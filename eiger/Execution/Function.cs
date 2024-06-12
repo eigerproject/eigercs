@@ -36,7 +36,9 @@ class Function : BaseFunction
             localSymbolTable[arg_n[i]] = args[i];
         }
 
-        return Interpreter.VisitNode(root, localSymbolTable);
+        dynamic v = Interpreter.VisitBlockNode(root, localSymbolTable, out dynamic ret);
+
+        return ret;
     }
 
     public override string ToString()

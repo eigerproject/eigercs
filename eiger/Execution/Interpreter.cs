@@ -1,5 +1,6 @@
 ﻿using EigerLang.Errors;
 using EigerLang.Parsing;
+using System.Net;
 
 
 namespace EigerLang.Execution;
@@ -26,6 +27,7 @@ class Interpreter
             case NodeType.If: return VisitIfNode(node, symbolTable);
             case NodeType.FuncCall: return VisitFuncCallNode(node, symbolTable);
             case NodeType.FuncDef: return VisitFuncDefNode(node, symbolTable);
+            case NodeType.Return: throw new EigerError("`ret` can only be used in a function");
             case NodeType.BinOp: return VisitBinOpNode(node, symbolTable);
             case NodeType.Literal: return VisitLiteralNode(node, symbolTable);
             case NodeType.Identifier: return VisitIdentifierNode(node, symbolTable);
@@ -35,12 +37,28 @@ class Interpreter
         return 0;
     }
 
-    static dynamic VisitBlockNode(ASTNode node,Dictionary<string,dynamic?> symbolTable)
+
+    public static dynamic VisitBlockNode(ASTNode node,Dictionary<string,dynamic?> symbolTable)
     {
         foreach(var child in node.children)
         {
             VisitNode(child,symbolTable);
         }
+        return 0;
+    }
+
+    public static dynamic VisitBlockNode(ASTNode node, Dictionary<string, dynamic?> symbolTable, out dynamic retVal)
+    {
+        foreach (var child in node.children)
+        {
+            if(child.type == NodeType.Return)
+            {
+                retVal = VisitNode(child.children[0],symbolTable);
+                return retVal;
+            }
+            VisitNode(child, symbolTable);
+        }
+        retVal = 0;
         return 0;
     }
 

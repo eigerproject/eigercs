@@ -92,6 +92,7 @@ public class Parser(List<Token> tokens)
         {
             case "if": return IfStatement();
             case "func": return FuncDefStatement();
+            case "ret": return RetStatement();
             default: return Expr();
         }
     }
@@ -139,6 +140,14 @@ public class Parser(List<Token> tokens)
                 return FunctionCallStatement();
 
         return new ASTNode(NodeType.Identifier, Advance().value);
+    }
+
+    ASTNode RetStatement()
+    {
+        Match(TokenType.IDENTIFIER, "ret");
+        ASTNode node = new ASTNode(NodeType.Return, null);
+        node.AddChild(Expr());
+        return node;
     }
 
     ASTNode FunctionCallStatement()

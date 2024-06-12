@@ -4,6 +4,7 @@ public enum NodeType
 {
     Block,
     If,
+    Return,
     FuncCall,
     FuncDef,
     BinOp,
