@@ -36,7 +36,7 @@ class Function : BaseFunction
             localSymbolTable[arg_n[i]] = args[i];
         }
 
-        Interpreter.VisitBlockNode(root, localSymbolTable, out dynamic ret);
+        Interpreter.VisitBlockNode(root, localSymbolTable, out dynamic ret,out bool set);
 
         return ret;
     }

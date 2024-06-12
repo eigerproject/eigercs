@@ -23,7 +23,7 @@ class Interpreter
     {
         switch (node.type)
         {
-            case NodeType.Block: return VisitBlockNode(node, new(symbolTable) );
+            case NodeType.Block: return VisitBlockNode(node, new(symbolTable));
             case NodeType.If: return VisitIfNode(node, symbolTable);
             case NodeType.FuncCall: return VisitFuncCallNode(node, symbolTable);
             case NodeType.FuncDef: return VisitFuncDefNode(node, symbolTable);
@@ -38,27 +38,38 @@ class Interpreter
     }
 
 
-    public static dynamic VisitBlockNode(ASTNode node,Dictionary<string,dynamic?> symbolTable)
+    public static dynamic VisitBlockNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
     {
-        foreach(var child in node.children)
+        foreach (var child in node.children)
         {
-            VisitNode(child,symbolTable);
+            VisitNode(child, symbolTable);
         }
         return 0;
     }
 
-    public static dynamic VisitBlockNode(ASTNode node, Dictionary<string, dynamic?> symbolTable, out dynamic retVal)
+    public static dynamic VisitBlockNode(ASTNode node, Dictionary<string, dynamic?> symbolTable, out dynamic retVal, out bool set)
     {
         foreach (var child in node.children)
         {
-            if(child.type == NodeType.Return)
+            if (child.type == NodeType.Return)
             {
-                retVal = VisitNode(child.children[0],symbolTable);
+                retVal = VisitNode(child.children[0], symbolTable);
+                set = true;
                 return retVal;
             }
-            VisitNode(child, symbolTable);
+            
+            if(child.type == NodeType.If)
+            {
+                VisitIfNode(child, symbolTable, out retVal, out set);
+                if (set) { return retVal; }
+            }
+            else
+            {
+                VisitNode(child, symbolTable);
+            }
         }
         retVal = 0;
+        set = false;
         return 0;
     }
 
@@ -66,11 +77,11 @@ class Interpreter
     {
         bool hasElseBlock = node.children.Count == 3;
         dynamic condition = VisitNode(node.children[0], symbolTable);
-        if(Convert.ToBoolean(condition))
+        if (Convert.ToBoolean(condition))
         {
             return VisitNode(node.children[1], symbolTable);
         }
-        else if(hasElseBlock)
+        else if (hasElseBlock)
         {
             return VisitNode(node.children[2], symbolTable);
         }
@@ -80,16 +91,36 @@ class Interpreter
         }
     }
 
+    static dynamic VisitIfNode(ASTNode node, Dictionary<string, dynamic?> symbolTable, out dynamic retVal,out bool set)
+    {
+        bool hasElseBlock = node.children.Count == 3;
+        dynamic condition = VisitNode(node.children[0], symbolTable);
+        if (Convert.ToBoolean(condition))
+        {
+            return VisitBlockNode(node.children[1], symbolTable, out retVal, out set);
+        }
+        else if (hasElseBlock)
+        {
+            return VisitBlockNode(node.children[2], symbolTable, out retVal, out set);
+        }
+        else
+        {
+            retVal = 0;
+            set = false;
+            return 0;
+        }
+    }
+
     static dynamic VisitFuncCallNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
     {
         try
         {
-            if(symbolTable[node.value] is BaseFunction)
+            if (symbolTable[node.value] is BaseFunction)
             {
                 List<dynamic> args = new List<dynamic>();
-                foreach(ASTNode child in node.children)
+                foreach (ASTNode child in node.children)
                 {
-                    args.Add(VisitNode(child,symbolTable));
+                    args.Add(VisitNode(child, symbolTable));
                 }
 
                 return symbolTable[node.value].Execute(args);
@@ -110,12 +141,12 @@ class Interpreter
         ASTNode root = node.children[0];
         List<string> argnames = new();
 
-        for(int i =1;i<node.children.Count;i++)
+        for (int i = 1; i < node.children.Count; i++)
         {
             argnames.Add(node.children[i].value);
         }
 
-        symbolTable[funcName] = new Function(funcName, argnames, root,symbolTable);
+        symbolTable[funcName] = new Function(funcName, argnames, root, symbolTable);
 
         return 0;
     }
@@ -124,7 +155,7 @@ class Interpreter
     {
         switch (node.value)
         {
-            case "+": return VisitNode(node.children[0],symbolTable) + VisitNode(node.children[1], symbolTable);
+            case "+": return VisitNode(node.children[0], symbolTable) + VisitNode(node.children[1], symbolTable);
             case "-": return VisitNode(node.children[0], symbolTable) - VisitNode(node.children[1], symbolTable);
             case "*": return VisitNode(node.children[0], symbolTable) * VisitNode(node.children[1], symbolTable);
             case "/": return VisitNode(node.children[0], symbolTable) / VisitNode(node.children[1], symbolTable);
