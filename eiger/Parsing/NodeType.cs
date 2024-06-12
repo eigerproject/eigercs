@@ -4,6 +4,7 @@ public enum NodeType
 {
     Block,
     If,
+    While,
     Return,
     FuncCall,
     FuncDef,

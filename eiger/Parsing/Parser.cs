@@ -1,5 +1,6 @@
 ﻿using EigerLang.Errors;
 using EigerLang.Tokenization;
+using System.Xml.Linq;
 
 namespace EigerLang.Parsing;
 
@@ -91,6 +92,7 @@ public class Parser(List<Token> tokens)
         switch (peeked.value)
         {
             case "if": return IfStatement();
+            case "while": return WhileStatement();
             case "func": return FuncDefStatement();
             case "ret": return RetStatement();
             default: return Expr();
@@ -170,6 +172,19 @@ public class Parser(List<Token> tokens)
         Match(TokenType.RPAREN);
 
         return node;
+    }
+
+    ASTNode WhileStatement()
+    {
+        Match(TokenType.IDENTIFIER, "while");
+        ASTNode condition = Expr();
+        Match(TokenType.IDENTIFIER, "do");
+        ASTNode doBranch = StatementList();
+        Match(TokenType.IDENTIFIER, "end");
+        ASTNode whileNode = new(NodeType.While, null);
+        whileNode.AddChild(condition);
+        whileNode.AddChild(doBranch);
+        return whileNode;
     }
 
     ASTNode IfStatement()

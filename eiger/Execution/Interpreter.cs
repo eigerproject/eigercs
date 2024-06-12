@@ -25,6 +25,7 @@ class Interpreter
         {
             case NodeType.Block: return VisitBlockNode(node, new(symbolTable));
             case NodeType.If: return VisitIfNode(node, symbolTable);
+            case NodeType.While: return VisitWhileNode(node, symbolTable);
             case NodeType.FuncCall: return VisitFuncCallNode(node, symbolTable);
             case NodeType.FuncDef: return VisitFuncDefNode(node, symbolTable);
             case NodeType.Return: throw new EigerError("`ret` can only be used in a function");
@@ -63,6 +64,11 @@ class Interpreter
                 VisitIfNode(child, symbolTable, out retVal, out set);
                 if (set) { return retVal; }
             }
+            else if (child.type == NodeType.While)
+            {
+                VisitWhileNode(child, symbolTable, out retVal, out set);
+                if (set) { return retVal; }
+            }
             else
             {
                 VisitNode(child, symbolTable);
@@ -70,6 +76,30 @@ class Interpreter
         }
         retVal = 0;
         set = false;
+        return 0;
+    }
+
+    static dynamic VisitWhileNode(ASTNode node, Dictionary<string, dynamic?> symbolTable,out dynamic retVal, out bool set)
+    {
+        dynamic condition = VisitNode(node.children[0], symbolTable);
+        while (Convert.ToBoolean(condition))
+        {
+            VisitBlockNode(node.children[1], symbolTable,out retVal,out set);
+            condition = VisitNode(node.children[0], symbolTable);
+        }
+        retVal = 0;
+        set = false;
+        return 0;
+    }
+
+    static dynamic VisitWhileNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
+    {
+        dynamic condition = VisitNode(node.children[0], symbolTable);
+        while (Convert.ToBoolean(condition))
+        {
+            VisitBlockNode(node.children[1], symbolTable);
+            condition = VisitNode(node.children[0], symbolTable);
+        }
         return 0;
     }
 
