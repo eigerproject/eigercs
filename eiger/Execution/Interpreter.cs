@@ -129,6 +129,11 @@ class Interpreter
             case "*": return VisitNode(node.children[0], symbolTable) * VisitNode(node.children[1], symbolTable);
             case "/": return VisitNode(node.children[0], symbolTable) / VisitNode(node.children[1], symbolTable);
             case "?=": return VisitNode(node.children[0], symbolTable) == VisitNode(node.children[1], symbolTable);
+            case "<": return VisitNode(node.children[0], symbolTable) < VisitNode(node.children[1], symbolTable);
+            case ">": return VisitNode(node.children[0], symbolTable) > VisitNode(node.children[1], symbolTable);
+            case "<=": return VisitNode(node.children[0], symbolTable) <= VisitNode(node.children[1], symbolTable);
+            case ">=": return VisitNode(node.children[0], symbolTable) >= VisitNode(node.children[1], symbolTable);
+            case "!=": return VisitNode(node.children[0], symbolTable) != VisitNode(node.children[1], symbolTable);
             case "=":
                 dynamic rightSide = VisitNode(node.children[1], symbolTable);
                 symbolTable[node.children[0].value] = rightSide;
