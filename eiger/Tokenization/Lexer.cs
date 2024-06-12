@@ -114,7 +114,7 @@ public class Lexer
         while (ptr < source.Length)
         {
             if (current_char == '\0') break;
-            else if (current_char == ' ' || current_char == '\t')
+            else if (current_char == ' ' || current_char == '\t' || current_char == '\r')
             {
                 Advance();
                 continue;

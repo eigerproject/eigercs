@@ -54,7 +54,7 @@ public class Program
         }
         else if(args.Length == 1)
         {
-            string filepath = args[1];
+            string filepath = args[0];
             if(Path.GetExtension(filepath) != ".el")
             {
                 Console.WriteLine("Not an .el file!");

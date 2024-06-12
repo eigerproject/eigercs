@@ -122,6 +122,7 @@ public class Parser(List<Token> tokens)
         Match(TokenType.RPAREN);
 
         ASTNode rootNode = StatementList();
+        Match(TokenType.IDENTIFIER, "end");
 
         node.AddChild(rootNode);
 
