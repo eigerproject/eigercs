@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34525.116
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "eiger", "eiger\eiger.csproj", "{B35C501E-47E3-487E-B6F8-A7E45C98D492}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B35C501E-47E3-487E-B6F8-A7E45C98D492}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B35C501E-47E3-487E-B6F8-A7E45C98D492}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B35C501E-47E3-487E-B6F8-A7E45C98D492}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B35C501E-47E3-487E-B6F8-A7E45C98D492}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3BE8F88D-014B-43D9-8E6B-54511BAA29DA}
+	EndGlobalSection
+EndGlobal
