@@ -1,7 +1,5 @@
 ﻿using EigerLang.Errors;
 using EigerLang.Parsing;
-using Microsoft.CSharp.RuntimeBinder;
-using System.Security.Cryptography;
 
 namespace EigerLang.Execution;
 
@@ -18,10 +16,7 @@ class Interpreter
         {"emitln",emitlnFunction},
         {"in",inFunction},
         {"inchar",incharFunction},
-        {"cls",clsFunction },
-        {"true",true},
-        {"false",false},
-        {"nix",null}
+        {"cls",clsFunction }
     };
 
     public static (bool, dynamic?) VisitNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
@@ -143,31 +138,24 @@ class Interpreter
     static (bool, dynamic?) VisitBinOpNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
     {
         dynamic? retVal = null;
-        try
+        switch (node.value)
         {
-            switch (node.value)
-            {
-                case "+": retVal = VisitNode(node.children[0], symbolTable).Item2 + VisitNode(node.children[1], symbolTable).Item2; break;
-                case "-": retVal = VisitNode(node.children[0], symbolTable).Item2 - VisitNode(node.children[1], symbolTable).Item2; break;
-                case "*": retVal = VisitNode(node.children[0], symbolTable).Item2 * VisitNode(node.children[1], symbolTable).Item2; break;
-                case "/": retVal = VisitNode(node.children[0], symbolTable).Item2 / VisitNode(node.children[1], symbolTable).Item2; break;
-                case "?=": retVal = VisitNode(node.children[0], symbolTable).Item2 == VisitNode(node.children[1], symbolTable).Item2; break;
-                case "<": retVal = VisitNode(node.children[0], symbolTable).Item2 < VisitNode(node.children[1], symbolTable).Item2; break;
-                case ">": retVal = VisitNode(node.children[0], symbolTable).Item2 > VisitNode(node.children[1], symbolTable).Item2; break;
-                case "<=": retVal = VisitNode(node.children[0], symbolTable).Item2 <= VisitNode(node.children[1], symbolTable).Item2; break;
-                case ">=": retVal = VisitNode(node.children[0], symbolTable).Item2 >= VisitNode(node.children[1], symbolTable).Item2; break;
-                case "!=": retVal = VisitNode(node.children[0], symbolTable).Item2 != VisitNode(node.children[1], symbolTable).Item2; break;
-                case "=":
-                    dynamic rightSide = VisitNode(node.children[1], symbolTable).Item2 ?? 0;
-                    symbolTable[node.children[0].value] = rightSide;
-                    retVal = rightSide;
-                    break;
-                default: throw new EigerError("Invalid Binary Operator");
-            }
-        }
-        catch(RuntimeBinderException)
-        {
-            throw new EigerError($"Operand {node.value} can't be applied to `{node.children[0].value}` and `{node.children[1].value}`");
+            case "+": retVal = VisitNode(node.children[0], symbolTable).Item2 + VisitNode(node.children[1], symbolTable).Item2; break;
+            case "-": retVal = VisitNode(node.children[0], symbolTable).Item2 - VisitNode(node.children[1], symbolTable).Item2; break;
+            case "*": retVal = VisitNode(node.children[0], symbolTable).Item2 * VisitNode(node.children[1], symbolTable).Item2; break;
+            case "/": retVal = VisitNode(node.children[0], symbolTable).Item2 / VisitNode(node.children[1], symbolTable).Item2; break;
+            case "?=": retVal = VisitNode(node.children[0], symbolTable).Item2 == VisitNode(node.children[1], symbolTable).Item2; break;
+            case "<": retVal = VisitNode(node.children[0], symbolTable).Item2 < VisitNode(node.children[1], symbolTable).Item2; break;
+            case ">": retVal = VisitNode(node.children[0], symbolTable).Item2 > VisitNode(node.children[1], symbolTable).Item2; break;
+            case "<=": retVal = VisitNode(node.children[0], symbolTable).Item2 <= VisitNode(node.children[1], symbolTable).Item2; break;
+            case ">=": retVal = VisitNode(node.children[0], symbolTable).Item2 >= VisitNode(node.children[1], symbolTable).Item2; break;
+            case "!=": retVal = VisitNode(node.children[0], symbolTable).Item2 != VisitNode(node.children[1], symbolTable).Item2; break;
+            case "=":
+                dynamic rightSide = VisitNode(node.children[1], symbolTable).Item2 ?? 0;
+                symbolTable[node.children[0].value] = rightSide;
+                retVal =  rightSide;
+                break;
+            default: throw new EigerError("Invalid Binary Operator");
         }
         return (false, retVal);
     }
