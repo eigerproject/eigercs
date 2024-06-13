@@ -1,5 +1,6 @@
 ﻿using EigerLang.Errors;
 using EigerLang.Parsing;
+using System.Xml.Linq;
 
 namespace EigerLang.Execution;
 
@@ -151,9 +152,39 @@ class Interpreter
             case ">=": retVal = VisitNode(node.children[0], symbolTable).Item2 >= VisitNode(node.children[1], symbolTable).Item2; break;
             case "!=": retVal = VisitNode(node.children[0], symbolTable).Item2 != VisitNode(node.children[1], symbolTable).Item2; break;
             case "=":
-                dynamic rightSide = VisitNode(node.children[1], symbolTable).Item2 ?? 0;
-                symbolTable[node.children[0].value] = rightSide;
-                retVal =  rightSide;
+                {
+                    dynamic? rightSide = VisitNode(node.children[1], symbolTable).Item2;
+                    SetSymbol(symbolTable, node.children[0].value, rightSide);
+                    retVal = rightSide;
+                }
+                break;
+            case "+=":
+                {
+                    dynamic? rightSide = VisitNode(node.children[1], symbolTable).Item2;
+                    SetSymbol(symbolTable, node.children[0].value, GetSymbol(symbolTable,node.children[0].value) + rightSide);
+                    retVal = rightSide;
+                }
+                break;
+            case "-=":
+                {
+                    dynamic? rightSide = VisitNode(node.children[1], symbolTable).Item2;
+                    SetSymbol(symbolTable, node.children[0].value, GetSymbol(symbolTable, node.children[0].value) - rightSide);
+                    retVal = rightSide;
+                }
+                break;
+            case "*=":
+                {
+                    dynamic? rightSide = VisitNode(node.children[1], symbolTable).Item2;
+                    SetSymbol(symbolTable, node.children[0].value, GetSymbol(symbolTable, node.children[0].value) * rightSide);
+                    retVal = rightSide;
+                }
+                break;
+            case "/=":
+                {
+                    dynamic? rightSide = VisitNode(node.children[1], symbolTable).Item2;
+                    SetSymbol(symbolTable, node.children[0].value, GetSymbol(symbolTable, node.children[0].value) / rightSide);
+                    retVal = rightSide;
+                }
                 break;
             default: throw new EigerError("Invalid Binary Operator");
         }
@@ -167,13 +198,30 @@ class Interpreter
 
     static (bool, dynamic?) VisitIdentifierNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
     {
+        return (false, GetSymbol(symbolTable,node.value));
+    }
+
+    static dynamic GetSymbol(Dictionary<string, dynamic?> symbolTable,string key)
+    {
         try
         {
-            return (false, symbolTable[node.value]);
+            return symbolTable[key] ?? 0;
         }
         catch (KeyNotFoundException)
         {
-            throw new EigerError($"Variable {node.value} undefined");
+            throw new EigerError($"`{key}` is undefined");
+        }
+    }
+
+    static void SetSymbol(Dictionary<string, dynamic?> symbolTable, string key,dynamic value)
+    {
+        try
+        {
+            symbolTable[key] = value;
+        }
+        catch (KeyNotFoundException)
+        {
+            throw new EigerError($"`{key}` is undefined");
         }
     }
 }

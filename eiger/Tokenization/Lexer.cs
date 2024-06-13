@@ -152,19 +152,47 @@ public class Lexer
             }
             else if (current_char == '+')
             {
-                result.Add(new Token(current_line, current_pos, TokenType.PLUS, "+"));
+                Advance();
+                if (current_char == '=')
+                    result.Add(new Token(current_line, current_pos, TokenType.PLUSEQ, "+="));
+                else
+                {
+                    result.Add(new Token(current_line, current_pos, TokenType.PLUS, "+"));
+                    Reverse();
+                }
             }
             else if (current_char == '-')
             {
-                result.Add(new Token(current_line, current_pos, TokenType.MINUS, "-"));
+                Advance();
+                if (current_char == '=')
+                    result.Add(new Token(current_line, current_pos, TokenType.MINUSEQ, "-="));
+                else
+                {
+                    result.Add(new Token(current_line, current_pos, TokenType.MINUS, "-"));
+                    Reverse();
+                }
             }
             else if (current_char == '*')
             {
-                result.Add(new Token(current_line, current_pos, TokenType.MUL, "*"));
+                Advance();
+                if (current_char == '=')
+                    result.Add(new Token(current_line, current_pos, TokenType.MULEQ, "*="));
+                else
+                {
+                    result.Add(new Token(current_line, current_pos, TokenType.MUL, "*"));
+                    Reverse();
+                }
             }
             else if (current_char == '/')
             {
-                result.Add(new Token(current_line, current_pos, TokenType.DIV, "/"));
+                Advance();
+                if (current_char == '=')
+                    result.Add(new Token(current_line, current_pos, TokenType.DIVEQ, "/="));
+                else
+                {
+                    result.Add(new Token(current_line, current_pos, TokenType.DIV, "/"));
+                    Reverse();
+                }
             }
             else if (current_char == '=')
             {

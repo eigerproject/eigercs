@@ -8,15 +8,20 @@ public class Parser(List<Token> tokens)
 {
     int current;
 
-    HashSet<TokenType> termOps = new HashSet<TokenType>
+    HashSet<TokenType> termOps = new()
     {
         TokenType.MUL, TokenType.DIV, TokenType.EQEQ, TokenType.NEQEQ,
         TokenType.GT, TokenType.LT, TokenType.GTE, TokenType.LTE,
     };
 
-    HashSet<TokenType> exprOps = new HashSet<TokenType>
+    HashSet<TokenType> exprOps = new()
     {
         TokenType.PLUS, TokenType.MINUS
+    };
+
+    HashSet<TokenType> assignOps = new()
+    {
+        TokenType.EQ, TokenType.PLUSEQ,TokenType.MINUSEQ,TokenType.MULEQ,TokenType.DIVEQ
     };
 
 
@@ -230,8 +235,7 @@ public class Parser(List<Token> tokens)
         {
             TokenType tokenType = Peek().type;
 
-            // Handle assignment operators
-            if (tokenType == TokenType.EQ)
+            if (assignOps.Contains(tokenType))
             {
                 Token op = Advance();
                 ASTNode right = Expr();

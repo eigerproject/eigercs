@@ -8,5 +8,9 @@ public enum TokenType
     GTE,
     LTE,
     NEQEQ,
-    EQEQ
+    EQEQ,
+    PLUSEQ,
+    MINUSEQ,
+    MULEQ,
+    DIVEQ,
 }
