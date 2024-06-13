@@ -37,7 +37,8 @@ public class Program
 
                     foreach (var statement in root.children)
                     {
-                        Console.WriteLine(Interpreter.VisitNode(statement, Interpreter.globalSymbolTable));
+                        (bool didReturn, dynamic? val) = Interpreter.VisitNode(statement, Interpreter.globalSymbolTable);
+                        if (didReturn) { Console.WriteLine(val); }
                     }
 
                 }

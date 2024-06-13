@@ -19,7 +19,7 @@ class Interpreter
         {"inchar",incharFunction},
     };
 
-    public static dynamic VisitNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
+    public static (bool, dynamic?) VisitNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
     {
         switch (node.type)
         {
@@ -28,86 +28,50 @@ class Interpreter
             case NodeType.While: return VisitWhileNode(node, symbolTable);
             case NodeType.FuncCall: return VisitFuncCallNode(node, symbolTable);
             case NodeType.FuncDef: return VisitFuncDefNode(node, symbolTable);
-            case NodeType.Return: throw new EigerError("`ret` can only be used in a function");
+            case NodeType.Return: return VisitReturnNode(node, symbolTable);
             case NodeType.BinOp: return VisitBinOpNode(node, symbolTable);
             case NodeType.Literal: return VisitLiteralNode(node, symbolTable);
             case NodeType.Identifier: return VisitIdentifierNode(node, symbolTable);
             default:
                 break;
         }
-        return 0;
+        return (false, null);
     }
 
+    static (bool, dynamic?) VisitReturnNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
+    {
+        return (true, VisitNode(node.children[0], symbolTable).Item2);
+    }
 
-    public static dynamic VisitBlockNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
+    public static (bool, dynamic?) VisitBlockNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
     {
         foreach (var child in node.children)
         {
-            VisitNode(child, symbolTable);
-        }
-        return 0;
-    }
-
-    public static dynamic VisitBlockNode(ASTNode node, Dictionary<string, dynamic?> symbolTable, out dynamic retVal, out bool set)
-    {
-        foreach (var child in node.children)
-        {
-            if (child.type == NodeType.Return)
+            (bool didReturn,dynamic? value) = VisitNode(child, symbolTable); 
+            if (didReturn)
             {
-                retVal = VisitNode(child.children[0], symbolTable);
-                set = true;
-                return retVal;
-            }
-            
-            if(child.type == NodeType.If)
-            {
-                VisitIfNode(child, symbolTable, out retVal, out set);
-                if (set) { return retVal; }
-            }
-            else if (child.type == NodeType.While)
-            {
-                VisitWhileNode(child, symbolTable, out retVal, out set);
-                if (set) { return retVal; }
-            }
-            else
-            {
-                VisitNode(child, symbolTable);
+                return (true,value);
             }
         }
-        retVal = 0;
-        set = false;
-        return 0;
+        return (false,null);
     }
 
-    static dynamic VisitWhileNode(ASTNode node, Dictionary<string, dynamic?> symbolTable,out dynamic retVal, out bool set)
+    static (bool, dynamic?) VisitWhileNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
     {
         dynamic condition = VisitNode(node.children[0], symbolTable);
-        while (Convert.ToBoolean(condition))
-        {
-            VisitBlockNode(node.children[1], symbolTable,out retVal,out set);
-            condition = VisitNode(node.children[0], symbolTable);
-        }
-        retVal = 0;
-        set = false;
-        return 0;
-    }
-
-    static dynamic VisitWhileNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
-    {
-        dynamic condition = VisitNode(node.children[0], symbolTable);
-        while (Convert.ToBoolean(condition))
+        while (Convert.ToBoolean(condition.Item2))
         {
             VisitBlockNode(node.children[1], symbolTable);
             condition = VisitNode(node.children[0], symbolTable);
         }
-        return 0;
+        return (false,null);
     }
 
-    static dynamic VisitIfNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
+    static (bool, dynamic?) VisitIfNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
     {
         bool hasElseBlock = node.children.Count == 3;
         dynamic condition = VisitNode(node.children[0], symbolTable);
-        if (Convert.ToBoolean(condition))
+        if (Convert.ToBoolean(condition.Item2))
         {
             return VisitNode(node.children[1], symbolTable);
         }
@@ -117,43 +81,23 @@ class Interpreter
         }
         else
         {
-            return 0;
+            return (false,null);
         }
     }
 
-    static dynamic VisitIfNode(ASTNode node, Dictionary<string, dynamic?> symbolTable, out dynamic retVal,out bool set)
-    {
-        bool hasElseBlock = node.children.Count == 3;
-        dynamic condition = VisitNode(node.children[0], symbolTable);
-        if (Convert.ToBoolean(condition))
-        {
-            return VisitBlockNode(node.children[1], symbolTable, out retVal, out set);
-        }
-        else if (hasElseBlock)
-        {
-            return VisitBlockNode(node.children[2], symbolTable, out retVal, out set);
-        }
-        else
-        {
-            retVal = 0;
-            set = false;
-            return 0;
-        }
-    }
-
-    static dynamic VisitFuncCallNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
+    static (bool, dynamic?) VisitFuncCallNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
     {
         try
         {
             if (symbolTable[node.value] is BaseFunction)
             {
-                List<dynamic> args = new List<dynamic>();
+                List<dynamic> args = [];
                 foreach (ASTNode child in node.children)
                 {
-                    args.Add(VisitNode(child, symbolTable));
+                    args.Add(VisitNode(child, symbolTable).Item2);
                 }
 
-                return symbolTable[node.value].Execute(args);
+                return ((BaseFunction)symbolTable[node.value]).Execute(args);
             }
             else
                 throw new EigerError($"{node.value} is not a function");
@@ -164,7 +108,7 @@ class Interpreter
         }
     }
 
-    static dynamic VisitFuncDefNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
+    static (bool, dynamic?) VisitFuncDefNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
     {
         string funcName = node.value ?? "";
 
@@ -178,41 +122,44 @@ class Interpreter
 
         symbolTable[funcName] = new Function(funcName, argnames, root, symbolTable);
 
-        return 0;
+        return (false, null);
     }
 
-    static dynamic VisitBinOpNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
+    static (bool, dynamic?) VisitBinOpNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
     {
+        dynamic? retVal = null;
         switch (node.value)
         {
-            case "+": return VisitNode(node.children[0], symbolTable) + VisitNode(node.children[1], symbolTable);
-            case "-": return VisitNode(node.children[0], symbolTable) - VisitNode(node.children[1], symbolTable);
-            case "*": return VisitNode(node.children[0], symbolTable) * VisitNode(node.children[1], symbolTable);
-            case "/": return VisitNode(node.children[0], symbolTable) / VisitNode(node.children[1], symbolTable);
-            case "?=": return VisitNode(node.children[0], symbolTable) == VisitNode(node.children[1], symbolTable);
-            case "<": return VisitNode(node.children[0], symbolTable) < VisitNode(node.children[1], symbolTable);
-            case ">": return VisitNode(node.children[0], symbolTable) > VisitNode(node.children[1], symbolTable);
-            case "<=": return VisitNode(node.children[0], symbolTable) <= VisitNode(node.children[1], symbolTable);
-            case ">=": return VisitNode(node.children[0], symbolTable) >= VisitNode(node.children[1], symbolTable);
-            case "!=": return VisitNode(node.children[0], symbolTable) != VisitNode(node.children[1], symbolTable);
+            case "+": retVal = VisitNode(node.children[0], symbolTable).Item2 + VisitNode(node.children[1], symbolTable).Item2; break;
+            case "-": retVal = VisitNode(node.children[0], symbolTable).Item2 - VisitNode(node.children[1], symbolTable).Item2; break;
+            case "*": retVal = VisitNode(node.children[0], symbolTable).Item2 * VisitNode(node.children[1], symbolTable).Item2; break;
+            case "/": retVal = VisitNode(node.children[0], symbolTable).Item2 / VisitNode(node.children[1], symbolTable).Item2; break;
+            case "?=": retVal = VisitNode(node.children[0], symbolTable).Item2 == VisitNode(node.children[1], symbolTable).Item2; break;
+            case "<": retVal = VisitNode(node.children[0], symbolTable).Item2 < VisitNode(node.children[1], symbolTable).Item2; break;
+            case ">": retVal = VisitNode(node.children[0], symbolTable).Item2 > VisitNode(node.children[1], symbolTable).Item2; break;
+            case "<=": retVal = VisitNode(node.children[0], symbolTable).Item2 <= VisitNode(node.children[1], symbolTable).Item2; break;
+            case ">=": retVal = VisitNode(node.children[0], symbolTable).Item2 >= VisitNode(node.children[1], symbolTable).Item2; break;
+            case "!=": retVal = VisitNode(node.children[0], symbolTable).Item2 != VisitNode(node.children[1], symbolTable).Item2; break;
             case "=":
-                dynamic rightSide = VisitNode(node.children[1], symbolTable);
+                dynamic rightSide = VisitNode(node.children[1], symbolTable).Item2 ?? 0;
                 symbolTable[node.children[0].value] = rightSide;
-                return rightSide;
+                retVal =  rightSide;
+                break;
+            default: throw new EigerError("Invalid Binary Operator");
         }
-        throw new EigerError("Invalid Binary Operator");
+        return (true, retVal);
     }
 
-    static dynamic VisitLiteralNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
+    static (bool, dynamic?) VisitLiteralNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
     {
-        return node.value ?? 0;
+        return (true, node.value);
     }
 
-    static dynamic VisitIdentifierNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
+    static (bool, dynamic?) VisitIdentifierNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
     {
         try
         {
-            return symbolTable[node.value] ?? 0;
+            return (true, symbolTable[node.value]);
         }
         catch (KeyNotFoundException)
         {

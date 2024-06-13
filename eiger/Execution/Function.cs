@@ -10,7 +10,7 @@ abstract class BaseFunction(string name, List<string> arg_n, Dictionary<string,d
 
     public Dictionary<string, dynamic?> symbolTable = symbolTable;
 
-    public abstract dynamic Execute(List<dynamic> args);
+    public abstract (bool,dynamic?) Execute(List<dynamic> args);
 }
 
 class Function : BaseFunction
@@ -22,7 +22,7 @@ class Function : BaseFunction
         this.root = root;
     }
 
-    public override dynamic Execute(List<dynamic> args)
+    public override (bool, dynamic?) Execute(List<dynamic> args)
     {
         if(args.Count != arg_n.Count)
         {
@@ -36,9 +36,7 @@ class Function : BaseFunction
             localSymbolTable[arg_n[i]] = args[i];
         }
 
-        Interpreter.VisitBlockNode(root, localSymbolTable, out dynamic ret,out bool set);
-
-        return ret;
+        return Interpreter.VisitBlockNode(root, localSymbolTable);
     }
 
     public override string ToString()
@@ -51,7 +49,7 @@ abstract class BuiltInFunction : BaseFunction
 {
     public BuiltInFunction(string name, List<string> arg_n) : base(name, arg_n,Interpreter.globalSymbolTable) {}
 
-    public override dynamic Execute(List<dynamic> args) { return 0; }
+    public override (bool, dynamic?) Execute(List<dynamic> args) { return (false,null); }
 
     public override string ToString()
     {

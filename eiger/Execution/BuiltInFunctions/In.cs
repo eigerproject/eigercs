@@ -11,12 +11,12 @@ class InFunction : BuiltInFunction
 {
     public InFunction() : base("in", []) { }
 
-    public override dynamic Execute(List<dynamic> args)
+    public override (bool, dynamic?) Execute(List<dynamic> args)
     {
         if (args.Count != arg_n.Count)
         {
             throw new EigerError($"Function {name} takes {arg_n.Count} arguments, got {args.Count}");
         }
-        return Console.ReadLine() ?? "";
+        return (true, Console.ReadLine());
     }
 }
