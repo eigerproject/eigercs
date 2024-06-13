@@ -1,4 +1,9 @@
-﻿namespace EigerLang.Parsing;
+﻿/*
+ * EIGERLANG NODETYPE ENUM
+ * WRITTEN BY VARDAN PETROSYAN
+*/
+
+namespace EigerLang.Parsing;
 
 public enum NodeType
 {

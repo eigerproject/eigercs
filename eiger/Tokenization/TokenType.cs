@@ -1,4 +1,9 @@
-﻿namespace EigerLang.Tokenization;
+﻿/*
+ * EIGERLANG TOKEN TYPE
+ * WRITTEN BY VARDAN PETROSYAN
+*/
+
+namespace EigerLang.Tokenization;
 
 public enum TokenType
 {

@@ -1,4 +1,9 @@
-﻿using EigerLang;
+﻿/*
+ * EIGERLANG MAIN
+ * WRITTEN BY VARDAN PETROSYAN
+*/
+
+using EigerLang;
 using EigerLang.Errors;
 using EigerLang.Tokenization;
 using EigerLang.Parsing;
@@ -8,9 +13,10 @@ public class Program
 {
     static void Main(string[] args)
     {
+        // if no args are passed
         if (args.Length == 0)
         {
-            // Shell
+            // start shell
             Console.WriteLine($"{Globals.langName} {Globals.langVer}\nDocumentation: {Globals.docUrl}\n");
             while (true)
             {
@@ -51,18 +57,19 @@ public class Program
                 catch (Exception e) { Console.WriteLine(e); }
             }
         }
+        // if given filepath
         else if (args.Length == 1)
         {
             string filepath = args[0];
-            if (Path.GetExtension(filepath) != ".el")
+            if (Path.GetExtension(filepath) != Globals.fileExtension) // check extension
             {
-                Console.WriteLine("Not an .el file!");
+                Console.WriteLine($"Not an {Globals.fileExtension} file!");
                 return;
             }
             string content = "";
             try
             {
-                content = File.ReadAllText(filepath);
+                content = File.ReadAllText(filepath); // try reading the file
             }
             catch (IOException)
             {
@@ -93,6 +100,7 @@ public class Program
             }
             catch (Exception e) { Console.WriteLine(e); }
         }
+        // invalid syntax, print usage
         else
         {
             Console.WriteLine("[USAGE] eiger <source_path (optional)>");

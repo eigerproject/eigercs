@@ -1,10 +1,15 @@
-﻿namespace EigerLang.Tokenization;
+﻿/*
+ * EIGERLANG TOKEN CLASS
+ * WRITTEN BY VARDAN PETROSYAN
+*/
+
+namespace EigerLang.Tokenization;
 
 public class Token
 {
-    public TokenType type = TokenType.UNDEFINED;
-    public dynamic? value = null;
-    public int line = 1, pos = 1;
+    public TokenType type = TokenType.UNDEFINED; // the type of the token
+    public dynamic? value = null; // the value of the token
+    public int line = 1, pos = 1; // the position of the token
 
     public Token(int line, int pos, TokenType type)
     {
@@ -29,6 +34,7 @@ public class Token
             return value.ToString();
     }
 
+    // to string for debugging
     public string ToLongString()
     {
         if (value == null)

@@ -1,10 +1,15 @@
-﻿namespace EigerLang.Errors;
+﻿/*
+ * EIGERLANG ERRORS
+ * WRITTEN BY VARDAN PETROSYAN
+*/
+
+namespace EigerLang.Errors;
 
 public class EigerError : Exception
 {
-    string? file;
-    int? line, pos;
-    string? message;
+    string? file; // the file of the error
+    int? line, pos; // the position of the error
+    string? message; // the message
 
     public EigerError(string file, int line, int pos, string message) : base($"Error in file {file} at line {line}, {pos}:\n{message}")
     {
@@ -14,5 +19,5 @@ public class EigerError : Exception
         this.message = message;
     }
 
-    public EigerError(string error) : base(error) { }
+    public EigerError(string error) : base(error) { } // errors without a position (only message)
 }

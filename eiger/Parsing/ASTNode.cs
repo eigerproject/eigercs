@@ -1,4 +1,9 @@
-﻿namespace EigerLang.Parsing;
+﻿/*
+ * EIGERLANG ASTNODE CLASS
+ * WRITTEN BY VARDAN PETROSYAN
+*/
+
+namespace EigerLang.Parsing;
 
 public class ASTNode(NodeType type, dynamic? value)
 {
