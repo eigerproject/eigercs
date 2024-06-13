@@ -71,7 +71,7 @@ class Interpreter
         dynamic condition = VisitNode(node.children[0], symbolTable);
         while (Convert.ToBoolean(condition.Item2))
         {
-            VisitBlockNode(node.children[1], symbolTable);
+            VisitBlockNode(node.children[1], new(symbolTable), symbolTable);
             condition = VisitNode(node.children[0], symbolTable);
         }
         return (false,null);
