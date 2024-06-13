@@ -3,13 +3,12 @@ using EigerLang.Errors;
 using EigerLang.Tokenization;
 using EigerLang.Parsing;
 using EigerLang.Execution;
-using System.Transactions;
 
 public class Program
 {
     static void Main(string[] args)
     {
-        if(args.Length == 0)
+        if (args.Length == 0)
         {
             // Shell
             Console.WriteLine($"{Globals.langName} {Globals.langVer}\nDocumentation: {Globals.docUrl}\n");
@@ -38,9 +37,8 @@ public class Program
                     foreach (var statement in root.children)
                     {
                         (bool didReturn, dynamic? val) = Interpreter.VisitNode(statement, Interpreter.globalSymbolTable);
-                        if (didReturn) { Console.WriteLine(val); }
+                        Console.WriteLine((string)Convert.ToString(val));
                     }
-
                 }
                 catch (EigerError e)
                 {
@@ -53,10 +51,10 @@ public class Program
                 catch (Exception e) { Console.WriteLine(e); }
             }
         }
-        else if(args.Length == 1)
+        else if (args.Length == 1)
         {
             string filepath = args[0];
-            if(Path.GetExtension(filepath) != ".el")
+            if (Path.GetExtension(filepath) != ".el")
             {
                 Console.WriteLine("Not an .el file!");
                 return;
@@ -66,7 +64,7 @@ public class Program
             {
                 content = File.ReadAllText(filepath);
             }
-            catch(IOException e)
+            catch (IOException)
             {
                 Console.WriteLine("Failed to read file");
                 return;
@@ -76,15 +74,29 @@ public class Program
             List<Token> tokens = lex.Tokenize();
             Parser parser = new(tokens);
             ASTNode root = parser.Parse();
-            foreach (var statement in root.children)
+
+            try
             {
-                Interpreter.VisitNode(statement, Interpreter.globalSymbolTable);
+                foreach (var statement in root.children)
+                {
+                    (bool didReturn, dynamic? val) = Interpreter.VisitNode(statement, Interpreter.globalSymbolTable);
+                    if (didReturn) { Console.WriteLine((string)Convert.ToString(val)); }
+                }
             }
+            catch (EigerError e)
+            {
+                Console.WriteLine(e.Message);
+            }
+            catch (OverflowException e)
+            {
+                Console.WriteLine(e.Message);
+            }
+            catch (Exception e) { Console.WriteLine(e); }
         }
         else
         {
             Console.WriteLine("[USAGE] eiger <source_path (optional)>");
         }
-        
+
     }
 }

@@ -36,7 +36,7 @@ class Function : BaseFunction
             localSymbolTable[arg_n[i]] = args[i];
         }
 
-        return Interpreter.VisitBlockNode(root, localSymbolTable);
+        return Interpreter.VisitBlockNode(root, localSymbolTable,symbolTable);
     }
 
     public override string ToString()

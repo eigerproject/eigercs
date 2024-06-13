@@ -1,7 +1,5 @@
 ﻿using EigerLang.Errors;
 using EigerLang.Parsing;
-using System.Net;
-
 
 namespace EigerLang.Execution;
 
@@ -11,19 +9,21 @@ class Interpreter
     public static BuiltInFunctions.EmitlnFunction emitlnFunction = new();
     public static BuiltInFunctions.InFunction inFunction = new();
     public static BuiltInFunctions.IncharFunction incharFunction = new();
+    public static BuiltInFunctions.ClsFunction clsFunction = new();
 
     public static Dictionary<string, dynamic?> globalSymbolTable = new() {
         {"emit",emitFunction},
         {"emitln",emitlnFunction},
         {"in",inFunction},
         {"inchar",incharFunction},
+        {"cls",clsFunction }
     };
 
     public static (bool, dynamic?) VisitNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
     {
         switch (node.type)
         {
-            case NodeType.Block: return VisitBlockNode(node, new(symbolTable));
+            case NodeType.Block: return VisitBlockNode(node, symbolTable);
             case NodeType.If: return VisitIfNode(node, symbolTable);
             case NodeType.While: return VisitWhileNode(node, symbolTable);
             case NodeType.FuncCall: return VisitFuncCallNode(node, symbolTable);
@@ -43,11 +43,21 @@ class Interpreter
         return (true, VisitNode(node.children[0], symbolTable).Item2);
     }
 
-    public static (bool, dynamic?) VisitBlockNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
+    public static (bool, dynamic?) VisitBlockNode(ASTNode node, Dictionary<string, dynamic?> symbolTable, Dictionary<string, dynamic?>? parentSymbolTable = null)
     {
         foreach (var child in node.children)
         {
             (bool didReturn,dynamic? value) = VisitNode(child, symbolTable); 
+
+            if(parentSymbolTable != null)
+            foreach (var symbol in parentSymbolTable.Keys)
+            {
+                    if(symbolTable.ContainsKey(symbol))
+                    {
+                        parentSymbolTable[symbol] = symbolTable[symbol];
+                    }
+            }
+
             if (didReturn)
             {
                 return (true,value);
@@ -73,11 +83,11 @@ class Interpreter
         dynamic condition = VisitNode(node.children[0], symbolTable);
         if (Convert.ToBoolean(condition.Item2))
         {
-            return VisitNode(node.children[1], symbolTable);
+            return VisitBlockNode(node.children[1], new(symbolTable),symbolTable);
         }
         else if (hasElseBlock)
         {
-            return VisitNode(node.children[2], symbolTable);
+            return VisitBlockNode(node.children[2], new(symbolTable), symbolTable);
         }
         else
         {
@@ -147,19 +157,19 @@ class Interpreter
                 break;
             default: throw new EigerError("Invalid Binary Operator");
         }
-        return (true, retVal);
+        return (false, retVal);
     }
 
     static (bool, dynamic?) VisitLiteralNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
     {
-        return (true, node.value);
+        return (false, node.value);
     }
 
     static (bool, dynamic?) VisitIdentifierNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
     {
         try
         {
-            return (true, symbolTable[node.value]);
+            return (false, symbolTable[node.value]);
         }
         catch (KeyNotFoundException)
         {
