@@ -14,6 +14,7 @@ public class Lexer
     char current_char; // the current char
     int current_pos = 1; // the position in the line
     int current_line = 1; // the current line
+    string path; // the path of the file
 
     // advance to next char
     void Advance()
@@ -245,7 +246,7 @@ public class Lexer
                 if (current_char == '=') // if the next one is an equal sign 
                     result.Add(new Token(current_line, current_pos, TokenType.EQEQ, "?="));
                 else
-                    throw new EigerError("<stdin>", current_line, current_pos, $"Invalid Character: {current_char}");
+                    throw new EigerError(path, current_line, current_pos, $"Invalid Character: {current_char}");
             }
             else if (current_char == '!') // if it's an exclamation mark
             {
@@ -253,11 +254,11 @@ public class Lexer
                 if (current_char == '=') // if the next one is an equal sign
                     result.Add(new Token(current_line, current_pos, TokenType.NEQEQ, "!="));
                 else
-                    throw new EigerError("<stdin>", current_line, current_pos, $"Invalid Character: {current_char}");
+                    throw new EigerError(path, current_line, current_pos, $"Invalid Character: {current_char}");
             }
             else
             {
-                throw new EigerError("<stdin>", current_line, current_pos, $"Invalid Character: {current_char}");
+                throw new EigerError(path, current_line, current_pos, $"Invalid Character: {current_char}");
             }
             Advance();
         }
@@ -265,8 +266,9 @@ public class Lexer
     }
 
     // constructor
-    public Lexer(string source)
+    public Lexer(string source,string path)
     {
         this.source = source;
+        this.path = path;
     }
 }

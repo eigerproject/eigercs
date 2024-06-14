@@ -3,20 +3,15 @@
  * DESCRIPTION: CLEARS OUTPUT SCREEN
 */
 
-using EigerLang.Errors;
-
 namespace EigerLang.Execution.BuiltInFunctions;
 
 class ClsFunction : BuiltInFunction
 {
     public ClsFunction() : base("cls", []) { }
 
-    public override (bool, dynamic?) Execute(List<dynamic> args)
+    public override (bool, dynamic?) Execute(List<dynamic> args,int line,int pos, string filepath)
     {
-        if (args.Count != arg_n.Count)
-        {
-            throw new EigerError($"Function {name} takes {arg_n.Count} arguments, got {args.Count}");
-        }
+        CheckArgs(filepath, line, pos, args.Count);
         Console.Clear();
         return (false, null);
     }

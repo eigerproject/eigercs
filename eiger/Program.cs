@@ -9,6 +9,8 @@ using EigerLang.Tokenization;
 using EigerLang.Parsing;
 using EigerLang.Execution;
 
+namespace EigerLang;
+
 public class Program
 {
     static void Main(string[] args)
@@ -27,7 +29,7 @@ public class Program
 
                     if (inp == "") continue;
 
-                    Lexer lex = new(inp);
+                    Lexer lex = new(inp,"<stdin>");
                     List<Token> tokens = lex.Tokenize();
 
                     /*
@@ -38,7 +40,7 @@ public class Program
                     */
 
                     Parser parser = new(tokens);
-                    ASTNode root = parser.Parse();
+                    ASTNode root = parser.Parse("<stdin>");
 
                     foreach (var statement in root.children)
                     {
@@ -77,10 +79,10 @@ public class Program
                 return;
             }
 
-            Lexer lex = new(content);
+            Lexer lex = new(content, filepath);
             List<Token> tokens = lex.Tokenize();
             Parser parser = new(tokens);
-            ASTNode root = parser.Parse();
+            ASTNode root = parser.Parse(filepath);
 
             try
             {

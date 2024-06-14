@@ -5,7 +5,6 @@
 
 using EigerLang.Errors;
 using EigerLang.Parsing;
-using EigerLang.Tokenization;
 
 namespace EigerLang.Execution;
 
@@ -111,7 +110,7 @@ class Interpreter
 
         Dictionary<string, dynamic?> localSymbolTable = new(symbolTable);
 
-        string iteratorName = ((Token)(node.children[0].value)).value;
+        string iteratorName = node.children[0].value;
 
         ASTNode toNode = node.children[2];
 
@@ -202,7 +201,7 @@ class Interpreter
         // -- ...
 
         // if the symbol we're calling is a function (it might be something else, like a variable)
-        if (GetSymbol(symbolTable, node.value) is BaseFunction) // BaseFunction is the class both custom and built-in functions extend from
+        if (GetSymbol(symbolTable, node.value,node) is BaseFunction) // BaseFunction is the class both custom and built-in functions extend from
         {
             List<dynamic> args = []; // prepare a list for args
             foreach (ASTNode child in node.children) //
@@ -210,10 +209,10 @@ class Interpreter
                 args.Add(VisitNode(child, symbolTable).Item2);
             }
 
-            return ((BaseFunction)symbolTable[node.value]).Execute(args);
+            return ((BaseFunction)symbolTable[node.value]).Execute(args,node.line,node.pos,node.filename);
         }
         else
-            throw new EigerError($"{node.value} is not a function");
+            throw new EigerError(node.filename,node.line,node.pos, $"{node.value} is not a function");
     }
 
     // Visit function definition node
@@ -281,32 +280,32 @@ class Interpreter
             case "+=":
                 {
                     dynamic? rightSide = VisitNode(node.children[1], symbolTable).Item2;
-                    SetSymbol(symbolTable, node.children[0].value, GetSymbol(symbolTable, node.children[0].value) + rightSide);
+                    SetSymbol(symbolTable, node.children[0].value, GetSymbol(symbolTable, node.children[0].value, node.children[0]) + rightSide);
                     retVal = rightSide;
                 }
                 break;
             case "-=":
                 {
                     dynamic? rightSide = VisitNode(node.children[1], symbolTable).Item2;
-                    SetSymbol(symbolTable, node.children[0].value, GetSymbol(symbolTable, node.children[0].value) - rightSide);
+                    SetSymbol(symbolTable, node.children[0].value, GetSymbol(symbolTable, node.children[0].value, node.children[0]) - rightSide);
                     retVal = rightSide;
                 }
                 break;
             case "*=":
                 {
                     dynamic? rightSide = VisitNode(node.children[1], symbolTable).Item2;
-                    SetSymbol(symbolTable, node.children[0].value, GetSymbol(symbolTable, node.children[0].value) * rightSide);
+                    SetSymbol(symbolTable, node.children[0].value, GetSymbol(symbolTable, node.children[0].value, node.children[0]) * rightSide);
                     retVal = rightSide;
                 }
                 break;
             case "/=":
                 {
                     dynamic? rightSide = VisitNode(node.children[1], symbolTable).Item2;
-                    SetSymbol(symbolTable, node.children[0].value, GetSymbol(symbolTable, node.children[0].value) / rightSide);
+                    SetSymbol(symbolTable, node.children[0].value, GetSymbol(symbolTable, node.children[0].value, node.children[0]) / rightSide);
                     retVal = rightSide;
                 }
                 break;
-            default: throw new EigerError("Invalid Binary Operator");
+            default: throw new EigerError(node.filename,node.line,node.pos, "Invalid Binary Operator");
         }
         return (false, retVal);
     }
@@ -320,11 +319,11 @@ class Interpreter
     // visit identifier node (pretty self-explanatory too)
     static (bool, dynamic?) VisitIdentifierNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
     {
-        return (false, GetSymbol(symbolTable, node.value));
+        return (false, GetSymbol(symbolTable, node.value,node));
     }
 
     // get symbol from a symboltable with error handling
-    static dynamic GetSymbol(Dictionary<string, dynamic?> symbolTable, string key)
+    static dynamic GetSymbol(Dictionary<string, dynamic?> symbolTable, string key,ASTNode node)
     {
         try
         {
@@ -332,20 +331,13 @@ class Interpreter
         }
         catch (KeyNotFoundException)
         {
-            throw new EigerError($"`{key}` is undefined");
+            throw new EigerError(node.filename,node.line,node.pos, $"`{key}` is undefined");
         }
     }
 
     // set symbol from a symboltable with error handling
     static void SetSymbol(Dictionary<string, dynamic?> symbolTable, string key, dynamic value)
     {
-        try
-        {
-            symbolTable[key] = value;
-        }
-        catch (KeyNotFoundException)
-        {
-            throw new EigerError($"`{key}` is undefined");
-        }
+        symbolTable[key] = value;
     }
 }

@@ -3,20 +3,15 @@
  * DESCRIPTION: GETS AND RETURNS INPUT FROM INPUT STREAM
 */
 
-using EigerLang.Errors;
-
 namespace EigerLang.Execution.BuiltInFunctions;
 
 class InFunction : BuiltInFunction
 {
     public InFunction() : base("in", []) { }
 
-    public override (bool, dynamic?) Execute(List<dynamic> args)
+    public override (bool, dynamic?) Execute(List<dynamic> args,int line, int pos,string filepath)
     {
-        if (args.Count != arg_n.Count)
-        {
-            throw new EigerError($"Function {name} takes {arg_n.Count} arguments, got {args.Count}");
-        }
+        CheckArgs(filepath, line, pos, args.Count);
         return (true, Console.ReadLine());
     }
 }

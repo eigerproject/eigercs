@@ -5,11 +5,13 @@
 
 namespace EigerLang.Parsing;
 
-public class ASTNode(NodeType type, dynamic? value)
+public class ASTNode(NodeType type, dynamic? value, int line, int pos, string filename)
 {
     public NodeType type = type;
     public List<ASTNode> children = new();
+    public int line = line, pos = pos;
     public dynamic? value = value;
+    public string filename = filename;
 
     public void AddChild(ASTNode node)
     {

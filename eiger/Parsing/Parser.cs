@@ -32,9 +32,12 @@ public class Parser(List<Token> tokens)
         TokenType.EQ, TokenType.PLUSEQ,TokenType.MINUSEQ,TokenType.MULEQ,TokenType.DIVEQ
     };
 
+    string path = "<stdin>";
+
     // parse the root
-    public ASTNode Parse()
+    public ASTNode Parse(string p)
     {
+        path = p;
         return StatementList();
     }
 
@@ -48,7 +51,7 @@ public class Parser(List<Token> tokens)
             return tokens[current++];
         }
         // if not, throw error
-        throw new EigerError("<stdin>", tokens[tokens.Count - 1].line, tokens[^1].pos, "Unexpected End of Input");
+        throw new EigerError(path, tokens[^1].line, tokens[^1].pos, "Unexpected End of Input");
     }
 
     // return current token
@@ -86,7 +89,7 @@ public class Parser(List<Token> tokens)
         }
         else
         {
-            throw new EigerError("<stdin>", Peek().line, Peek().pos, $"Unexpected token `{Peek().value}`");
+            throw new EigerError(path, Peek().line, Peek().pos, $"Unexpected token `{Peek().value}`");
         }
     }
 
@@ -99,14 +102,14 @@ public class Parser(List<Token> tokens)
         }
         else
         {
-            throw new EigerError("<stdin>", Peek().line, Peek().pos, $"Unexpected token `{Peek().value}`");
+            throw new EigerError(path, Peek().line, Peek().pos, $"Unexpected token `{Peek().value}`");
         }
     }
 
     // statement list
     ASTNode StatementList()
     {
-        ASTNode root = new ASTNode(NodeType.Block, null);
+        ASTNode root = new(NodeType.Block, null,1,0, path);
         // add statements until the end of block (end or else)
         while (current < tokens.Count && Peek().value.ToString() != "end" && Peek().value.ToString() != "else")
         {
@@ -139,10 +142,11 @@ public class Parser(List<Token> tokens)
         Match(TokenType.IDENTIFIER, "func");
 
         // get func name
+        Token funcTok = Peek();
         string funcName = Advance().value ?? "";
 
         // create func def node
-        ASTNode node = new(NodeType.FuncDef, funcName);
+        ASTNode node = new(NodeType.FuncDef, funcName,funcTok.line,funcTok.pos,path);
         // create list for args
         List<ASTNode> args = [];
 
@@ -188,7 +192,7 @@ public class Parser(List<Token> tokens)
         // match ret
         Match(TokenType.IDENTIFIER, "ret");
         // create node
-        ASTNode node = new ASTNode(NodeType.Return, null);
+        ASTNode node = new(NodeType.Return, null,Peek().line,Peek().pos,path);
         // add the expression as the child
         node.AddChild(Expr());
         return node;
@@ -203,7 +207,7 @@ public class Parser(List<Token> tokens)
         // match left parenthasis
         Match(TokenType.LPAREN);
 
-        ASTNode node = new(NodeType.FuncCall, funcName.value);
+        ASTNode node = new(NodeType.FuncCall, funcName.value,funcName.line,funcName.pos,path);
 
         // if the function has no args, return node
         if (Peek().type == TokenType.RPAREN) { Match(TokenType.RPAREN); return node; }
@@ -227,6 +231,7 @@ public class Parser(List<Token> tokens)
     ASTNode ForToStatement()
     {
         // match for
+        Token forToken = Peek();
         Match(TokenType.IDENTIFIER, "for");
         // match iterator name
         Token iteratorVar = Advance();
@@ -246,8 +251,8 @@ public class Parser(List<Token> tokens)
         Match(TokenType.IDENTIFIER, "end");
 
         // construct for node
-        ASTNode forNode = new(NodeType.ForTo, null);
-        forNode.AddChild(new(NodeType.Identifier,iteratorVar));
+        ASTNode forNode = new(NodeType.ForTo, null, forToken.line, forToken.pos,path);
+        forNode.AddChild(new(NodeType.Identifier,iteratorVar.value,iteratorVar.line,iteratorVar.pos,path));
         forNode.AddChild(value);
         forNode.AddChild(to);
         forNode.AddChild(forBlock);
@@ -259,6 +264,7 @@ public class Parser(List<Token> tokens)
     ASTNode WhileStatement()
     {
         // match while
+        Token whileToken = Peek();
         Match(TokenType.IDENTIFIER, "while");
         // match condition (which is an expression)
         ASTNode condition = Expr();
@@ -269,7 +275,7 @@ public class Parser(List<Token> tokens)
         // match end
         Match(TokenType.IDENTIFIER, "end");
         // construct the node, first the condition, then the block
-        ASTNode whileNode = new(NodeType.While, null);
+        ASTNode whileNode = new(NodeType.While, null, whileToken.line, whileToken.pos,path);
         whileNode.AddChild(condition);
         whileNode.AddChild(doBlock);
         return whileNode;
@@ -279,6 +285,7 @@ public class Parser(List<Token> tokens)
     ASTNode IfStatement()
     {
         // natch if
+        Token ifToken = Peek();
         Match(TokenType.IDENTIFIER, "if");
         // match condition (which is an expression)
         ASTNode condition = Expr();
@@ -300,7 +307,7 @@ public class Parser(List<Token> tokens)
         Match(TokenType.IDENTIFIER, "end");
 
         // construct the node, first the condition, then the if block, then the else block (if exists)
-        ASTNode ifNode = new ASTNode(NodeType.If, null);
+        ASTNode ifNode = new(NodeType.If, null,ifToken.line,ifToken.pos,path);
         ifNode.AddChild(condition);
         ifNode.AddChild(ifBlock);
         if (elseBranch != null)
@@ -325,7 +332,7 @@ public class Parser(List<Token> tokens)
             {
                 Token op = Advance(); // get operator
                 ASTNode right = Expr(); // get right hand side
-                ASTNode binOpNode = new ASTNode(NodeType.BinOp, op.value); // construct the node
+                ASTNode binOpNode = new(NodeType.BinOp, op.value,op.line,op.pos,path); // construct the node
                 binOpNode.AddChild(node);
                 binOpNode.AddChild(right);
                 node = binOpNode;
@@ -335,7 +342,7 @@ public class Parser(List<Token> tokens)
             {
                 Token op = Advance(); // get operator
                 ASTNode right = Term(); // get right hand side
-                ASTNode binOpNode = new ASTNode(NodeType.BinOp, op.value); // construct the node
+                ASTNode binOpNode = new(NodeType.BinOp, op.value, op.line, op.pos,path); // construct the node
                 binOpNode.AddChild(node);
                 binOpNode.AddChild(right);
                 node = binOpNode;
@@ -360,7 +367,7 @@ public class Parser(List<Token> tokens)
         {
             Token op = Advance(); // get operator
             ASTNode right = Factor(); // get right hand side
-            ASTNode binOpNode = new ASTNode(NodeType.BinOp, op.value); // construct the node
+            ASTNode binOpNode = new(NodeType.BinOp, op.value,op.line,op.pos,path); // construct the node
             binOpNode.AddChild(node);
             binOpNode.AddChild(right);
             node = binOpNode;
@@ -374,7 +381,8 @@ public class Parser(List<Token> tokens)
         // if its a number literal
         if (Peek().type == TokenType.NUMBER)
         {
-            return new ASTNode(NodeType.Literal, Advance().value);
+            Token numberToken = Advance();
+            return new(NodeType.Literal, numberToken.value, numberToken.line, numberToken.pos,path);
         }
         // if it's an identifier
         else if (Peek().type == TokenType.IDENTIFIER)
@@ -386,13 +394,15 @@ public class Parser(List<Token> tokens)
             }
             else
             {
-                return new ASTNode(NodeType.Identifier, Advance().value);
+                Token identToken = Advance();
+                return new(NodeType.Identifier, identToken.value, identToken.line, identToken.pos,path);
             }
         }
         // if it's a string literal
         else if (Peek().type == TokenType.STRING)
         {
-            return new ASTNode(NodeType.Literal, Advance().value);
+            Token stringToken = Advance();
+            return new(NodeType.Literal, stringToken.value, stringToken.line, stringToken.pos,path);
         }
         // parenthasis in expressions
         else if (Peek().type == TokenType.LPAREN)
@@ -405,7 +415,7 @@ public class Parser(List<Token> tokens)
         else
         {
             // unexpected token
-            throw new EigerError("<stdin>", Peek().line, Peek().pos, $"Unexpected Token: {Peek()}");
+            throw new EigerError(path, Peek().line, Peek().pos, $"Unexpected Token: {Peek()}");
         }
     }
 }

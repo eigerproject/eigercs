@@ -16,7 +16,14 @@ abstract class BaseFunction(string name, List<string> arg_n, Dictionary<string,d
 
     public Dictionary<string, dynamic?> symbolTable = symbolTable; // symbol table
 
-    public abstract (bool,dynamic?) Execute(List<dynamic> args); // abstract execute function
+    public void CheckArgs(string path,int line,int pos,int argCount)
+    {
+        // if the count of the given args and the required args are not equal
+        if (argCount != arg_n.Count)
+            throw new EigerError(path, line, pos, $"Function {name} takes {arg_n.Count} arguments, got {argCount}");
+    }
+
+    public abstract (bool,dynamic?) Execute(List<dynamic> args,int line,int pos, string path); // abstract execute function
 }
 
 // custom functions
@@ -30,13 +37,9 @@ class Function : BaseFunction
         this.root = root;
     }
 
-    public override (bool, dynamic?) Execute(List<dynamic> args)
+    public override (bool, dynamic?) Execute(List<dynamic> args,int line,int pos, string path)
     {
-        // if the count of the given args and the required args are not equal
-        if(args.Count != arg_n.Count)
-        {
-            throw new EigerError($"Function {name} takes {arg_n.Count} arguments, got {args.Count}");
-        }
+        CheckArgs(path,line,pos,args.Count);
 
         // create local symbol table
         Dictionary<string, dynamic?> localSymbolTable = new(symbolTable);
@@ -62,7 +65,7 @@ abstract class BuiltInFunction : BaseFunction
 {
     public BuiltInFunction(string name, List<string> arg_n) : base(name, arg_n,Interpreter.globalSymbolTable) {}
 
-    public override (bool, dynamic?) Execute(List<dynamic> args) { return (false,null); }
+    public override (bool, dynamic?) Execute(List<dynamic> args,int line,int pos,string file) { return (false,null); }
 
     public override string ToString()
     {

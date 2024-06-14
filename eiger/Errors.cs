@@ -18,6 +18,4 @@ public class EigerError : Exception
         this.pos = pos;
         this.message = message;
     }
-
-    public EigerError(string error) : base(error) { } // errors without a position (only message)
 }
