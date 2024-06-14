@@ -4,6 +4,7 @@
 */
 
 using EigerLang.Errors;
+using EigerLang.Execution.BuiltInTypes;
 using EigerLang.Parsing;
 
 namespace EigerLang.Execution;
@@ -41,6 +42,7 @@ class Interpreter
             case NodeType.BinOp: return VisitBinOpNode(node, symbolTable);
             case NodeType.Literal: return VisitLiteralNode(node, symbolTable);
             case NodeType.Identifier: return VisitIdentifierNode(node, symbolTable);
+            case NodeType.Array: return VisitArrayNode(node, symbolTable);
             default:
                 break;
         }
@@ -320,6 +322,17 @@ class Interpreter
     static (bool, dynamic?) VisitIdentifierNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
     {
         return (false, GetSymbol(symbolTable, node.value,node));
+    }
+
+    // visit array node
+    static (bool, dynamic?) VisitArrayNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
+    {
+        List<dynamic?> list = [];
+        foreach (dynamic item in node.children)
+        {
+            list.Add(VisitNode(item, symbolTable).Item2);
+        }
+        return (false,new BuiltInTypes.Array([.. list]));
     }
 
     // get symbol from a symboltable with error handling

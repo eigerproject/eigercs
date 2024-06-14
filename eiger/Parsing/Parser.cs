@@ -416,6 +416,22 @@ public class Parser(List<Token> tokens)
             Match(TokenType.RPAREN);
             return node;
         }
+        // if it's an array
+        else if(Peek().type == TokenType.LSQUARE)
+        {
+            // match left square
+            Token lsquareToken = Peek();
+            Match(TokenType.LSQUARE);
+            ASTNode arrayNode = new(NodeType.Array, null, lsquareToken.line, lsquareToken.pos, path);
+            while (true)
+            {
+                if (Peek().type == TokenType.RSQUARE) { Match(TokenType.RSQUARE); break; }
+                arrayNode.AddChild(Expr());
+                if (Peek().type == TokenType.RSQUARE) { Match(TokenType.RSQUARE); break; }
+                else if (Peek().type == TokenType.COMMA) { Match(TokenType.COMMA); continue; }
+            }
+            return arrayNode;
+        }
         else
         {
             // unexpected token

@@ -16,5 +16,6 @@ public enum NodeType
     FuncDef,
     BinOp,
     Literal,
-    Identifier
+    Identifier,
+    Array
 }

@@ -18,4 +18,6 @@ public enum TokenType
     MINUSEQ,
     MULEQ,
     DIVEQ,
+    LSQUARE,
+    RSQUARE,
 }

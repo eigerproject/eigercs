@@ -162,6 +162,14 @@ public class Lexer
             {
                 result.Add(new Token(current_line, current_pos, TokenType.LPAREN, "("));
             }
+            else if (current_char == ']') // if it's a right parenthasis
+            {
+                result.Add(new Token(current_line, current_pos, TokenType.RSQUARE, "]"));
+            }
+            else if (current_char == '[') // if it's a left parenthasis
+            {
+                result.Add(new Token(current_line, current_pos, TokenType.LSQUARE, "["));
+            }
             else if (current_char == ')') // if it's a right parenthasis
             {
                 result.Add(new Token(current_line, current_pos, TokenType.RPAREN, ")"));
