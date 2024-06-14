@@ -111,10 +111,12 @@ public class Parser(List<Token> tokens)
     {
         ASTNode root = new(NodeType.Block, null,1,0, path);
         // add statements until the end of block (end or else)
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
         while (current < tokens.Count && Peek().value.ToString() != "end" && Peek().value.ToString() != "else")
         {
             root.AddChild(Statement());
         }
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
         return root;
     }
     
@@ -388,6 +390,7 @@ public class Parser(List<Token> tokens)
         else if (Peek().type == TokenType.IDENTIFIER)
         {
             // if the next token is a left parenthasis, then it's a function call
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
             if (PeekNext() != null && PeekNext().type == TokenType.LPAREN)
             {
                 return FunctionCallStatement();
@@ -395,8 +398,9 @@ public class Parser(List<Token> tokens)
             else
             {
                 Token identToken = Advance();
-                return new(NodeType.Identifier, identToken.value, identToken.line, identToken.pos,path);
+                return new(NodeType.Identifier, identToken.value, identToken.line, identToken.pos, path);
             }
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
         }
         // if it's a string literal
         else if (Peek().type == TokenType.STRING)

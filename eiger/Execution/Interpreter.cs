@@ -110,14 +110,14 @@ class Interpreter
 
         Dictionary<string, dynamic?> localSymbolTable = new(symbolTable);
 
-        string iteratorName = node.children[0].value;
+        string iteratorName = node.children[0].value ?? "";
 
         ASTNode toNode = node.children[2];
 
         ASTNode forBlock = node.children[3];
 
-        dynamic value = VisitNode(node.children[1], symbolTable).Item2;
-        dynamic toValue = VisitNode(toNode, symbolTable).Item2;
+        dynamic value = VisitNode(node.children[1], symbolTable).Item2 ?? 0;
+        dynamic toValue = VisitNode(toNode, symbolTable).Item2 ?? 0;
 
         int step = value < toValue ? 1 : -1;
 
