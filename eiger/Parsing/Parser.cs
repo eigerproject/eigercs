@@ -166,10 +166,10 @@ public class Parser(List<Token> tokens)
                 args.Add(Factor()); // add the name to the args
 
             } while (Peek().type == TokenType.COMMA); // if there is a comma right after the argname
-        }
 
-        // match right parenthasis
-        Match(TokenType.RPAREN);
+            // match right parenthasis
+            Match(TokenType.RPAREN);
+        }
 
         // parse the body
         ASTNode rootNode = StatementList();
