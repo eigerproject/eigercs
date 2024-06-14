@@ -384,31 +384,40 @@ public class Parser(List<Token> tokens)
         if (Peek().type == TokenType.NUMBER)
         {
             Token numberToken = Advance();
-            return new(NodeType.Literal, numberToken.value, numberToken.line, numberToken.pos,path);
+            return new ASTNode(NodeType.Literal, numberToken.value, numberToken.line, numberToken.pos, path);
         }
         // if it's an identifier
         else if (Peek().type == TokenType.IDENTIFIER)
         {
-            // if the next token is a left parenthasis, then it's a function call
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-            if (PeekNext() != null && PeekNext().type == TokenType.LPAREN)
+            Token identToken = Advance();
+            // Check for function call or element access
+            if (Peek().type == TokenType.LPAREN)
             {
+                current--;
                 return FunctionCallStatement();
+            }
+            else if (Peek().type == TokenType.LSQUARE)
+            {
+                return ParseElementAccess(new ASTNode(NodeType.Identifier, identToken.value, identToken.line, identToken.pos, path));
             }
             else
             {
-                Token identToken = Advance();
-                return new(NodeType.Identifier, identToken.value, identToken.line, identToken.pos, path);
+                return new ASTNode(NodeType.Identifier, identToken.value, identToken.line, identToken.pos, path);
             }
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
         }
         // if it's a string literal
         else if (Peek().type == TokenType.STRING)
         {
             Token stringToken = Advance();
-            return new(NodeType.Literal, stringToken.value, stringToken.line, stringToken.pos,path);
+            ASTNode stringNode = new ASTNode(NodeType.Literal, stringToken.value, stringToken.line, stringToken.pos, path);
+            // Check for element access
+            if (Peek().type == TokenType.LSQUARE)
+            {
+                return ParseElementAccess(stringNode);
+            }
+            return stringNode;
         }
-        // parenthasis in expressions
+        // parenthesis in expressions
         else if (Peek().type == TokenType.LPAREN)
         {
             Match(TokenType.LPAREN);
@@ -417,25 +426,52 @@ public class Parser(List<Token> tokens)
             return node;
         }
         // if it's an array
-        else if(Peek().type == TokenType.LSQUARE)
+        else if (Peek().type == TokenType.LSQUARE)
         {
-            // match left square
-            Token lsquareToken = Peek();
-            Match(TokenType.LSQUARE);
-            ASTNode arrayNode = new(NodeType.Array, null, lsquareToken.line, lsquareToken.pos, path);
-            while (true)
-            {
-                if (Peek().type == TokenType.RSQUARE) { Match(TokenType.RSQUARE); break; }
-                arrayNode.AddChild(Expr());
-                if (Peek().type == TokenType.RSQUARE) { Match(TokenType.RSQUARE); break; }
-                else if (Peek().type == TokenType.COMMA) { Match(TokenType.COMMA); continue; }
-            }
-            return arrayNode;
+            return ParseArrayLiteral();
         }
         else
         {
             // unexpected token
             throw new EigerError(path, Peek().line, Peek().pos, $"Unexpected Token: {Peek()}");
         }
+    }
+
+    // Parse array literal
+    ASTNode ParseArrayLiteral()
+    {
+        Token lsquareToken = Peek();
+        Match(TokenType.LSQUARE);
+        ASTNode arrayNode = new ASTNode(NodeType.Array, null, lsquareToken.line, lsquareToken.pos, path);
+        while (true)
+        {
+            if (Peek().type == TokenType.RSQUARE) { Match(TokenType.RSQUARE); break; }
+            arrayNode.AddChild(Expr());
+            if (Peek().type == TokenType.RSQUARE) { Match(TokenType.RSQUARE); break; }
+            else if (Peek().type == TokenType.COMMA) { Match(TokenType.COMMA); continue; }
+        }
+        // Check for element access
+        if (Peek().type == TokenType.LSQUARE)
+        {
+            return ParseElementAccess(arrayNode);
+        }
+        return arrayNode;
+    }
+
+    // Parse element access
+    ASTNode ParseElementAccess(ASTNode target)
+    {
+        while (Peek().type == TokenType.LSQUARE)
+        {
+            Token lsquareToken = Peek();
+            Match(TokenType.LSQUARE);
+            ASTNode indexNode = Expr();
+            Match(TokenType.RSQUARE);
+            target = new ASTNode(NodeType.ElementAccess, null, lsquareToken.line, lsquareToken.pos, path)
+            {
+                children = { target, indexNode }
+            };
+        }
+        return target;
     }
 }

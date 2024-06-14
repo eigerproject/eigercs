@@ -6,6 +6,7 @@
 using EigerLang.Errors;
 using EigerLang.Execution.BuiltInTypes;
 using EigerLang.Parsing;
+using Microsoft.CSharp.RuntimeBinder;
 
 namespace EigerLang.Execution;
 
@@ -43,6 +44,7 @@ class Interpreter
             case NodeType.Literal: return VisitLiteralNode(node, symbolTable);
             case NodeType.Identifier: return VisitIdentifierNode(node, symbolTable);
             case NodeType.Array: return VisitArrayNode(node, symbolTable);
+            case NodeType.ElementAccess: return VisitElementAccessNode(node, symbolTable);
             default:
                 break;
         }
@@ -327,12 +329,40 @@ class Interpreter
     // visit array node
     static (bool, dynamic?) VisitArrayNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
     {
+        // ArrayNode structure
+        // ArrayNode
+        // -- element1
+        // -- element2
+        // -- ...
+
         List<dynamic?> list = [];
         foreach (dynamic item in node.children)
         {
             list.Add(VisitNode(item, symbolTable).Item2);
         }
         return (false,new BuiltInTypes.Array([.. list]));
+    }
+
+    private static (bool, dynamic) VisitElementAccessNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
+    {
+        dynamic? iter = VisitNode(node.children[0], symbolTable).Item2;
+        (bool, dynamic) value = VisitNode(node.children[1], symbolTable);
+        try
+        {
+            int idx = Convert.ToInt32(value.Item2);
+            if (iter is BuiltInTypes.Array)
+                return (false, iter.array[idx]);
+            else
+                return (false, iter[idx]);
+        }
+        catch(IndexOutOfRangeException)
+        {
+            throw new EigerError(node.filename, node.line, node.pos, "Index outside of bounds");
+        }
+        catch(RuntimeBinderException)
+        {
+            throw new EigerError(node.filename, node.line, node.pos, "Object is not iterable");
+        }
     }
 
     // get symbol from a symboltable with error handling

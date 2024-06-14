@@ -17,5 +17,6 @@ public enum NodeType
     BinOp,
     Literal,
     Identifier,
-    Array
+    Array,
+    ElementAccess
 }
