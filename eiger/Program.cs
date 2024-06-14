@@ -15,7 +15,6 @@ public class Program
 {
     static void Main(string[] args)
     {
-        Console.WriteLine(new int[]{ 1,2,3});
         // if no args are passed
         if (args.Length == 0)
         {
