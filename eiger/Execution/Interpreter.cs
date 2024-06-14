@@ -7,6 +7,8 @@ using EigerLang.Errors;
 using EigerLang.Execution.BuiltInTypes;
 using EigerLang.Parsing;
 using Microsoft.CSharp.RuntimeBinder;
+using System.IO;
+using System.Text;
 
 namespace EigerLang.Execution;
 
@@ -276,7 +278,38 @@ class Interpreter
             case "=":
                 {
                     dynamic? rightSide = VisitNode(node.children[1], symbolTable).Item2;
-                    SetSymbol(symbolTable, node.children[0].value, rightSide);
+                    if (node.children[0].type == NodeType.ElementAccess)
+                    {
+                        var targetNode = node.children[0].children[0];
+                        var indexNode = node.children[0].children[1];
+                        var target = VisitNode(targetNode, symbolTable).Item2;
+                        var index = Convert.ToInt32(VisitNode(indexNode, symbolTable).Item2);
+                        if (target is BuiltInTypes.Array list)
+                        {
+                            if (index is int intIndex && intIndex >= 0 && intIndex < list.array.Length)
+                            {
+                                list.array[intIndex] = rightSide;
+                            }
+                            else
+                            {
+                                throw new EigerError(node.filename, node.line, node.pos, "Index out of bounds.");
+                            }
+                        }
+                        else if (target is string str)
+                        {
+                            if (index is int intIndex && intIndex >= 0 && intIndex < str.Length)
+                            {
+                                var strBuilder = new StringBuilder(str) { [intIndex] = Convert.ToChar(rightSide) };
+                                SetSymbol(symbolTable, targetNode.value, strBuilder.ToString());
+                            }
+                            else
+                            {
+                                throw new EigerError(node.filename, node.line, node.pos, "Index out of bounds.");
+                            }
+                        }
+                    }
+                    else
+                                SetSymbol(symbolTable, node.children[0].value, rightSide);
                     retVal = rightSide;
                 }
                 break;
