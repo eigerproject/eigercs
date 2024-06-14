@@ -10,6 +10,7 @@ public enum NodeType
     Block,
     If,
     While,
+    ForTo,
     Return,
     FuncCall,
     FuncDef,

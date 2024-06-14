@@ -5,6 +5,7 @@
 
 using EigerLang.Errors;
 using EigerLang.Parsing;
+using EigerLang.Tokenization;
 
 namespace EigerLang.Execution;
 
@@ -33,6 +34,7 @@ class Interpreter
         {
             case NodeType.Block: return VisitBlockNode(node, symbolTable);
             case NodeType.If: return VisitIfNode(node, symbolTable);
+            case NodeType.ForTo: return VisitForToNode(node, symbolTable);
             case NodeType.While: return VisitWhileNode(node, symbolTable);
             case NodeType.FuncCall: return VisitFuncCallNode(node, symbolTable);
             case NodeType.FuncDef: return VisitFuncDefNode(node, symbolTable);
@@ -94,7 +96,45 @@ class Interpreter
         return (false, null);
     }
 
-    // Visit while node
+    // visit for..to node
+    static (bool,dynamic?) VisitForToNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
+    {
+        // ForToNode structure
+        // ForToNode
+        // -- Identifier : <iterator variable name>
+        // -- <expr> (iterator initial value)
+        // -- <expr> (iterator to value)
+        // -- Block
+        // ---- statement1
+        // ---- statement2
+        // ---- ...
+
+        Dictionary<string, dynamic?> localSymbolTable = new(symbolTable);
+
+        string iteratorName = ((Token)(node.children[0].value)).value;
+
+        ASTNode toNode = node.children[2];
+
+        ASTNode forBlock = node.children[3];
+
+        dynamic value = VisitNode(node.children[1], symbolTable).Item2;
+        dynamic toValue = VisitNode(toNode, symbolTable).Item2;
+
+        int step = value < toValue ? 1 : -1;
+
+        SetSymbol(localSymbolTable, iteratorName, value);
+
+        while (value != toValue)
+        {
+            VisitBlockNode(forBlock, localSymbolTable, symbolTable);
+            value += step;
+            SetSymbol(localSymbolTable, iteratorName, value);
+        }
+
+        return (false, null);
+    }
+
+    // visit while node
     static (bool, dynamic?) VisitWhileNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
     {
         // WhileNode structure

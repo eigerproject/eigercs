@@ -124,6 +124,7 @@ public class Parser(List<Token> tokens)
         {
             // if it's a statement, parse a statement, else, parse an expression
             case "if": return IfStatement();
+            case "for": return ForToStatement();
             case "while": return WhileStatement();
             case "func": return FuncDefStatement();
             case "ret": return RetStatement();
@@ -220,6 +221,38 @@ public class Parser(List<Token> tokens)
         Match(TokenType.RPAREN);
 
         return node;
+    }
+
+    // for-to statement
+    ASTNode ForToStatement()
+    {
+        // match for
+        Match(TokenType.IDENTIFIER, "for");
+        // match iterator name
+        Token iteratorVar = Advance();
+        // match equal sign
+        Match(TokenType.EQ);
+        // match initial value
+        ASTNode value = Expr();
+        // match to
+        Match(TokenType.IDENTIFIER, "to");
+        // match ending value
+        ASTNode to = Expr();
+        // match do
+        Match(TokenType.IDENTIFIER, "do");
+        // get for block
+        ASTNode forBlock = StatementList();
+        // match end
+        Match(TokenType.IDENTIFIER, "end");
+
+        // construct for node
+        ASTNode forNode = new(NodeType.ForTo, null);
+        forNode.AddChild(new(NodeType.Identifier,iteratorVar));
+        forNode.AddChild(value);
+        forNode.AddChild(to);
+        forNode.AddChild(forBlock);
+
+        return forNode;
     }
 
     // while statement
