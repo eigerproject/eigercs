@@ -345,6 +345,11 @@ class Interpreter
 
     private static (bool, dynamic) VisitElementAccessNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
     {
+        // ElementAccessNode structure
+        // ElementAccessNode
+        // -- value
+        // -- idx
+
         dynamic? iter = VisitNode(node.children[0], symbolTable).Item2;
         (bool, dynamic) value = VisitNode(node.children[1], symbolTable);
         try
@@ -357,11 +362,11 @@ class Interpreter
         }
         catch(IndexOutOfRangeException)
         {
-            throw new EigerError(node.filename, node.line, node.pos, "Index outside of bounds");
+            throw new EigerError(node.filename, node.line, node.pos, "Index out of bounds");
         }
         catch(RuntimeBinderException)
         {
-            throw new EigerError(node.filename, node.line, node.pos, "Object is not iterable");
+            throw new EigerError(node.filename, node.line, node.pos, "Not iterable");
         }
     }
 
