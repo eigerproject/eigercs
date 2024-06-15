@@ -320,9 +320,9 @@ class Interpreter
     // visit literal node (pretty self-explanatory)
     static (bool, Value) VisitLiteralNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
-        if (node.value == "true")
+        if (node.value is string && node.value == "true")
             return (false, new Boolean(node.filename, node.line, node.pos, true));
-        else if(node.value == "false")
+        else if(node.value is string && node.value == "false")
             return (false, new Boolean(node.filename, node.line, node.pos, false));
 
         return (false, Value.ToEigerValue(node.filename,node.line,node.pos,node.value));
