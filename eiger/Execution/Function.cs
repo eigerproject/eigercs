@@ -33,7 +33,7 @@ class Function : BaseFunction
     // function body
     ASTNode root;
 
-    public Function(ASTNode? node,string name, List<string> arg_n, ASTNode root, Dictionary<string, Value> symbolTable) : base(node,name,arg_n,symbolTable)
+    public Function(ASTNode node,string name, List<string> arg_n, ASTNode root, Dictionary<string, Value> symbolTable) : base(node,name,arg_n,symbolTable)
     {
         this.root = root;
     }
@@ -66,7 +66,7 @@ abstract class BuiltInFunction : BaseFunction
 {
     public BuiltInFunction(string name, List<string> arg_n) : base(new(NodeType.Block,0,0,0,"<unset>"),name, arg_n,Interpreter.globalSymbolTable) {}
 
-    public override (bool, Value) Execute(List<Value> args,int line,int pos,string file) { return (false,null); }
+    public override (bool, Value) Execute(List<Value> args,int line,int pos,string file) { return (false, new Nix(file, line, pos)); }
 
     public override string ToString()
     {

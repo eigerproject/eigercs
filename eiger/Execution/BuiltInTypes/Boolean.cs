@@ -4,9 +4,20 @@
 
 namespace EigerLang.Execution.BuiltInTypes;
 
-public class Boolean(string filename, int line, int pos, bool value) : Value(filename, line, pos)
+public class Boolean : Value
 {
-    public bool value = value;
+    public bool value;
+    string filename;
+    int line, pos;
+
+    public Boolean(string filename, int line, int pos, bool value) : base(filename, line, pos)
+    {
+        this.filename = filename;
+        this.value = value;
+        this.line = line;
+        this.pos = pos;
+        this.value = value;
+    }
 
     public override Boolean ComparisonEqeq(dynamic other)
     {

@@ -407,6 +407,8 @@ public class Parser(List<Token> tokens)
                     return new ASTNode(NodeType.Literal, "true", identToken.line, identToken.pos, path);
                 else if (identToken.value == "false")
                     return new ASTNode(NodeType.Literal, "false", identToken.line, identToken.pos, path);
+                else if (identToken.value == "nix")
+                    return new ASTNode(NodeType.Literal, "nix", identToken.line, identToken.pos, path);
                 else
                     return new ASTNode(NodeType.Identifier, identToken.value, identToken.line, identToken.pos, path);
             }

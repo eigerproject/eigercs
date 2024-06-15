@@ -4,9 +4,19 @@
 
 namespace EigerLang.Execution.BuiltInTypes;
 
-class Number(string filename, int line, int pos, double value) : Value(filename, line, pos)
+class Number: Value
 {
-    public double value = value;
+    public double value;
+    string filename;
+    int line, pos;
+
+    public Number(string filename, int line, int pos, double value) : base(filename,line,pos)
+    {
+        this.filename = filename;
+        this.line = line;
+        this.pos = pos;
+        this.value = value;
+    }
 
     public override dynamic AddedTo(dynamic other)
     {

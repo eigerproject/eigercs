@@ -23,7 +23,7 @@ class Interpreter
     public static BuiltInFunctions.ClsFunction clsFunction = new();
 
     // global symbol table
-    public static Dictionary<string, Value?> globalSymbolTable = new() {
+    public static Dictionary<string, Value> globalSymbolTable = new() {
         {"emit",emitFunction},
         {"emitln",emitlnFunction},
         {"in",inFunction},
@@ -32,7 +32,7 @@ class Interpreter
     };
 
     // function for visiting a node
-    public static (bool, Value?) VisitNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    public static (bool, Value) VisitNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         switch (node.type)
         {
@@ -51,11 +51,11 @@ class Interpreter
             default:
                 break;
         }
-        return (false, null);
+        return (false, new Nix(node.filename, node.line, node.pos));
     }
 
     // visit return node
-    static (bool, Value?) VisitReturnNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static (bool, Value) VisitReturnNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         // ReturnNode structure
         // ReturnNode
@@ -65,7 +65,7 @@ class Interpreter
     }
 
     // visit block node 
-    public static (bool, Value?) VisitBlockNode(ASTNode node, Dictionary<string, Value> symbolTable, Dictionary<string, Value>? parentSymbolTable = null)
+    public static (bool, Value) VisitBlockNode(ASTNode node, Dictionary<string, Value> symbolTable, Dictionary<string, Value>? parentSymbolTable = null)
     {
         // BlockNode structure
         // BlockNode
@@ -99,11 +99,11 @@ class Interpreter
             }
         }
         // return nothing
-        return (false, null);
+        return (false, new Nix(node.filename, node.line, node.pos));
     }
 
     // visit for..to node
-    static (bool, Value?) VisitForToNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static (bool, Value) VisitForToNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         // ForToNode structure
         // ForToNode
@@ -137,11 +137,11 @@ class Interpreter
             SetSymbol(localSymbolTable, iteratorName, new Number(node.filename, node.line, node.pos, value));
         }
 
-        return (false, null);
+        return (false, new Nix(node.filename, node.line, node.pos));
     }
 
     // visit while node
-    static (bool, Value?) VisitWhileNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static (bool, Value) VisitWhileNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         // WhileNode structure
         // WhileNode
@@ -149,21 +149,21 @@ class Interpreter
         // -- whileBlock
 
         // visit Condition
-        Boolean? condition = (Boolean?)VisitNode(node.children[0], symbolTable).Item2;
+        Boolean condition = (Boolean)VisitNode(node.children[0], symbolTable).Item2;
         while (Convert.ToBoolean(condition.value))
         {
             // visit the body of the loop
             VisitBlockNode(node.children[1], new(symbolTable), symbolTable);
 
             // update the condition
-            condition = (Boolean?)VisitNode(node.children[0], symbolTable).Item2;
+            condition = (Boolean)VisitNode(node.children[0], symbolTable).Item2;
         }
         // return nothing
-        return (false, null);
+        return (false, new Nix(node.filename, node.line, node.pos));
     }
 
     // visit if node
-    static (bool, Value?) VisitIfNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static (bool, Value) VisitIfNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         // IfNode structure
         // IfNode
@@ -176,7 +176,7 @@ class Interpreter
         bool hasElseBlock = node.children.Count == 3;
 
         // visit condition
-        Boolean? condition = (Boolean?)VisitNode(node.children[0], symbolTable).Item2;
+        Boolean condition = (Boolean)VisitNode(node.children[0], symbolTable).Item2;
 
         // if the condition is true
         if (Convert.ToBoolean(condition.value))
@@ -194,12 +194,12 @@ class Interpreter
         else
         {
             // do nothing
-            return (false, null);
+            return (false, new Nix(node.filename, node.line, node.pos));
         }
     }
 
     // visit function call node
-    static (bool, Value?) VisitFuncCallNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static (bool, Value) VisitFuncCallNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         // FuncCallNode structure:
         // FuncCallNode : <function name>
@@ -213,7 +213,8 @@ class Interpreter
             List <Value> args = []; // prepare a list for args
             foreach (ASTNode child in node.children) //
             {
-                args.Add(VisitNode(child, symbolTable).Item2);
+                Value? val = VisitNode(child, symbolTable).Item2 ?? throw new EigerError(node.filename, node.line, node.pos, $"Invalid Argument");
+                args.Add(val);
             }
 
             return ((BaseFunction)symbolTable[node.value]).Execute(args,node.line,node.pos,node.filename);
@@ -223,7 +224,7 @@ class Interpreter
     }
 
     // Visit function definition node
-    static (bool, Value?) VisitFuncDefNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static (bool, Value) VisitFuncDefNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         // FuncDefNode structure
         // FuncDefNode : <function name>
@@ -254,7 +255,7 @@ class Interpreter
         symbolTable[funcName] = new Function(node,funcName, argnames, root, symbolTable);
 
         // return nothing
-        return (false, null);
+        return (false, new Nix(node.filename, node.line, node.pos));
     }
 
     // visit binary operator node
@@ -262,23 +263,30 @@ class Interpreter
     {
         // prepare a variable for return value
         Value retVal;
+
+        Value leftSide = new Nix(node.filename,node.line,node.pos);
+
+        if(node.value != "=")
+            leftSide = VisitNode(node.children[0], symbolTable).Item2;
+
+        Value rightSide = VisitNode(node.children[1], symbolTable).Item2;
+
         switch (node.value)
         {
             // check each available binary operator
-            case "+": retVal = VisitNode(node.children[0], symbolTable).Item2.AddedTo(VisitNode(node.children[1], symbolTable).Item2); break;
-            case "-": retVal = VisitNode(node.children[0], symbolTable).Item2.SubbedBy(VisitNode(node.children[1], symbolTable).Item2); break;
-            case "*": retVal = VisitNode(node.children[0], symbolTable).Item2.MultedBy(VisitNode(node.children[1], symbolTable).Item2); break;
-            case "/": retVal = VisitNode(node.children[0], symbolTable).Item2.DivedBy(VisitNode(node.children[1], symbolTable).Item2); break;
-            case "?=": retVal = VisitNode(node.children[0], symbolTable).Item2.ComparisonEqeq(VisitNode(node.children[1], symbolTable).Item2); break;
-            case "<": retVal = VisitNode(node.children[0], symbolTable).Item2.ComparisonLT(VisitNode(node.children[1], symbolTable).Item2); break;
-            case ">": retVal = VisitNode(node.children[0], symbolTable).Item2.ComparisonGT(VisitNode(node.children[1], symbolTable).Item2); break;
-            case "<=": retVal = VisitNode(node.children[0], symbolTable).Item2.ComparisonLTE(VisitNode(node.children[1], symbolTable).Item2); break;
-            case ">=": retVal = VisitNode(node.children[0], symbolTable).Item2.ComparisonGTE(VisitNode(node.children[1], symbolTable).Item2); break;
-            case "!=": retVal = VisitNode(node.children[0], symbolTable).Item2.ComparisonNeqeq(VisitNode(node.children[1], symbolTable).Item2); break;
+            case "+": retVal = leftSide.AddedTo(rightSide); break;
+            case "-": retVal = leftSide.SubbedBy(rightSide); break;
+            case "*": retVal = leftSide.MultedBy(rightSide); break;
+            case "/": retVal = leftSide.DivedBy(rightSide); break;
+            case "?=": retVal = leftSide.ComparisonEqeq(rightSide); break;
+            case "<": retVal = leftSide.ComparisonLT(rightSide); break;
+            case ">": retVal = leftSide.ComparisonGT(rightSide); break;
+            case "<=": retVal = leftSide.ComparisonLTE(rightSide); break;
+            case ">=": retVal = leftSide.ComparisonGTE(rightSide); break;
+            case "!=": retVal = leftSide.ComparisonNeqeq(rightSide); break;
             // assignment operator (assign a value to a variable and return it)
             case "=":
                 {
-                    Value rightSide = VisitNode(node.children[1], symbolTable).Item2;
                     SetSymbol(symbolTable, node.children[0].value, rightSide);
                     retVal = rightSide;
                 }
@@ -286,28 +294,24 @@ class Interpreter
             // compound assignment operators (change the variable's value and return the new value)
             case "+=":
                 {
-                    Value rightSide = VisitNode(node.children[1], symbolTable).Item2;
                     SetSymbol(symbolTable, node.children[0].value, GetSymbol(symbolTable, node.children[0].value, node.children[0]) + rightSide);
                     retVal = rightSide;
                 }
                 break;
             case "-=":
                 {
-                    Value rightSide = VisitNode(node.children[1], symbolTable).Item2;
                     SetSymbol(symbolTable, node.children[0].value, GetSymbol(symbolTable, node.children[0].value, node.children[0]) - rightSide);
                     retVal = rightSide;
                 }
                 break;
             case "*=":
                 {
-                    Value rightSide = VisitNode(node.children[1], symbolTable).Item2;
                     SetSymbol(symbolTable, node.children[0].value, GetSymbol(symbolTable, node.children[0].value, node.children[0]) * rightSide);
                     retVal = rightSide;
                 }
                 break;
             case "/=":
                 {
-                    Value rightSide = VisitNode(node.children[1], symbolTable).Item2;
                     SetSymbol(symbolTable, node.children[0].value, GetSymbol(symbolTable, node.children[0].value, node.children[0]) / rightSide);
                     retVal = rightSide;
                 }
@@ -324,6 +328,8 @@ class Interpreter
             return (false, new Boolean(node.filename, node.line, node.pos, true));
         else if(node.value is string && node.value == "false")
             return (false, new Boolean(node.filename, node.line, node.pos, false));
+        else if (node.value is string && node.value == "nix")
+            return (false, new Nix(node.filename, node.line, node.pos));
 
         return (false, Value.ToEigerValue(node.filename,node.line,node.pos,node.value));
     }

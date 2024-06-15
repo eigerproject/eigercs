@@ -4,9 +4,20 @@
 
 namespace EigerLang.Execution.BuiltInTypes;
 
-class String(string filename, int line, int pos, string value) : Value(filename, line, pos)
+class String : Value
 {
-    public string value = value;
+    public string value;
+    string filename;
+    int line;
+    int pos;
+
+    public String(string filename, int line, int pos,string value) : base(filename, line,pos)
+    {
+        this.value = value;
+        this.filename = filename;
+        this.line = line;
+        this.pos = pos;
+    }
 
     public override Value GetIndex(int idx)
     {

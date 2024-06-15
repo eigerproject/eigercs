@@ -15,6 +15,6 @@ class EmitFunction : BuiltInFunction
     {
         CheckArgs(filepath, line, pos, args.Count);
         Console.Write(args[0]);
-        return (false,null);
+        return (false, new Nix(filepath, line, pos));
     }
 }

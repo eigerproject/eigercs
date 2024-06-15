@@ -4,19 +4,29 @@
 
 namespace EigerLang.Execution.BuiltInTypes;
 
-class Array(string filename,int line,int pos,Value[] array) : Value(filename,line,pos)
+class Array : Value
 {
-    public Value[] array = array;
+    public Value[] array;
+    string fn;
+    int ln, ps;
+
+    public Array(string fn, int ln, int ps, Value[] array) : base(fn, ln, ps)
+    {
+        this.array = [];
+        this.fn = fn;
+        this.ln = ln;
+        this.ps = ps;
+    }
 
     public override Value AddedTo(object other)
     {
         if (other is Array)
         {
-            return new Array(filename, line, pos, [.. array, ..((Array)other).array]);
+            return new Array(fn, ln, ps, [.. array, ..((Array)other).array]);
         }
         else
         {
-            return new Array(filename, line, pos, [.. array, (Value)other]);
+            return new Array(fn, ln, ps, [.. array, (Value)other]);
         }
         
     }
