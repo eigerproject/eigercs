@@ -5,16 +5,17 @@
 
 using EigerLang.Errors;
 using EigerLang.Parsing;
+using EigerLang.Execution.BuiltInTypes;
 
 namespace EigerLang.Execution;
 
 // a base function from which both custom and built-in functions will extend
-abstract class BaseFunction(string name, List<string> arg_n, Dictionary<string,dynamic?> symbolTable)
+abstract class BaseFunction(ASTNode node,string name, List<string> arg_n, Dictionary<string, Value> symbolTable) : Value(node.filename,node.line,node.pos)
 {
     public string name { get; } = name; // name
     public List<string> arg_n { get; } = arg_n; // argument names
 
-    public Dictionary<string, dynamic?> symbolTable = symbolTable; // symbol table
+    public Dictionary<string, Value> symbolTable = symbolTable; // symbol table
 
     public void CheckArgs(string path,int line,int pos,int argCount)
     {
@@ -23,7 +24,7 @@ abstract class BaseFunction(string name, List<string> arg_n, Dictionary<string,d
             throw new EigerError(path, line, pos, $"Function {name} takes {arg_n.Count} arguments, got {argCount}");
     }
 
-    public abstract (bool,dynamic?) Execute(List<dynamic> args,int line,int pos, string path); // abstract execute function
+    public abstract (bool, Value) Execute(List<Value> args,int line,int pos, string path); // abstract execute function
 }
 
 // custom functions
@@ -32,17 +33,17 @@ class Function : BaseFunction
     // function body
     ASTNode root;
 
-    public Function(string name, List<string> arg_n, ASTNode root, Dictionary<string, dynamic?> symbolTable) : base(name,arg_n,symbolTable)
+    public Function(ASTNode? node,string name, List<string> arg_n, ASTNode root, Dictionary<string, Value> symbolTable) : base(node,name,arg_n,symbolTable)
     {
         this.root = root;
     }
 
-    public override (bool, dynamic?) Execute(List<dynamic> args,int line,int pos, string path)
+    public override (bool, Value) Execute(List<Value> args,int line,int pos, string path)
     {
         CheckArgs(path,line,pos,args.Count);
 
         // create local symbol table
-        Dictionary<string, dynamic?> localSymbolTable = new(symbolTable);
+        Dictionary<string, Value> localSymbolTable = new(symbolTable);
 
         // add args to that local symbol table
         for (int i = 0; i < args.Count;i++)
@@ -63,9 +64,9 @@ class Function : BaseFunction
 // built-in functions
 abstract class BuiltInFunction : BaseFunction
 {
-    public BuiltInFunction(string name, List<string> arg_n) : base(name, arg_n,Interpreter.globalSymbolTable) {}
+    public BuiltInFunction(string name, List<string> arg_n) : base(new(NodeType.Block,0,0,0,"<unset>"),name, arg_n,Interpreter.globalSymbolTable) {}
 
-    public override (bool, dynamic?) Execute(List<dynamic> args,int line,int pos,string file) { return (false,null); }
+    public override (bool, Value) Execute(List<Value> args,int line,int pos,string file) { return (false,null); }
 
     public override string ToString()
     {

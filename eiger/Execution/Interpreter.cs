@@ -7,8 +7,9 @@ using EigerLang.Errors;
 using EigerLang.Execution.BuiltInTypes;
 using EigerLang.Parsing;
 using Microsoft.CSharp.RuntimeBinder;
-using System.IO;
 using System.Text;
+
+using Boolean = EigerLang.Execution.BuiltInTypes.Boolean;
 
 namespace EigerLang.Execution;
 
@@ -22,7 +23,7 @@ class Interpreter
     public static BuiltInFunctions.ClsFunction clsFunction = new();
 
     // global symbol table
-    public static Dictionary<string, dynamic?> globalSymbolTable = new() {
+    public static Dictionary<string, Value?> globalSymbolTable = new() {
         {"emit",emitFunction},
         {"emitln",emitlnFunction},
         {"in",inFunction},
@@ -31,7 +32,7 @@ class Interpreter
     };
 
     // function for visiting a node
-    public static (bool, dynamic?) VisitNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
+    public static (bool, Value?) VisitNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         switch (node.type)
         {
@@ -54,7 +55,7 @@ class Interpreter
     }
 
     // visit return node
-    static (bool, dynamic?) VisitReturnNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
+    static (bool, Value?) VisitReturnNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         // ReturnNode structure
         // ReturnNode
@@ -64,7 +65,7 @@ class Interpreter
     }
 
     // visit block node 
-    public static (bool, dynamic?) VisitBlockNode(ASTNode node, Dictionary<string, dynamic?> symbolTable, Dictionary<string, dynamic?>? parentSymbolTable = null)
+    public static (bool, Value?) VisitBlockNode(ASTNode node, Dictionary<string, Value> symbolTable, Dictionary<string, Value>? parentSymbolTable = null)
     {
         // BlockNode structure
         // BlockNode
@@ -76,7 +77,7 @@ class Interpreter
         foreach (var child in node.children)
         {
             // visit each statement
-            (bool didReturn, dynamic? value) = VisitNode(child, symbolTable);
+            (bool didReturn, Value value) = VisitNode(child, symbolTable);
 
             // Sync local and parent symbol tables
             // basically syncing the variables in this scope with the ones in the parent scope
@@ -102,7 +103,7 @@ class Interpreter
     }
 
     // visit for..to node
-    static (bool,dynamic?) VisitForToNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
+    static (bool, Value?) VisitForToNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         // ForToNode structure
         // ForToNode
@@ -114,7 +115,7 @@ class Interpreter
         // ---- statement2
         // ---- ...
 
-        Dictionary<string, dynamic?> localSymbolTable = new(symbolTable);
+        Dictionary<string, Value> localSymbolTable = new(symbolTable);
 
         string iteratorName = node.children[0].value ?? "";
 
@@ -122,25 +123,25 @@ class Interpreter
 
         ASTNode forBlock = node.children[3];
 
-        dynamic value = VisitNode(node.children[1], symbolTable).Item2 ?? 0;
-        dynamic toValue = VisitNode(toNode, symbolTable).Item2 ?? 0;
+        double value = ((Number)VisitNode(node.children[1], symbolTable).Item2).value;
+        double toValue = ((Number)VisitNode(toNode, symbolTable).Item2).value;
 
         int step = value < toValue ? 1 : -1;
 
-        SetSymbol(localSymbolTable, iteratorName, value);
+        SetSymbol(localSymbolTable, iteratorName, new Number(node.filename,node.line,node.pos, value));
 
         while (value != toValue)
         {
             VisitBlockNode(forBlock, localSymbolTable, symbolTable);
             value += step;
-            SetSymbol(localSymbolTable, iteratorName, value);
+            SetSymbol(localSymbolTable, iteratorName, new Number(node.filename, node.line, node.pos, value));
         }
 
         return (false, null);
     }
 
     // visit while node
-    static (bool, dynamic?) VisitWhileNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
+    static (bool, Value?) VisitWhileNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         // WhileNode structure
         // WhileNode
@@ -148,21 +149,21 @@ class Interpreter
         // -- whileBlock
 
         // visit Condition
-        dynamic condition = VisitNode(node.children[0], symbolTable);
-        while (Convert.ToBoolean(condition.Item2))
+        Boolean? condition = (Boolean?)VisitNode(node.children[0], symbolTable).Item2;
+        while (Convert.ToBoolean(condition.value))
         {
             // visit the body of the loop
             VisitBlockNode(node.children[1], new(symbolTable), symbolTable);
 
             // update the condition
-            condition = VisitNode(node.children[0], symbolTable);
+            condition = (Boolean?)VisitNode(node.children[0], symbolTable).Item2;
         }
         // return nothing
         return (false, null);
     }
 
     // visit if node
-    static (bool, dynamic?) VisitIfNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
+    static (bool, Value?) VisitIfNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         // IfNode structure
         // IfNode
@@ -175,10 +176,10 @@ class Interpreter
         bool hasElseBlock = node.children.Count == 3;
 
         // visit condition
-        dynamic condition = VisitNode(node.children[0], symbolTable);
+        Boolean? condition = (Boolean?)VisitNode(node.children[0], symbolTable).Item2;
 
         // if the condition is true
-        if (Convert.ToBoolean(condition.Item2))
+        if (Convert.ToBoolean(condition.value))
         {
             // visit the if block (2nd child node)
             return VisitBlockNode(node.children[1], new(symbolTable), symbolTable);
@@ -198,7 +199,7 @@ class Interpreter
     }
 
     // visit function call node
-    static (bool, dynamic?) VisitFuncCallNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
+    static (bool, Value?) VisitFuncCallNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         // FuncCallNode structure:
         // FuncCallNode : <function name>
@@ -209,7 +210,7 @@ class Interpreter
         // if the symbol we're calling is a function (it might be something else, like a variable)
         if (GetSymbol(symbolTable, node.value,node) is BaseFunction) // BaseFunction is the class both custom and built-in functions extend from
         {
-            List<dynamic> args = []; // prepare a list for args
+            List <Value> args = []; // prepare a list for args
             foreach (ASTNode child in node.children) //
             {
                 args.Add(VisitNode(child, symbolTable).Item2);
@@ -222,7 +223,7 @@ class Interpreter
     }
 
     // Visit function definition node
-    static (bool, dynamic?) VisitFuncDefNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
+    static (bool, Value?) VisitFuncDefNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         // FuncDefNode structure
         // FuncDefNode : <function name>
@@ -250,94 +251,63 @@ class Interpreter
         }
 
         // add the function to the current scope
-        symbolTable[funcName] = new Function(funcName, argnames, root, symbolTable);
+        symbolTable[funcName] = new Function(node,funcName, argnames, root, symbolTable);
 
         // return nothing
         return (false, null);
     }
 
     // visit binary operator node
-    static (bool, dynamic?) VisitBinOpNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
+    static (bool, Value) VisitBinOpNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         // prepare a variable for return value
-        dynamic? retVal;
+        Value retVal;
         switch (node.value)
         {
             // check each available binary operator
-            case "+": retVal = VisitNode(node.children[0], symbolTable).Item2 + VisitNode(node.children[1], symbolTable).Item2; break;
-            case "-": retVal = VisitNode(node.children[0], symbolTable).Item2 - VisitNode(node.children[1], symbolTable).Item2; break;
-            case "*": retVal = VisitNode(node.children[0], symbolTable).Item2 * VisitNode(node.children[1], symbolTable).Item2; break;
-            case "/": retVal = VisitNode(node.children[0], symbolTable).Item2 / VisitNode(node.children[1], symbolTable).Item2; break;
-            case "?=": retVal = VisitNode(node.children[0], symbolTable).Item2 == VisitNode(node.children[1], symbolTable).Item2; break;
-            case "<": retVal = VisitNode(node.children[0], symbolTable).Item2 < VisitNode(node.children[1], symbolTable).Item2; break;
-            case ">": retVal = VisitNode(node.children[0], symbolTable).Item2 > VisitNode(node.children[1], symbolTable).Item2; break;
-            case "<=": retVal = VisitNode(node.children[0], symbolTable).Item2 <= VisitNode(node.children[1], symbolTable).Item2; break;
-            case ">=": retVal = VisitNode(node.children[0], symbolTable).Item2 >= VisitNode(node.children[1], symbolTable).Item2; break;
-            case "!=": retVal = VisitNode(node.children[0], symbolTable).Item2 != VisitNode(node.children[1], symbolTable).Item2; break;
+            case "+": retVal = VisitNode(node.children[0], symbolTable).Item2.AddedTo(VisitNode(node.children[1], symbolTable).Item2); break;
+            case "-": retVal = VisitNode(node.children[0], symbolTable).Item2.SubbedBy(VisitNode(node.children[1], symbolTable).Item2); break;
+            case "*": retVal = VisitNode(node.children[0], symbolTable).Item2.MultedBy(VisitNode(node.children[1], symbolTable).Item2); break;
+            case "/": retVal = VisitNode(node.children[0], symbolTable).Item2.DivedBy(VisitNode(node.children[1], symbolTable).Item2); break;
+            case "?=": retVal = VisitNode(node.children[0], symbolTable).Item2.ComparisonEqeq(VisitNode(node.children[1], symbolTable).Item2); break;
+            case "<": retVal = VisitNode(node.children[0], symbolTable).Item2.ComparisonLT(VisitNode(node.children[1], symbolTable).Item2); break;
+            case ">": retVal = VisitNode(node.children[0], symbolTable).Item2.ComparisonGT(VisitNode(node.children[1], symbolTable).Item2); break;
+            case "<=": retVal = VisitNode(node.children[0], symbolTable).Item2.ComparisonLTE(VisitNode(node.children[1], symbolTable).Item2); break;
+            case ">=": retVal = VisitNode(node.children[0], symbolTable).Item2.ComparisonGTE(VisitNode(node.children[1], symbolTable).Item2); break;
+            case "!=": retVal = VisitNode(node.children[0], symbolTable).Item2.ComparisonNeqeq(VisitNode(node.children[1], symbolTable).Item2); break;
             // assignment operator (assign a value to a variable and return it)
             case "=":
                 {
-                    dynamic? rightSide = VisitNode(node.children[1], symbolTable).Item2;
-                    if (node.children[0].type == NodeType.ElementAccess)
-                    {
-                        var targetNode = node.children[0].children[0];
-                        var indexNode = node.children[0].children[1];
-                        var target = VisitNode(targetNode, symbolTable).Item2;
-                        var index = Convert.ToInt32(VisitNode(indexNode, symbolTable).Item2);
-                        if (target is BuiltInTypes.Array list)
-                        {
-                            if (index is int intIndex && intIndex >= 0 && intIndex < list.array.Length)
-                            {
-                                list.array[intIndex] = rightSide;
-                            }
-                            else
-                            {
-                                throw new EigerError(node.filename, node.line, node.pos, "Index out of bounds.");
-                            }
-                        }
-                        else if (target is string str)
-                        {
-                            if (index is int intIndex && intIndex >= 0 && intIndex < str.Length)
-                            {
-                                var strBuilder = new StringBuilder(str) { [intIndex] = Convert.ToChar(rightSide) };
-                                SetSymbol(symbolTable, targetNode.value, strBuilder.ToString());
-                            }
-                            else
-                            {
-                                throw new EigerError(node.filename, node.line, node.pos, "Index out of bounds.");
-                            }
-                        }
-                    }
-                    else
-                                SetSymbol(symbolTable, node.children[0].value, rightSide);
+                    Value rightSide = VisitNode(node.children[1], symbolTable).Item2;
+                    SetSymbol(symbolTable, node.children[0].value, rightSide);
                     retVal = rightSide;
                 }
                 break;
             // compound assignment operators (change the variable's value and return the new value)
             case "+=":
                 {
-                    dynamic? rightSide = VisitNode(node.children[1], symbolTable).Item2;
+                    Value rightSide = VisitNode(node.children[1], symbolTable).Item2;
                     SetSymbol(symbolTable, node.children[0].value, GetSymbol(symbolTable, node.children[0].value, node.children[0]) + rightSide);
                     retVal = rightSide;
                 }
                 break;
             case "-=":
                 {
-                    dynamic? rightSide = VisitNode(node.children[1], symbolTable).Item2;
+                    Value rightSide = VisitNode(node.children[1], symbolTable).Item2;
                     SetSymbol(symbolTable, node.children[0].value, GetSymbol(symbolTable, node.children[0].value, node.children[0]) - rightSide);
                     retVal = rightSide;
                 }
                 break;
             case "*=":
                 {
-                    dynamic? rightSide = VisitNode(node.children[1], symbolTable).Item2;
+                    Value rightSide = VisitNode(node.children[1], symbolTable).Item2;
                     SetSymbol(symbolTable, node.children[0].value, GetSymbol(symbolTable, node.children[0].value, node.children[0]) * rightSide);
                     retVal = rightSide;
                 }
                 break;
             case "/=":
                 {
-                    dynamic? rightSide = VisitNode(node.children[1], symbolTable).Item2;
+                    Value rightSide = VisitNode(node.children[1], symbolTable).Item2;
                     SetSymbol(symbolTable, node.children[0].value, GetSymbol(symbolTable, node.children[0].value, node.children[0]) / rightSide);
                     retVal = rightSide;
                 }
@@ -348,19 +318,19 @@ class Interpreter
     }
 
     // visit literal node (pretty self-explanatory)
-    static (bool, dynamic?) VisitLiteralNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
+    static (bool, Value) VisitLiteralNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
-        return (false, node.value);
+        return (false, Value.ToEigerValue(node.filename,node.line,node.pos,node.value));
     }
 
     // visit identifier node (pretty self-explanatory too)
-    static (bool, dynamic?) VisitIdentifierNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
+    static (bool, Value) VisitIdentifierNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         return (false, GetSymbol(symbolTable, node.value,node));
     }
 
     // visit array node
-    static (bool, dynamic?) VisitArrayNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
+    static (bool, Value) VisitArrayNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         // ArrayNode structure
         // ArrayNode
@@ -368,30 +338,27 @@ class Interpreter
         // -- element2
         // -- ...
 
-        List<dynamic?> list = [];
+        List<Value> list = [];
         foreach (dynamic item in node.children)
         {
             list.Add(VisitNode(item, symbolTable).Item2);
         }
-        return (false,new BuiltInTypes.Array([.. list]));
+        return (false,new BuiltInTypes.Array(node.filename,node.line,node.pos,[.. list]));
     }
 
-    private static (bool, dynamic) VisitElementAccessNode(ASTNode node, Dictionary<string, dynamic?> symbolTable)
+    private static (bool, Value) VisitElementAccessNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         // ElementAccessNode structure
         // ElementAccessNode
         // -- value
         // -- idx
 
-        dynamic? iter = VisitNode(node.children[0], symbolTable).Item2;
-        (bool, dynamic) value = VisitNode(node.children[1], symbolTable);
+        Value? iter = VisitNode(node.children[0], symbolTable).Item2;
+        (bool, Value?) value = VisitNode(node.children[1], symbolTable);
         try
         {
             int idx = Convert.ToInt32(value.Item2);
-            if (iter is BuiltInTypes.Array)
-                return (false, iter.array[idx]);
-            else
-                return (false, iter[idx]);
+            return (false, iter.GetIndex(idx));
         }
         catch(IndexOutOfRangeException)
         {
@@ -404,11 +371,11 @@ class Interpreter
     }
 
     // get symbol from a symboltable with error handling
-    static dynamic GetSymbol(Dictionary<string, dynamic?> symbolTable, string key,ASTNode node)
+    static Value GetSymbol(Dictionary<string, Value> symbolTable, string key,ASTNode node)
     {
         try
         {
-            return symbolTable[key] ?? 0;
+            return symbolTable[key];
         }
         catch (KeyNotFoundException)
         {
@@ -417,7 +384,7 @@ class Interpreter
     }
 
     // set symbol from a symboltable with error handling
-    static void SetSymbol(Dictionary<string, dynamic?> symbolTable, string key, dynamic value)
+    static void SetSymbol(Dictionary<string, Value> symbolTable, string key, Value value)
     {
         symbolTable[key] = value;
     }

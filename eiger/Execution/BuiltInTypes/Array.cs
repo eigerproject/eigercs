@@ -4,36 +4,40 @@
 
 namespace EigerLang.Execution.BuiltInTypes;
 
-class Array(dynamic?[] array)
+class Array(string filename,int line,int pos,Value[] array) : Value(filename,line,pos)
 {
-    public dynamic?[] array = array;
+    public Value[] array = array;
+
+    public override Value AddedTo(object other)
+    {
+        if (other is Array)
+        {
+            return new Array(filename, line, pos, [.. array, ..((Array)other).array]);
+        }
+        else
+        {
+            return new Array(filename, line, pos, [.. array, (Value)other]);
+        }
+        
+    }
+
+    public override Value GetIndex(int idx)
+    {
+        return array[idx];
+    }
 
     public override string ToString()
     {
-        return "[" + string.Join(", ", array) + "]";
-    }
-
-    public static Array operator +(Array a, Array b)
-    {
-        return new Array([.. a.array, .. b.array]);
-    }
-
-    public static bool operator ==(Array a, Array b)
-    {
-        return a.array.SequenceEqual(b.array);
-    }
-
-    public static bool operator !=(Array a, Array b)
-    {
-        return !a.array.SequenceEqual(b.array);
-    }
-
-    public override bool Equals(object obj)
-    {
-        if (obj is Array other)
+        string strep = "[";
+        for (int i = 0; i < array.Length; i++)
         {
-            return this == other;
+            strep += array[i].ToString();
+            if (i != array.Length - 1)
+            {
+                strep += ", ";
+            }
         }
-        return false;
+        strep+= "]";
+        return strep;
     }
 }
