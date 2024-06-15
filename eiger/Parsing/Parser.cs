@@ -5,6 +5,7 @@
 
 using EigerLang.Errors;
 using EigerLang.Tokenization;
+using System.ComponentModel.Design;
 
 namespace EigerLang.Parsing;
 
@@ -402,7 +403,12 @@ public class Parser(List<Token> tokens)
             }
             else
             {
-                return new ASTNode(NodeType.Identifier, identToken.value, identToken.line, identToken.pos, path);
+                if (identToken.value == "true")
+                    return new ASTNode(NodeType.Literal, "true", identToken.line, identToken.pos, path);
+                else if (identToken.value == "false")
+                    return new ASTNode(NodeType.Literal, "false", identToken.line, identToken.pos, path);
+                else
+                    return new ASTNode(NodeType.Identifier, identToken.value, identToken.line, identToken.pos, path);
             }
         }
         // if it's a string literal
