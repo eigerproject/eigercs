@@ -38,6 +38,16 @@ class String : Value
         return new String(filename, line, pos, value + other.value);
     }
 
+    public override dynamic MultedBy(object other)
+    {
+        if(other is Number)
+        {
+            return new String(filename, line, pos, string.Concat(Enumerable.Repeat(value, (int)((Number)other).value)));
+        }
+        else
+            return base.MultedBy(other);
+    }
+
     public override Boolean ComparisonEqeq(dynamic other)
     {
         return new Boolean(filename, line, pos, value == other.value);
