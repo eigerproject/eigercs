@@ -2,6 +2,8 @@
  * EIGERLANG STRING TYPE
 */
 
+using System.Text;
+
 namespace EigerLang.Execution.BuiltInTypes;
 
 class String : Value
@@ -22,6 +24,13 @@ class String : Value
     public override Value GetIndex(int idx)
     {
         return new String(filename,line,pos, value[idx].ToString());
+    }
+
+    public override void SetIndex(int idx, Value val)
+    {
+        StringBuilder sb = new StringBuilder(value);
+        sb[idx] = ((String)val ?? throw new Errors.EigerError(filename, line, pos, "Failed to set index (value is null)")).value[0];
+        value = sb.ToString();
     }
 
     public override dynamic AddedTo(dynamic other)

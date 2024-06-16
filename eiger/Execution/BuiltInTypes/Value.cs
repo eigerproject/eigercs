@@ -58,6 +58,11 @@ public class Value(string filename,int line, int pos)
         throw new EigerError(filename, line, pos, "Object is not iterable");
     }
 
+    public virtual void SetIndex(int idx,Value val)
+    {
+        throw new EigerError(filename, line, pos, "Object is not iterable");
+    }
+
     public static Value ToEigerValue(string filename,int line,int pos,dynamic val)
     {
         if (val is double || val is int)

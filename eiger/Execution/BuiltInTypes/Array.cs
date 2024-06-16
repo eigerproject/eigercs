@@ -2,6 +2,8 @@
  * EIGERLANG ARRAY TYPE
 */
 
+using EigerLang.Errors;
+
 namespace EigerLang.Execution.BuiltInTypes;
 
 class Array : Value
@@ -12,7 +14,7 @@ class Array : Value
 
     public Array(string fn, int ln, int ps, Value[] array) : base(fn, ln, ps)
     {
-        this.array = [];
+        this.array = array;
         this.fn = fn;
         this.ln = ln;
         this.ps = ps;
@@ -33,7 +35,16 @@ class Array : Value
 
     public override Value GetIndex(int idx)
     {
+        if(idx < 0 || idx >= array.Length)
+            throw new EigerError(fn,ln, ps,"Index outside of bounds");
         return array[idx];
+    }
+
+    public override void SetIndex(int idx, Value val)
+    {
+        if (idx < 0 || idx >= array.Length)
+            throw new EigerError(fn, ln, ps, "Index outside of bounds");
+        array[idx] = val;
     }
 
     public override string ToString()

@@ -7,7 +7,7 @@ using EigerLang.Errors;
 using EigerLang.Execution.BuiltInTypes;
 using EigerLang.Parsing;
 using Microsoft.CSharp.RuntimeBinder;
-using System.Text;
+using Array = EigerLang.Execution.BuiltInTypes.Array;
 
 using Boolean = EigerLang.Execution.BuiltInTypes.Boolean;
 
@@ -117,8 +117,6 @@ class Interpreter
 
         Dictionary<string, Value> localSymbolTable = new(symbolTable);
 
-        string iteratorName = node.children[0].value ?? "";
-
         ASTNode toNode = node.children[2];
 
         ASTNode forBlock = node.children[3];
@@ -128,13 +126,13 @@ class Interpreter
 
         int step = value < toValue ? 1 : -1;
 
-        SetSymbol(localSymbolTable, iteratorName, new Number(node.filename,node.line,node.pos, value));
+        SetSymbol(localSymbolTable, node.children[0], new Number(node.filename, node.line, node.pos, value));
 
         while (value != toValue)
         {
             VisitBlockNode(forBlock, localSymbolTable, symbolTable);
             value += step;
-            SetSymbol(localSymbolTable, iteratorName, new Number(node.filename, node.line, node.pos, value));
+            SetSymbol(localSymbolTable, node.children[0], new Number(node.filename, node.line, node.pos, value));
         }
 
         return (false, new Nix(node.filename, node.line, node.pos));
@@ -208,19 +206,19 @@ class Interpreter
         // -- ...
 
         // if the symbol we're calling is a function (it might be something else, like a variable)
-        if (GetSymbol(symbolTable, node.value,node) is BaseFunction) // BaseFunction is the class both custom and built-in functions extend from
+        if (GetSymbol(symbolTable, node) is BaseFunction) // BaseFunction is the class both custom and built-in functions extend from
         {
-            List <Value> args = []; // prepare a list for args
+            List<Value> args = []; // prepare a list for args
             foreach (ASTNode child in node.children) //
             {
                 Value? val = VisitNode(child, symbolTable).Item2 ?? throw new EigerError(node.filename, node.line, node.pos, $"Invalid Argument");
                 args.Add(val);
             }
 
-            return ((BaseFunction)symbolTable[node.value]).Execute(args,node.line,node.pos,node.filename);
+            return ((BaseFunction)symbolTable[node.value]).Execute(args, node.line, node.pos, node.filename);
         }
         else
-            throw new EigerError(node.filename,node.line,node.pos, $"{node.value} is not a function");
+            throw new EigerError(node.filename, node.line, node.pos, $"{node.value} is not a function");
     }
 
     // Visit function definition node
@@ -252,7 +250,7 @@ class Interpreter
         }
 
         // add the function to the current scope
-        symbolTable[funcName] = new Function(node,funcName, argnames, root, symbolTable);
+        symbolTable[funcName] = new Function(node, funcName, argnames, root, symbolTable);
 
         // return nothing
         return (false, new Nix(node.filename, node.line, node.pos));
@@ -264,9 +262,9 @@ class Interpreter
         // prepare a variable for return value
         Value retVal;
 
-        Value leftSide = new Nix(node.filename,node.line,node.pos);
+        Value leftSide = new Nix(node.filename, node.line, node.pos);
 
-        if(node.value != "=")
+        if (node.value != "=")
             leftSide = VisitNode(node.children[0], symbolTable).Item2;
 
         Value rightSide = VisitNode(node.children[1], symbolTable).Item2;
@@ -287,36 +285,36 @@ class Interpreter
             // assignment operator (assign a value to a variable and return it)
             case "=":
                 {
-                    SetSymbol(symbolTable, node.children[0].value, rightSide);
+                    SetSymbol(symbolTable, node.children[0], rightSide);
                     retVal = rightSide;
                 }
                 break;
             // compound assignment operators (change the variable's value and return the new value)
             case "+=":
                 {
-                    SetSymbol(symbolTable, node.children[0].value, GetSymbol(symbolTable, node.children[0].value, node.children[0]) + rightSide);
+                    SetSymbol(symbolTable, node.children[0], GetSymbol(symbolTable, node.children[0]).AddedTo(rightSide));
                     retVal = rightSide;
                 }
                 break;
             case "-=":
                 {
-                    SetSymbol(symbolTable, node.children[0].value, GetSymbol(symbolTable, node.children[0].value, node.children[0]) - rightSide);
+                    SetSymbol(symbolTable, node.children[0], GetSymbol(symbolTable, node.children[0]).SubbedBy(rightSide));
                     retVal = rightSide;
                 }
                 break;
             case "*=":
                 {
-                    SetSymbol(symbolTable, node.children[0].value, GetSymbol(symbolTable, node.children[0].value, node.children[0]) * rightSide);
+                    SetSymbol(symbolTable, node.children[0], GetSymbol(symbolTable, node.children[0]).MultedBy(rightSide));
                     retVal = rightSide;
                 }
                 break;
             case "/=":
                 {
-                    SetSymbol(symbolTable, node.children[0].value, GetSymbol(symbolTable, node.children[0].value, node.children[0]) / rightSide);
+                    SetSymbol(symbolTable, node.children[0], GetSymbol(symbolTable, node.children[0]).DivedBy(rightSide));
                     retVal = rightSide;
                 }
                 break;
-            default: throw new EigerError(node.filename,node.line,node.pos, "Invalid Binary Operator");
+            default: throw new EigerError(node.filename, node.line, node.pos, "Invalid Binary Operator");
         }
         return (false, retVal);
     }
@@ -326,18 +324,18 @@ class Interpreter
     {
         if (node.value is string && node.value == "true")
             return (false, new Boolean(node.filename, node.line, node.pos, true));
-        else if(node.value is string && node.value == "false")
+        else if (node.value is string && node.value == "false")
             return (false, new Boolean(node.filename, node.line, node.pos, false));
         else if (node.value is string && node.value == "nix")
             return (false, new Nix(node.filename, node.line, node.pos));
 
-        return (false, Value.ToEigerValue(node.filename,node.line,node.pos,node.value));
+        return (false, Value.ToEigerValue(node.filename, node.line, node.pos, node.value));
     }
 
     // visit identifier node (pretty self-explanatory too)
     static (bool, Value) VisitIdentifierNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
-        return (false, GetSymbol(symbolTable, node.value,node));
+        return (false, GetSymbol(symbolTable, node));
     }
 
     // visit array node
@@ -350,11 +348,11 @@ class Interpreter
         // -- ...
 
         List<Value> list = [];
-        foreach (dynamic item in node.children)
+        foreach (ASTNode item in node.children)
         {
             list.Add(VisitNode(item, symbolTable).Item2);
         }
-        return (false,new BuiltInTypes.Array(node.filename,node.line,node.pos,[.. list]));
+        return (false, new Array(node.filename, node.line, node.pos, [.. list]));
     }
 
     private static (bool, Value) VisitElementAccessNode(ASTNode node, Dictionary<string, Value> symbolTable)
@@ -368,35 +366,76 @@ class Interpreter
         (bool, Value?) value = VisitNode(node.children[1], symbolTable);
         try
         {
-            int idx = Convert.ToInt32(value.Item2);
+            int idx = Convert.ToInt32(((Number)(value.Item2 ?? throw new EigerError(node.filename, node.line, node.pos, "InvalidIndex"))).value);
             return (false, iter.GetIndex(idx));
         }
-        catch(IndexOutOfRangeException)
+        catch (IndexOutOfRangeException)
         {
             throw new EigerError(node.filename, node.line, node.pos, "Index out of bounds");
         }
-        catch(RuntimeBinderException)
+        catch (RuntimeBinderException)
         {
             throw new EigerError(node.filename, node.line, node.pos, "Not iterable");
         }
     }
 
     // get symbol from a symboltable with error handling
-    static Value GetSymbol(Dictionary<string, Value> symbolTable, string key,ASTNode node)
+    static Value GetSymbol(Dictionary<string, Value> symbolTable, ASTNode key)
     {
         try
         {
-            return symbolTable[key];
+            if (key.type == NodeType.Identifier)
+                return symbolTable[key.value];
+            else
+            {
+                ASTNode listNode = key.children[0];
+                ASTNode idxNode = key.children[1];
+
+                if (listNode.type != NodeType.Identifier)
+                    throw new EigerError(key.filename, key.line, key.pos, "Must be identifier");
+
+                string listKey = key.children[0].value ?? throw new EigerError(key.filename, key.line, key.pos, "Identifier value not found");
+                int idx = (int)((Number)(VisitNode(idxNode, symbolTable).Item2)).value;
+
+                return symbolTable[listKey].GetIndex(idx);
+            }
         }
         catch (KeyNotFoundException)
         {
-            throw new EigerError(node.filename,node.line,node.pos, $"`{key}` is undefined");
+            throw new EigerError(key.filename, key.line, key.pos, $"Variable is undefined");
         }
     }
 
     // set symbol from a symboltable with error handling
-    static void SetSymbol(Dictionary<string, Value> symbolTable, string key, Value value)
+    static void SetSymbol(Dictionary<string, Value> symbolTable, ASTNode key, Value value)
     {
-        symbolTable[key] = value;
+        try
+        {
+            if (key.type == NodeType.ElementAccess)
+            {
+                ASTNode listNode = key.children[0];
+                ASTNode idxNode = key.children[1];
+
+                if (listNode.type != NodeType.Identifier)
+                    throw new EigerError(key.filename, key.line, key.pos, "Assignee must be identifier");
+
+                string listKey = key.children[0].value ?? throw new EigerError(key.filename, key.line, key.pos, "Identifier value not found");
+                int idx = (int)((Number)(VisitNode(idxNode, symbolTable).Item2)).value;
+
+                symbolTable[listKey].SetIndex(idx, value);
+            }
+            else if (key.type == NodeType.Identifier)
+            {
+                symbolTable[key.value] = value;
+            }
+            else
+            {
+                throw new EigerError(key.filename, key.line, key.pos, "Assignee must be identifier");
+            }
+        }
+        catch (KeyNotFoundException)
+        {
+            throw new EigerError(key.filename, key.line, key.pos, $"Variable is undefined");
+        }
     }
 }
