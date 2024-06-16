@@ -380,9 +380,9 @@ class Interpreter
     {
         try
         {
-            if (key.type == NodeType.Identifier)
+            if (key.type == NodeType.Identifier || key.type == NodeType.FuncCall)
                 return symbolTable[key.value];
-            else
+            else if (key.type == NodeType.ElementAccess)
             {
                 ASTNode listNode = key.children[0];
                 ASTNode idxNode = key.children[1];
@@ -395,6 +395,7 @@ class Interpreter
 
                 return symbolTable[listKey].GetIndex(idx);
             }
+            else throw new EigerError(key.filename, key.line, key.pos, $"Invalid Node {key.type}", EigerError.ErrorType.ParserError);
         }
         catch (KeyNotFoundException)
         {
