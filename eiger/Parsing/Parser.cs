@@ -52,7 +52,7 @@ public class Parser(List<Token> tokens)
             return tokens[current++];
         }
         // if not, throw error
-        throw new EigerError(path, tokens[^1].line, tokens[^1].pos, "Unexpected End of Input");
+        throw new EigerError(path, tokens[^1].line, tokens[^1].pos, "Unexpected End of Input", EigerError.ErrorType.ParserError);
     }
 
     // return current token
@@ -90,7 +90,7 @@ public class Parser(List<Token> tokens)
         }
         else
         {
-            throw new EigerError(path, Peek().line, Peek().pos, $"Unexpected token `{Peek().value}`");
+            throw new EigerError(path, Peek().line, Peek().pos, $"{Globals.UnexpectedTokenStr} `{Peek().value}`",EigerError.ErrorType.ParserError);
         }
     }
 
@@ -103,7 +103,7 @@ public class Parser(List<Token> tokens)
         }
         else
         {
-            throw new EigerError(path, Peek().line, Peek().pos, $"Unexpected token `{Peek().value}`");
+            throw new EigerError(path, Peek().line, Peek().pos, $"{Globals.UnexpectedTokenStr} `{Peek().value}`", EigerError.ErrorType.ParserError);
         }
     }
 
@@ -441,7 +441,7 @@ public class Parser(List<Token> tokens)
         else
         {
             // unexpected token
-            throw new EigerError(path, Peek().line, Peek().pos, $"Unexpected Token: {Peek()}");
+            throw new EigerError(path, Peek().line, Peek().pos, $"{Globals.UnexpectedTokenStr} `{Peek().value}`", EigerError.ErrorType.ParserError);
         }
     }
 

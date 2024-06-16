@@ -211,14 +211,14 @@ class Interpreter
             List<Value> args = []; // prepare a list for args
             foreach (ASTNode child in node.children) //
             {
-                Value? val = VisitNode(child, symbolTable).Item2 ?? throw new EigerError(node.filename, node.line, node.pos, $"Invalid Argument");
+                Value? val = VisitNode(child, symbolTable).Item2 ?? throw new EigerError(node.filename, node.line, node.pos, Globals.ArgumentErrorStr,EigerError.ErrorType.ArgumentError);
                 args.Add(val);
             }
 
             return ((BaseFunction)symbolTable[node.value]).Execute(args, node.line, node.pos, node.filename);
         }
         else
-            throw new EigerError(node.filename, node.line, node.pos, $"{node.value} is not a function");
+            throw new EigerError(node.filename, node.line, node.pos, $"{node.value} is not a function", EigerError.ErrorType.RuntimeError);
     }
 
     // Visit function definition node
@@ -314,7 +314,7 @@ class Interpreter
                     retVal = rightSide;
                 }
                 break;
-            default: throw new EigerError(node.filename, node.line, node.pos, "Invalid Binary Operator");
+            default: throw new EigerError(node.filename, node.line, node.pos, Globals.InvalidOperationStr, EigerError.ErrorType.InvalidOperationError);
         }
         return (false, retVal);
     }
@@ -366,16 +366,12 @@ class Interpreter
         (bool, Value?) value = VisitNode(node.children[1], symbolTable);
         try
         {
-            int idx = Convert.ToInt32(((Number)(value.Item2 ?? throw new EigerError(node.filename, node.line, node.pos, "InvalidIndex"))).value);
+            int idx = Convert.ToInt32(((Number)(value.Item2 ?? throw new EigerError(node.filename, node.line, node.pos, "Index is unknown",EigerError.ErrorType.ParserError))).value);
             return (false, iter.GetIndex(idx));
         }
         catch (IndexOutOfRangeException)
         {
-            throw new EigerError(node.filename, node.line, node.pos, "Index out of bounds");
-        }
-        catch (RuntimeBinderException)
-        {
-            throw new EigerError(node.filename, node.line, node.pos, "Not iterable");
+            throw new EigerError(node.filename, node.line, node.pos, Globals.IndexErrorStr,EigerError.ErrorType.IndexError);
         }
     }
 
@@ -392,9 +388,9 @@ class Interpreter
                 ASTNode idxNode = key.children[1];
 
                 if (listNode.type != NodeType.Identifier)
-                    throw new EigerError(key.filename, key.line, key.pos, "Must be identifier");
+                    throw new EigerError(key.filename, key.line, key.pos, "Must be identifier", EigerError.ErrorType.RuntimeError);
 
-                string listKey = key.children[0].value ?? throw new EigerError(key.filename, key.line, key.pos, "Identifier value not found");
+                string listKey = key.children[0].value ?? throw new EigerError(key.filename, key.line, key.pos, "Identifier value not found",EigerError.ErrorType.ParserError);
                 int idx = (int)((Number)(VisitNode(idxNode, symbolTable).Item2)).value;
 
                 return symbolTable[listKey].GetIndex(idx);
@@ -402,7 +398,7 @@ class Interpreter
         }
         catch (KeyNotFoundException)
         {
-            throw new EigerError(key.filename, key.line, key.pos, $"Variable is undefined");
+            throw new EigerError(key.filename, key.line, key.pos, $"Variable is undefined",EigerError.ErrorType.RuntimeError);
         }
     }
 
@@ -417,9 +413,9 @@ class Interpreter
                 ASTNode idxNode = key.children[1];
 
                 if (listNode.type != NodeType.Identifier)
-                    throw new EigerError(key.filename, key.line, key.pos, "Assignee must be identifier");
+                    throw new EigerError(key.filename, key.line, key.pos, "Assignee must be identifier",EigerError.ErrorType.RuntimeError);
 
-                string listKey = key.children[0].value ?? throw new EigerError(key.filename, key.line, key.pos, "Identifier value not found");
+                string listKey = key.children[0].value ?? throw new EigerError(key.filename, key.line, key.pos, "Identifier value not found",EigerError.ErrorType.ParserError);
                 int idx = (int)((Number)(VisitNode(idxNode, symbolTable).Item2)).value;
 
                 symbolTable[listKey].SetIndex(idx, value);
@@ -430,12 +426,12 @@ class Interpreter
             }
             else
             {
-                throw new EigerError(key.filename, key.line, key.pos, "Assignee must be identifier");
+                throw new EigerError(key.filename, key.line, key.pos, "Assignee must be identifier",EigerError.ErrorType.RuntimeError);
             }
         }
         catch (KeyNotFoundException)
         {
-            throw new EigerError(key.filename, key.line, key.pos, $"Variable is undefined");
+            throw new EigerError(key.filename, key.line, key.pos, $"Variable is undefined",EigerError.ErrorType.RuntimeError);
         }
     }
 }

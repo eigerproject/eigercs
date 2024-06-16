@@ -254,7 +254,7 @@ public class Lexer
                 if (current_char == '=') // if the next one is an equal sign 
                     result.Add(new Token(current_line, current_pos, TokenType.EQEQ, "?="));
                 else
-                    throw new EigerError(path, current_line, current_pos, $"Invalid Character: {current_char}");
+                    throw new EigerError(path, current_line, current_pos, $"{Globals.InvalidCharStr} {current_char}",EigerError.ErrorType.LexerError);
             }
             else if (current_char == '!') // if it's an exclamation mark
             {
@@ -262,11 +262,11 @@ public class Lexer
                 if (current_char == '=') // if the next one is an equal sign
                     result.Add(new Token(current_line, current_pos, TokenType.NEQEQ, "!="));
                 else
-                    throw new EigerError(path, current_line, current_pos, $"Invalid Character: {current_char}");
+                    throw new EigerError(path, current_line, current_pos, $"{Globals.InvalidCharStr} {current_char}", EigerError.ErrorType.LexerError);
             }
             else
             {
-                throw new EigerError(path, current_line, current_pos, $"Invalid Character: {current_char}");
+                throw new EigerError(path, current_line, current_pos, $"{Globals.InvalidCharStr} {current_char}", EigerError.ErrorType.LexerError);
             }
             Advance();
         }

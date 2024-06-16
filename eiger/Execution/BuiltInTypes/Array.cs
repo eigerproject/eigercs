@@ -36,14 +36,14 @@ class Array : Value
     public override Value GetIndex(int idx)
     {
         if(idx < 0 || idx >= array.Length)
-            throw new EigerError(fn,ln, ps,"Index outside of bounds");
+            throw new EigerError(fn,ln, ps,"Index outside of bounds",EigerError.ErrorType.IndexError);
         return array[idx];
     }
 
     public override void SetIndex(int idx, Value val)
     {
         if (idx < 0 || idx >= array.Length)
-            throw new EigerError(fn, ln, ps, "Index outside of bounds");
+            throw new EigerError(fn, ln, ps, "Index outside of bounds", EigerError.ErrorType.IndexError);
         array[idx] = val;
     }
 

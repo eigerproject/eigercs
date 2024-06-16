@@ -36,7 +36,7 @@ class Number: Value
     public override dynamic DivedBy(dynamic other)
     {
         if (other.value == 0)
-            throw new Errors.EigerError(filename, line, pos, "Zero Division");
+            throw new Errors.EigerError(filename, line, pos, "Zero Division",Errors.EigerError.ErrorType.ZeroDivisionError);
 
         return new Number(filename, line, pos, value / other.value);
     }

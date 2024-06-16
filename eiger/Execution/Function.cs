@@ -21,7 +21,7 @@ abstract class BaseFunction(ASTNode node,string name, List<string> arg_n, Dictio
     {
         // if the count of the given args and the required args are not equal
         if (argCount != arg_n.Count)
-            throw new EigerError(path, line, pos, $"Function {name} takes {arg_n.Count} arguments, got {argCount}");
+            throw new EigerError(path, line, pos, $"Function {name} takes {arg_n.Count} arguments, got {argCount}", EigerError.ErrorType.ArgumentError);
     }
 
     public abstract (bool, Value) Execute(List<Value> args,int line,int pos, string path); // abstract execute function

@@ -54,7 +54,7 @@ public class Program
                 }
                 catch (OverflowException e)
                 {
-                    Console.WriteLine(e.Message);
+                    Console.WriteLine($"[INTERNAL] Overflow Exception: {e.Message}");
                 }
                 catch (Exception e) { Console.WriteLine(e); }
             }

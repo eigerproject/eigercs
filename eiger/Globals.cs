@@ -11,4 +11,10 @@ public static class Globals
     public static string langVer = "0.01a";
     public static string docUrl = "https://null";
     public static string fileExtension = ".el";
+
+    public static string IndexErrorStr = "Index out of bounds";
+    public static string InvalidOperationStr = "Invalid operation";
+    public static string ArgumentErrorStr = "Invalid Argument";
+    public static string UnexpectedTokenStr = "Unexpected Token";
+    public static string InvalidCharStr = "Invalid Character";
 }

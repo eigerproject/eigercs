@@ -29,7 +29,7 @@ class String : Value
     public override void SetIndex(int idx, Value val)
     {
         StringBuilder sb = new StringBuilder(value);
-        sb[idx] = ((String)val ?? throw new Errors.EigerError(filename, line, pos, "Failed to set index (value is null)")).value[0];
+        sb[idx] = ((String)val ?? throw new Errors.EigerError(filename, line, pos, "Failed to set index (value is null)",Errors.EigerError.ErrorType.ParserError)).value[0];
         value = sb.ToString();
     }
 
