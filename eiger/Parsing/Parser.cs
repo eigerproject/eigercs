@@ -136,6 +136,7 @@ public class Parser(List<Token> tokens)
             case "func": return FuncDefStatement();
             case "ret": return RetStatement();
             case "class": return ClassStatement();
+            case "dataclass": return DataclassStatement();
             default: return Expr();
         }
     }
@@ -215,7 +216,15 @@ public class Parser(List<Token> tokens)
         ASTNode node = new(NodeType.FuncCall, funcName.value, funcName.line, funcName.pos, path);
 
         // if the function has no args, return node
-        if (Peek().type == TokenType.RPAREN) { Match(TokenType.RPAREN); return node; }
+        if (Peek().type == TokenType.RPAREN)
+        {
+            Match(TokenType.RPAREN);
+            if (Peek().type == TokenType.DOT) // if it's an atrribute access of function call like Person("test").a
+            {
+                return ParseAttrAccess(node);
+            }
+            return node;
+        }
 
         // get arguments similar way in FuncDefStatement
         do // add arguments until there are no more
@@ -283,6 +292,25 @@ public class Parser(List<Token> tokens)
         Match(TokenType.IDENTIFIER, "end");
         // construct the node
         ASTNode node = new ASTNode(NodeType.Class, className, body.line, body.pos, path);
+
+        node.AddChild(body);
+
+        return node;
+    }
+
+    // dataclass definition
+    ASTNode DataclassStatement()
+    {
+        // match class
+        Match(TokenType.IDENTIFIER, "dataclass");
+        // get class name
+        string className = Advance().value ?? throw new EigerError(path, Peek().line, Peek().pos, "Expected dataclass name", EigerError.ErrorType.ParserError);
+        // get class body
+        ASTNode body = StatementList();
+        // match end
+        Match(TokenType.IDENTIFIER, "end");
+        // construct the node
+        ASTNode node = new ASTNode(NodeType.Dataclass, className, body.line, body.pos, path);
 
         node.AddChild(body);
 

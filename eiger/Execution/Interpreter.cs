@@ -43,6 +43,7 @@ class Interpreter
             case NodeType.FuncCall: return VisitFuncCallNode(node, symbolTable);
             case NodeType.FuncDef: return VisitFuncDefNode(node, symbolTable);
             case NodeType.Class: return VisitClassNode(node, symbolTable);
+            case NodeType.Dataclass: return VisitDataclassNode(node, symbolTable);
             case NodeType.Return: return VisitReturnNode(node, symbolTable);
             case NodeType.BinOp: return VisitBinOpNode(node, symbolTable);
             case NodeType.Literal: return VisitLiteralNode(node, symbolTable);
@@ -87,18 +88,12 @@ class Interpreter
             // this is not a very optimized solution but I can't come up with a better one
             if (parentSymbolTable != null)
                 foreach (var symbol in parentSymbolTable.Keys)
-                {
                     if (symbolTable.ContainsKey(symbol))
-                    {
                         parentSymbolTable[symbol] = symbolTable[symbol];
-                    }
-                }
 
             // if the current statement returned a value, return the value and stop block execution
             if (didReturn)
-            {
                 return (true, value);
-            }
         }
         // return nothing
         return (false, new Nix(node.filename, node.line, node.pos));
@@ -132,7 +127,11 @@ class Interpreter
 
         while (value != toValue)
         {
-            VisitBlockNode(forBlock, localSymbolTable, symbolTable);
+            (bool didReturn,Value v) = VisitBlockNode(forBlock, localSymbolTable, symbolTable);
+
+            if(didReturn)
+                return (true, v);
+
             value += step;
             SetSymbol(localSymbolTable, node.children[0], new Number(node.filename, node.line, node.pos, value));
         }
@@ -232,6 +231,23 @@ class Interpreter
         }
         else
             throw new EigerError(node.filename, node.line, node.pos, $"{node.value} is not a function", EigerError.ErrorType.RuntimeError);
+    }
+
+    // Visit dataclass definition node
+    static (bool, Value) VisitDataclassNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    {
+        // DataclassNode structure
+        // DataclassNode : <class name>
+        // -- block
+        // ---- definition1
+        // ---- definition2
+        // ---- ...
+
+        Dataclass classdef = new(node.filename, node.line, node.pos, node.value, new Dictionary<string, Value>(symbolTable), node.children[0]);
+
+        SetSymbol(symbolTable, node.value, classdef);
+
+        return (false, classdef);
     }
 
     // Visit class definition node

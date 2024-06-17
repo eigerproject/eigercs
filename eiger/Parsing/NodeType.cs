@@ -20,5 +20,6 @@ public enum NodeType
     Array,
     ElementAccess,
     Class,
-    AttrAccess
+    AttrAccess,
+    Dataclass
 }
