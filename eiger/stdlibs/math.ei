@@ -1,6 +1,4 @@
-﻿~ math stdlib for eiger
-
-dataclass math
+﻿dataclass math
 	pi = 3.1415
 
 	func abs(n)

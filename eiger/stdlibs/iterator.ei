@@ -1,0 +1,17 @@
+class Iterator
+    func Iterator(iter)
+        this.iter = iter
+        this.length = iter.length
+        this.ptr = 0
+    end
+
+    func Iterate()
+        if ptr < length then
+            retVal = iter[ptr]
+            ptr += 1
+            ret retVal
+        else
+            ret nix
+        end
+    end
+end

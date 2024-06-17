@@ -39,11 +39,11 @@ public class Lexer
     {
         string val = "";
         // while its a letter and in bounds
-        while (char.IsLetter(current_char) && ptr < source.Length)
+        while ((char.IsLetter(current_char) || current_char == '_') && ptr < source.Length)
         {
             val += current_char;
             Advance();
-            if (!char.IsLetter(current_char) || ptr >= source.Length)
+            if (!(char.IsLetter(current_char) || current_char == '_') || ptr >= source.Length)
             {
                 Reverse();
                 break;

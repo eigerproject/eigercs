@@ -8,11 +8,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="stdlibs\math.el" />
+    <None Remove="stdlibs\iterator.ei" />
+    <None Remove="stdlibs\math.ei" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="stdlibs\math.el">
+    <Content Include="stdlibs\iterator.ei">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="stdlibs\math.ei">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
