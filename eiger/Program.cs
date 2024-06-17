@@ -59,7 +59,7 @@ public class Program
         }
     }
 
-    static void Execute(string src, string fn, bool printExprs)
+    public static void Execute(string src, string fn, bool printExprs)
     {
         try
         {

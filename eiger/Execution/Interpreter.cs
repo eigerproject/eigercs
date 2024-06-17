@@ -6,6 +6,7 @@
 using EigerLang.Errors;
 using EigerLang.Execution.BuiltInTypes;
 using EigerLang.Parsing;
+using EigerLang.Tokenization;
 using Microsoft.CSharp.RuntimeBinder;
 using Array = EigerLang.Execution.BuiltInTypes.Array;
 
@@ -51,6 +52,7 @@ class Interpreter
             case NodeType.Array: return VisitArrayNode(node, symbolTable);
             case NodeType.ElementAccess: return VisitElementAccessNode(node, symbolTable);
             case NodeType.AttrAccess: return VisitAttrAccessNode(node, symbolTable);
+            case NodeType.Include: return VisitIncludeNode(node, symbolTable);
             default:
                 break;
         }
@@ -468,6 +470,48 @@ class Interpreter
         {
             throw new EigerError(node.filename, node.line, node.pos, Globals.IndexErrorStr,EigerError.ErrorType.IndexError);
         }
+    }
+
+    private static (bool, Value) VisitIncludeNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    {
+        string path = node.value ?? new EigerError(node.filename, node.line, node.pos, "Path is unknown", EigerError.ErrorType.RuntimeError);
+
+        if (!path.EndsWith(Globals.fileExtension))
+            path += Globals.fileExtension;
+
+        if (Path.GetExtension(path) != Globals.fileExtension) // check extension
+        {
+            throw new EigerError(node.filename, node.line, node.pos, $"Not a {Globals.fileExtension} file", EigerError.ErrorType.RuntimeError);
+        }
+        string content;
+        try
+        {
+            content = File.ReadAllText(path); // try reading the file
+        }
+        catch (IOException)
+        {
+            throw new EigerError(node.filename, node.line, node.pos, "Failed to read file", EigerError.ErrorType.RuntimeError);
+        }
+
+        try
+        {
+            Lexer lex = new(content, path);
+            List<Token> tokens = lex.Tokenize();
+            Parser parser = new(tokens);
+            ASTNode root = parser.Parse(path);
+            VisitBlockNode(root, symbolTable);
+        }
+        catch (EigerError e)
+        {
+            Console.WriteLine(e.Message);
+        }
+        catch (OverflowException e)
+        {
+            Console.WriteLine($"[INTERNAL] Overflow: {e.Message}");
+        }
+        catch (Exception e) { Console.WriteLine(e); }
+
+        return (false, new Nix(node.filename, node.line, node.pos));
     }
 
     // get symbol from a symboltable with error handling

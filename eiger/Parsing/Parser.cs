@@ -137,8 +137,17 @@ public class Parser(List<Token> tokens)
             case "ret": return RetStatement();
             case "class": return ClassStatement();
             case "dataclass": return DataclassStatement();
+            case "include": return IncludeStatement();
             default: return Expr();
         }
+    }
+
+    // include statement
+    ASTNode IncludeStatement()
+    {
+        Match(TokenType.IDENTIFIER, "include");
+        Token pathToken = Advance();
+        return new ASTNode(NodeType.Include, pathToken.value, pathToken.line, pathToken.pos, path);
     }
 
     // function definition
