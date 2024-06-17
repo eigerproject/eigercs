@@ -20,7 +20,7 @@ public class Dataclass : Value
         this.name = name;
         this.symbolTable = symbolTable;
 
-        Interpreter.VisitBlockNode(blockNode, symbolTable,null);
+        Interpreter.VisitBlockNode(blockNode, symbolTable);
     }
 
     public override Value GetAttr(ASTNode attr)
