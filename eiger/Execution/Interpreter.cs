@@ -429,12 +429,22 @@ class Interpreter
         if (v is BaseFunction f && currentNode.type == NodeType.FuncCall)
         {
             List<Value> args = []; // prepare a list for args
-            foreach (ASTNode child in currentNode.children) //
+            foreach (ASTNode child in currentNode.children)
             {
                 Value val = VisitNode(child, symbolTable).Item2 ?? throw new EigerError(node.filename, node.line, node.pos, Globals.ArgumentErrorStr, EigerError.ErrorType.ArgumentError);
                 args.Add(val);
             }
             return (false, f.Execute(args, node.line, node.pos, node.filename).Item2);
+        }
+        else if (v is Class c && currentNode.type == NodeType.FuncCall)
+        {
+            List<Value> args = []; // prepare a list for args
+            foreach (ASTNode child in currentNode.children)
+            {
+                Value val = VisitNode(child, symbolTable).Item2 ?? throw new EigerError(node.filename, node.line, node.pos, Globals.ArgumentErrorStr, EigerError.ErrorType.ArgumentError);
+                args.Add(val);
+            }
+            return (false, c.Execute(args).Item2);
         }
         else
             return (false, v);
