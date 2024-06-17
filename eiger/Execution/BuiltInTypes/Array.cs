@@ -57,6 +57,11 @@ class Array : Value
         array[idx] = val;
     }
 
+    public override Value GetLength()
+    {
+        return new Number(filename, line, pos, array.Length);
+    }
+
     public override string ToString()
     {
         string strep = "[";

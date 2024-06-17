@@ -48,6 +48,11 @@ class String : Value
         return base.GetAttr(attr);
     }
 
+    public override Value GetLength()
+    {
+        return new Number(filename, line, pos, value.Length);
+    }
+
     public override dynamic MultedBy(object other)
     {
         if(other is Number number)

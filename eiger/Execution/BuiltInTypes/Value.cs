@@ -64,11 +64,24 @@ public class Value(string filename, int line, int pos)
         throw new EigerError(filename, line, pos, "Object is not iterable", EigerError.ErrorType.RuntimeError);
     }
 
+    public virtual Value GetLength()
+    {
+        throw new EigerError(filename, line, pos, "Object has no length", EigerError.ErrorType.RuntimeError);
+    }
+
     public virtual Value GetAttr(ASTNode attr)
     {
+        if(attr.type == NodeType.AttrAccess)
+        {
+            return GetAttr(attr.children[0]).GetAttr(attr.children[1]);
+        }
         if(attr.value == "asString")
         {
             return new String(filename, line, pos,ToString() ?? "");
+        }
+        if (attr.value == "length")
+        {
+            return GetLength();
         }
         throw new EigerError(filename, line, pos, "Attribute not found", EigerError.ErrorType.RuntimeError);
     }

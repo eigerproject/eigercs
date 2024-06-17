@@ -231,12 +231,7 @@ public class Parser(List<Token> tokens)
 
         if (Peek().type == TokenType.DOT) // if it's an atrribute access of function call like Person("test").a
         {
-            Token op = Advance(); // get operator (.)
-            ASTNode right = Factor(); // get right hand side
-            ASTNode attrAccessNode = new ASTNode(NodeType.AttrAccess, op.value, op.line, op.pos, path); // construct the node
-            attrAccessNode.AddChild(node);
-            attrAccessNode.AddChild(right);
-            return attrAccessNode;
+            return ParseAttrAccess(node);
         }
 
         return node;
@@ -418,12 +413,7 @@ public class Parser(List<Token> tokens)
 
             if (Peek().type == TokenType.DOT) // if it's an atrribute access of a literal like a.AsString()
             {
-                Token op = Advance(); // get operator (.)
-                ASTNode right = Factor(); // get right hand side
-                ASTNode attrAccessNode = new ASTNode(NodeType.AttrAccess, op.value, op.line, op.pos, path); // construct the node
-                attrAccessNode.AddChild(new ASTNode(NodeType.Literal,numberToken.value,numberToken.line,numberToken.pos,path));
-                attrAccessNode.AddChild(right);
-                return attrAccessNode;
+                return ParseAttrAccess(new ASTNode(NodeType.Literal, numberToken.value, numberToken.line, numberToken.pos, path));
             }
 
             return new ASTNode(NodeType.Literal, numberToken.value, numberToken.line, numberToken.pos, path);
@@ -471,12 +461,7 @@ public class Parser(List<Token> tokens)
             }
             else if (Peek().type == TokenType.DOT) // if it's an atrribute access of a literal like a.AsString()
             {
-                Token op = Advance(); // get operator (.)
-                ASTNode right = Factor(); // get right hand side
-                ASTNode attrAccessNode = new ASTNode(NodeType.AttrAccess, op.value, op.line, op.pos, path); // construct the node
-                attrAccessNode.AddChild(stringNode);
-                attrAccessNode.AddChild(right);
-                return attrAccessNode;
+                return ParseAttrAccess(stringNode);
             }
             return stringNode;
         }
@@ -518,7 +503,21 @@ public class Parser(List<Token> tokens)
         {
             return ParseElementAccess(arrayNode);
         }
+        else if (Peek().type == TokenType.DOT) // if it's an atrribute access of a literal like a.AsString()
+        {
+            return ParseAttrAccess(arrayNode);
+        }
         return arrayNode;
+    }
+
+    ASTNode ParseAttrAccess(ASTNode target)
+    {
+        Token op = Advance(); // get operator (.)
+        ASTNode right = Factor(); // get right hand side
+        ASTNode attrAccessNode = new ASTNode(NodeType.AttrAccess, op.value, op.line, op.pos, path); // construct the node
+        attrAccessNode.AddChild(target);
+        attrAccessNode.AddChild(right);
+        return attrAccessNode;
     }
 
     // Parse element access
