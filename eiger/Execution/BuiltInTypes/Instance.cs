@@ -25,6 +25,10 @@ public class Instance : Value
 
     public override Value GetAttr(ASTNode attr)
     {
+        if (attr.value == "type")
+        {
+            return new String(filename, line, pos, "[type Instance]");
+        }
         return Interpreter.GetSymbol(symbolTable, attr);
     }
 

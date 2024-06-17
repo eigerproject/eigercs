@@ -2,6 +2,7 @@
  * EIGERLANG STRING TYPE
 */
 
+using EigerLang.Parsing;
 using System.Text;
 
 namespace EigerLang.Execution.BuiltInTypes;
@@ -36,6 +37,15 @@ class String : Value
     public override dynamic AddedTo(dynamic other)
     {
         return new String(filename, line, pos, value + other.value);
+    }
+
+    public override Value GetAttr(ASTNode attr)
+    {
+        if (attr.value == "type")
+        {
+            return new String(filename, line, pos, "[type String]");
+        }
+        return base.GetAttr(attr);
     }
 
     public override dynamic MultedBy(object other)

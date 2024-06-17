@@ -3,32 +3,33 @@
 */
 
 using EigerLang.Errors;
+using EigerLang.Parsing;
 
 namespace EigerLang.Execution.BuiltInTypes;
 
 class Array : Value
 {
     public Value[] array;
-    string fn;
-    int ln, ps;
+    string filename;
+    int line, pos;
 
     public Array(string fn, int ln, int ps, Value[] array) : base(fn, ln, ps)
     {
         this.array = array;
-        this.fn = fn;
-        this.ln = ln;
-        this.ps = ps;
+        this.filename = fn;
+        this.line = ln;
+        this.pos = ps;
     }
 
     public override Value AddedTo(object other)
     {
         if (other is Array)
         {
-            return new Array(fn, ln, ps, [.. array, ..((Array)other).array]);
+            return new Array(filename, line, pos, [.. array, ..((Array)other).array]);
         }
         else
         {
-            return new Array(fn, ln, ps, [.. array, (Value)other]);
+            return new Array(filename, line, pos, [.. array, (Value)other]);
         }
         
     }
@@ -36,14 +37,23 @@ class Array : Value
     public override Value GetIndex(int idx)
     {
         if(idx < 0 || idx >= array.Length)
-            throw new EigerError(fn,ln, ps,"Index outside of bounds",EigerError.ErrorType.IndexError);
+            throw new EigerError(filename,line, pos,"Index outside of bounds",EigerError.ErrorType.IndexError);
         return array[idx];
+    }
+
+    public override Value GetAttr(ASTNode attr)
+    {
+        if (attr.value == "type")
+        {
+            return new String(filename, line, pos, "[type Array]");
+        }
+        return base.GetAttr(attr);
     }
 
     public override void SetIndex(int idx, Value val)
     {
         if (idx < 0 || idx >= array.Length)
-            throw new EigerError(fn, ln, ps, "Index outside of bounds", EigerError.ErrorType.IndexError);
+            throw new EigerError(filename, line, pos, "Index outside of bounds", EigerError.ErrorType.IndexError);
         array[idx] = val;
     }
 

@@ -1,4 +1,6 @@
-﻿namespace EigerLang.Execution.BuiltInTypes;
+﻿using EigerLang.Parsing;
+
+namespace EigerLang.Execution.BuiltInTypes;
 
 class Nix : Value
 {
@@ -16,6 +18,15 @@ class Nix : Value
     public override string ToString()
     {
         return "nix";
+    }
+
+    public override Value GetAttr(ASTNode attr)
+    {
+        if (attr.value == "type")
+        {
+            return new String(filename, line, pos, "[type Nix]");
+        }
+        return base.GetAttr(attr);
     }
 
     public override Boolean ComparisonEqeq(object other)

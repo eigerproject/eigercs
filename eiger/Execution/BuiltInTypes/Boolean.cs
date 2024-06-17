@@ -2,6 +2,8 @@
  * EIGERLANG BOOLEAN TYPE
 */
 
+using EigerLang.Parsing;
+
 namespace EigerLang.Execution.BuiltInTypes;
 
 public class Boolean : Value
@@ -22,6 +24,15 @@ public class Boolean : Value
     public override Boolean ComparisonEqeq(dynamic other)
     {
         return new Boolean(filename, line, pos, value == other.value);
+    }
+
+    public override Value GetAttr(ASTNode attr)
+    {
+        if (attr.value == "type")
+        {
+            return new String(filename, line, pos, "[type Boolean]");
+        }
+        return base.GetAttr(attr);
     }
 
     public override Boolean ComparisonNeqeq(dynamic other)

@@ -415,6 +415,17 @@ public class Parser(List<Token> tokens)
         if (Peek().type == TokenType.NUMBER)
         {
             Token numberToken = Advance();
+
+            if (Peek().type == TokenType.DOT) // if it's an atrribute access of a literal like a.AsString()
+            {
+                Token op = Advance(); // get operator (.)
+                ASTNode right = Factor(); // get right hand side
+                ASTNode attrAccessNode = new ASTNode(NodeType.AttrAccess, op.value, op.line, op.pos, path); // construct the node
+                attrAccessNode.AddChild(new ASTNode(NodeType.Literal,numberToken.value,numberToken.line,numberToken.pos,path));
+                attrAccessNode.AddChild(right);
+                return attrAccessNode;
+            }
+
             return new ASTNode(NodeType.Literal, numberToken.value, numberToken.line, numberToken.pos, path);
         }
         // if it's an identifier
@@ -457,6 +468,15 @@ public class Parser(List<Token> tokens)
             if (Peek().type == TokenType.LSQUARE)
             {
                 return ParseElementAccess(stringNode);
+            }
+            else if (Peek().type == TokenType.DOT) // if it's an atrribute access of a literal like a.AsString()
+            {
+                Token op = Advance(); // get operator (.)
+                ASTNode right = Factor(); // get right hand side
+                ASTNode attrAccessNode = new ASTNode(NodeType.AttrAccess, op.value, op.line, op.pos, path); // construct the node
+                attrAccessNode.AddChild(stringNode);
+                attrAccessNode.AddChild(right);
+                return attrAccessNode;
             }
             return stringNode;
         }

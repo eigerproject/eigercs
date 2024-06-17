@@ -2,6 +2,8 @@
  * EIGERLANG NUMBER TYPE
 */
 
+using EigerLang.Parsing;
+
 namespace EigerLang.Execution.BuiltInTypes;
 
 class Number: Value
@@ -69,6 +71,15 @@ class Number: Value
     public override Boolean ComparisonLTE(dynamic other)
     {
         return new Boolean(filename, line, pos, value <= other.value);
+    }
+
+    public override Value GetAttr(ASTNode attr)
+    {
+        if (attr.value == "type")
+        {
+            return new String(filename, line, pos, "[type Number]");
+        }
+        return base.GetAttr(attr);
     }
 
     public override string ToString()

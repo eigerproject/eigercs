@@ -3,7 +3,7 @@ using EigerLang.Parsing;
 
 namespace EigerLang.Execution.BuiltInTypes;
 
-public class Value(string filename,int line, int pos)
+public class Value(string filename, int line, int pos)
 {
     public virtual dynamic AddedTo(object other)
     {
@@ -59,28 +59,32 @@ public class Value(string filename,int line, int pos)
         throw new EigerError(filename, line, pos, "Object is not iterable", EigerError.ErrorType.RuntimeError);
     }
 
-    public virtual void SetIndex(int idx,Value val)
+    public virtual void SetIndex(int idx, Value val)
     {
         throw new EigerError(filename, line, pos, "Object is not iterable", EigerError.ErrorType.RuntimeError);
     }
 
     public virtual Value GetAttr(ASTNode attr)
     {
-        throw new EigerError(filename, line, pos, "Not an object", EigerError.ErrorType.RuntimeError);
+        if(attr.value == "asString")
+        {
+            return new String(filename, line, pos,ToString() ?? "");
+        }
+        throw new EigerError(filename, line, pos, "Attribute not found", EigerError.ErrorType.RuntimeError);
     }
 
     public virtual void SetAttr(ASTNode attr, Value val)
     {
-        throw new EigerError(filename, line, pos, "Not an object", EigerError.ErrorType.RuntimeError);
+        throw new EigerError(filename, line, pos, "Attribute not found", EigerError.ErrorType.RuntimeError);
     }
 
-    public static Value ToEigerValue(string filename,int line,int pos,dynamic val)
+    public static Value ToEigerValue(string filename, int line, int pos, dynamic val)
     {
         if (val is double || val is int)
         {
             return new Number(filename, line, pos, val);
         }
-        else if(val is string)
+        else if (val is string)
         {
             return new String(filename, line, pos, val);
         }

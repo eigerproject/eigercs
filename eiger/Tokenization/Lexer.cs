@@ -61,7 +61,12 @@ public class Lexer
         do
         {
             if (current_char == '.') // if there's a dot
-                isFloat = true; // it's a floating point number
+            {
+                if (ptr + 1 < source.Length && char.IsDigit(source[ptr + 1]))
+                    isFloat = true; // it's a floating point number
+                else { Reverse();break; };
+            }
+            
             strval += current_char;
             Advance();
             if (!(ptr < source.Length && (char.IsDigit(current_char) || (current_char == '.' && !isFloat))))

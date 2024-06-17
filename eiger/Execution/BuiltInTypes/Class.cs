@@ -41,6 +41,15 @@ public class Class : Value
         return (false, inst);
     }
 
+    public override Value GetAttr(ASTNode attr)
+    {
+        if (attr.value == "type")
+        {
+            return new String(filename, line, pos, "[type Class]");
+        }
+        return base.GetAttr(attr);
+    }
+
     public override string ToString()
     {
         return $"[class {name}]";
