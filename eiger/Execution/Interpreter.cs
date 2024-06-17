@@ -344,7 +344,7 @@ class Interpreter
                     retVal = rightSide;
                 }
                 break;
-            default: throw new EigerError(node.filename, node.line, node.pos, Globals.InvalidOperationStr, EigerError.ErrorType.InvalidOperationError);
+            default: throw new EigerError(node.filename, node.line, node.pos, $"{Globals.InvalidOperationStr}: {node.value}", EigerError.ErrorType.InvalidOperationError);
         }
         return (false, retVal);
     }

@@ -6,6 +6,7 @@
 using EigerLang.Errors;
 using EigerLang.Tokenization;
 using System.ComponentModel.Design;
+using System.Xml.Linq;
 
 namespace EigerLang.Parsing;
 
@@ -90,7 +91,7 @@ public class Parser(List<Token> tokens)
         }
         else
         {
-            throw new EigerError(path, Peek().line, Peek().pos, $"{Globals.UnexpectedTokenStr} `{Peek().value}`",EigerError.ErrorType.ParserError);
+            throw new EigerError(path, Peek().line, Peek().pos, $"{Globals.UnexpectedTokenStr} `{Peek().value}`", EigerError.ErrorType.ParserError);
         }
     }
 
@@ -110,7 +111,7 @@ public class Parser(List<Token> tokens)
     // statement list
     ASTNode StatementList()
     {
-        ASTNode root = new(NodeType.Block, null,1,0, path);
+        ASTNode root = new(NodeType.Block, null, 1, 0, path);
         // add statements until the end of block (end or else)
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
         while (current < tokens.Count && Peek().value.ToString() != "end" && Peek().value.ToString() != "else")
@@ -120,7 +121,7 @@ public class Parser(List<Token> tokens)
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
         return root;
     }
-    
+
     // single statement
     ASTNode Statement()
     {
@@ -150,7 +151,7 @@ public class Parser(List<Token> tokens)
         string funcName = Advance().value ?? "";
 
         // create func def node
-        ASTNode node = new(NodeType.FuncDef, funcName,funcTok.line,funcTok.pos,path);
+        ASTNode node = new(NodeType.FuncDef, funcName, funcTok.line, funcTok.pos, path);
         // create list for args
         List<ASTNode> args = [];
 
@@ -182,7 +183,7 @@ public class Parser(List<Token> tokens)
         // add the root node first, then the argnames
         node.AddChild(rootNode);
 
-        foreach(var arg in args)
+        foreach (var arg in args)
         {
             node.AddChild(arg);
         }
@@ -196,7 +197,7 @@ public class Parser(List<Token> tokens)
         // match ret
         Match(TokenType.IDENTIFIER, "ret");
         // create node
-        ASTNode node = new(NodeType.Return, null,Peek().line,Peek().pos,path);
+        ASTNode node = new(NodeType.Return, null, Peek().line, Peek().pos, path);
         // add the expression as the child
         node.AddChild(Expr());
         return node;
@@ -207,11 +208,11 @@ public class Parser(List<Token> tokens)
     {
         // get the function name;
         Token funcName = Advance();
-        
+
         // match left parenthasis
         Match(TokenType.LPAREN);
 
-        ASTNode node = new(NodeType.FuncCall, funcName.value,funcName.line,funcName.pos,path);
+        ASTNode node = new(NodeType.FuncCall, funcName.value, funcName.line, funcName.pos, path);
 
         // if the function has no args, return node
         if (Peek().type == TokenType.RPAREN) { Match(TokenType.RPAREN); return node; }
@@ -227,6 +228,16 @@ public class Parser(List<Token> tokens)
 
         // match right parenthasis
         Match(TokenType.RPAREN);
+
+        if (Peek().type == TokenType.DOT) // if it's an atrribute access of function call like Person("test").a
+        {
+            Token op = Advance(); // get operator (.)
+            ASTNode right = Factor(); // get right hand side
+            ASTNode attrAccessNode = new ASTNode(NodeType.AttrAccess, op.value, op.line, op.pos, path); // construct the node
+            attrAccessNode.AddChild(node);
+            attrAccessNode.AddChild(right);
+            return attrAccessNode;
+        }
 
         return node;
     }
@@ -255,8 +266,8 @@ public class Parser(List<Token> tokens)
         Match(TokenType.IDENTIFIER, "end");
 
         // construct for node
-        ASTNode forNode = new(NodeType.ForTo, null, forToken.line, forToken.pos,path);
-        forNode.AddChild(new(NodeType.Identifier,iteratorVar.value,iteratorVar.line,iteratorVar.pos,path));
+        ASTNode forNode = new(NodeType.ForTo, null, forToken.line, forToken.pos, path);
+        forNode.AddChild(new(NodeType.Identifier, iteratorVar.value, iteratorVar.line, iteratorVar.pos, path));
         forNode.AddChild(value);
         forNode.AddChild(to);
         forNode.AddChild(forBlock);
@@ -270,7 +281,7 @@ public class Parser(List<Token> tokens)
         // match class
         Match(TokenType.IDENTIFIER, "class");
         // get class name
-        string className = Advance().value ?? throw new EigerError(path,Peek().line,Peek().pos, "Expected class name",EigerError.ErrorType.ParserError);
+        string className = Advance().value ?? throw new EigerError(path, Peek().line, Peek().pos, "Expected class name", EigerError.ErrorType.ParserError);
         // get class body
         ASTNode body = StatementList();
         // match end
@@ -298,7 +309,7 @@ public class Parser(List<Token> tokens)
         // match end
         Match(TokenType.IDENTIFIER, "end");
         // construct the node, first the condition, then the block
-        ASTNode whileNode = new(NodeType.While, null, whileToken.line, whileToken.pos,path);
+        ASTNode whileNode = new(NodeType.While, null, whileToken.line, whileToken.pos, path);
         whileNode.AddChild(condition);
         whileNode.AddChild(doBlock);
         return whileNode;
@@ -330,7 +341,7 @@ public class Parser(List<Token> tokens)
         Match(TokenType.IDENTIFIER, "end");
 
         // construct the node, first the condition, then the if block, then the else block (if exists)
-        ASTNode ifNode = new(NodeType.If, null,ifToken.line,ifToken.pos,path);
+        ASTNode ifNode = new(NodeType.If, null, ifToken.line, ifToken.pos, path);
         ifNode.AddChild(condition);
         ifNode.AddChild(ifBlock);
         if (elseBranch != null)
@@ -350,31 +361,21 @@ public class Parser(List<Token> tokens)
             // get the token type
             TokenType tokenType = Peek().type;
 
-            // if its an assignment operator
-            if (tokenType == TokenType.DOT)
-            {
-                Token op = Advance(); // get operator
-                ASTNode right = Factor(); // get right hand side
-                ASTNode binOpNode = new(NodeType.AttrAccess, op.value, op.line, op.pos, path); // construct the node
-                binOpNode.AddChild(node);
-                binOpNode.AddChild(right);
-                node = binOpNode;
-            }
-            else if (assignOps.Contains(tokenType))
+            // if it's an expression operator
+            if (assignOps.Contains(tokenType))
             {
                 Token op = Advance(); // get operator
                 ASTNode right = Expr(); // get right hand side
-                ASTNode binOpNode = new(NodeType.BinOp, op.value,op.line,op.pos,path); // construct the node
+                ASTNode binOpNode = new(NodeType.BinOp, op.value, op.line, op.pos, path); // construct the node
                 binOpNode.AddChild(node);
                 binOpNode.AddChild(right);
                 node = binOpNode;
             }
-            // if its an expression operator
             else if (exprOps.Contains(tokenType))
             {
                 Token op = Advance(); // get operator
                 ASTNode right = Term(); // get right hand side
-                ASTNode binOpNode = new(NodeType.BinOp, op.value, op.line, op.pos,path); // construct the node
+                ASTNode binOpNode = new ASTNode(NodeType.BinOp, op.value, op.line, op.pos, path); // construct the node
                 binOpNode.AddChild(node);
                 binOpNode.AddChild(right);
                 node = binOpNode;
@@ -399,7 +400,7 @@ public class Parser(List<Token> tokens)
         {
             Token op = Advance(); // get operator
             ASTNode right = Factor(); // get right hand side
-            ASTNode binOpNode = new(NodeType.BinOp, op.value,op.line,op.pos,path); // construct the node
+            ASTNode binOpNode = new(NodeType.BinOp, op.value, op.line, op.pos, path); // construct the node
             binOpNode.AddChild(node);
             binOpNode.AddChild(right);
             node = binOpNode;
@@ -426,18 +427,23 @@ public class Parser(List<Token> tokens)
                 current--;
                 return FunctionCallStatement();
             }
+            else if (Peek().type == TokenType.DOT)
+            {
+                Token op = Advance(); // get operator (.)
+                ASTNode right = Factor(); // get right hand side
+                ASTNode attrAccessNode = new ASTNode(NodeType.AttrAccess, op.value, op.line, op.pos, path); // construct the node
+                attrAccessNode.AddChild(new ASTNode(NodeType.Identifier, identToken.value, identToken.line, identToken.pos,path));
+                attrAccessNode.AddChild(right);
+                return attrAccessNode;
+            }
             else if (Peek().type == TokenType.LSQUARE)
             {
                 return ParseElementAccess(new ASTNode(NodeType.Identifier, identToken.value, identToken.line, identToken.pos, path));
             }
             else
             {
-                if (identToken.value == "true")
-                    return new ASTNode(NodeType.Literal, "true", identToken.line, identToken.pos, path);
-                else if (identToken.value == "false")
-                    return new ASTNode(NodeType.Literal, "false", identToken.line, identToken.pos, path);
-                else if (identToken.value == "nix")
-                    return new ASTNode(NodeType.Literal, "nix", identToken.line, identToken.pos, path);
+                if (identToken.value == "true" || identToken.value == "false" || identToken.value == "nix")
+                    return new ASTNode(NodeType.Literal, identToken.value, identToken.line, identToken.pos, path);
                 else
                     return new ASTNode(NodeType.Identifier, identToken.value, identToken.line, identToken.pos, path);
             }

@@ -22,43 +22,12 @@ public class Program
             Console.WriteLine($"{Globals.langName} {Globals.langVer}\nDocumentation: {Globals.docUrl}\n");
             while (true)
             {
-                try
-                {
-                    Console.Write("#-> ");
-                    string inp = Console.ReadLine() ?? "";
+                Console.Write("#-> ");
+                string inp = Console.ReadLine() ?? "";
 
-                    if (inp == "") continue;
+                if (inp == "") continue;
 
-                    Lexer lex = new(inp,"<stdin>");
-                    List<Token> tokens = lex.Tokenize();
-
-                    /*
-                    foreach(Token token in tokens)
-                    {
-                        Console.WriteLine(token.ToLongString());
-                    }
-                    */
-
-                    Parser parser = new(tokens);
-                    ASTNode root = parser.Parse("<stdin>");
-
-                     root.Print();
-
-                    foreach (var statement in root.children)
-                    {
-                        (bool didReturn, dynamic? val) = Interpreter.VisitNode(statement, Interpreter.globalSymbolTable);
-                        Console.WriteLine((string)Convert.ToString(val));
-                    }
-                }
-                catch (EigerError e)
-                {
-                    Console.WriteLine(e.Message);
-                }
-                catch (OverflowException e)
-                {
-                    Console.WriteLine($"[INTERNAL] Overflow Exception: {e.Message}");
-                }
-                catch (Exception e) { Console.WriteLine(e); }
+                Execute(inp, "<stdin>",true);
             }
         }
         // if given filepath
@@ -81,28 +50,7 @@ public class Program
                 return;
             }
 
-            Lexer lex = new(content, filepath);
-            List<Token> tokens = lex.Tokenize();
-            Parser parser = new(tokens);
-            ASTNode root = parser.Parse(filepath);
-
-            try
-            {
-                foreach (var statement in root.children)
-                {
-                    (bool didReturn, dynamic? val) = Interpreter.VisitNode(statement, Interpreter.globalSymbolTable);
-                    if (didReturn) { Console.WriteLine((string)Convert.ToString(val)); }
-                }
-            }
-            catch (EigerError e)
-            {
-                Console.WriteLine(e.Message);
-            }
-            catch (OverflowException e)
-            {
-                Console.WriteLine(e.Message);
-            }
-            catch (Exception e) { Console.WriteLine(e); }
+            Execute(content, filepath,false);
         }
         // invalid syntax, print usage
         else
@@ -110,5 +58,33 @@ public class Program
             Console.WriteLine("[USAGE] eiger <source_path (optional)>");
         }
 
+    }
+
+    static void Execute(string src, string fn, bool printExprs)
+    {
+        try
+        {
+            Lexer lex = new(src, fn);
+            List<Token> tokens = lex.Tokenize();
+            Parser parser = new(tokens);
+            ASTNode root = parser.Parse(fn);
+
+            //root.Print();
+
+            foreach (var statement in root.children)
+            {
+                (bool didReturn, dynamic? val) = Interpreter.VisitNode(statement, Interpreter.globalSymbolTable);
+                if(printExprs && didReturn) Console.WriteLine((string)Convert.ToString(val));
+            }
+        }
+        catch (EigerError e)
+        {
+            Console.WriteLine(e.Message);
+        }
+        catch (OverflowException e)
+        {
+            Console.WriteLine(e.Message);
+        }
+        catch (Exception e) { Console.WriteLine(e); }
     }
 }
