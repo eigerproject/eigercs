@@ -474,7 +474,24 @@ class Interpreter
 
     private static (bool, Value) VisitIncludeNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
-        string path = node.value ?? new EigerError(node.filename, node.line, node.pos, "Path is unknown", EigerError.ErrorType.RuntimeError);
+        // IncludeNode structure
+        // IncludeNode
+        // -- path
+
+        string path;
+
+        if (node.children[0].type == NodeType.Identifier)
+        {
+            path = $"./stdlibs/{node.children[0].value}";
+        }
+        else if (node.children[0].type == NodeType.Literal && node.children[0].value is string s)
+        {
+            path = s;
+        }
+        else
+        {
+            throw new EigerError(node.filename, node.line, node.pos, "Invalid path", EigerError.ErrorType.RuntimeError);
+        }
 
         if (!path.EndsWith(Globals.fileExtension))
             path += Globals.fileExtension;

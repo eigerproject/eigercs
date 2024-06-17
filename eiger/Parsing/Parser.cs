@@ -146,8 +146,10 @@ public class Parser(List<Token> tokens)
     ASTNode IncludeStatement()
     {
         Match(TokenType.IDENTIFIER, "include");
-        Token pathToken = Advance();
-        return new ASTNode(NodeType.Include, pathToken.value, pathToken.line, pathToken.pos, path);
+        ASTNode pathToken = Factor();
+        ASTNode includeNode = new ASTNode(NodeType.Include, null, pathToken.line, pathToken.pos, path);
+        includeNode.AddChild(pathToken);
+        return includeNode;
     }
 
     // function definition
