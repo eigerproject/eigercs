@@ -68,7 +68,7 @@ public class Program
             Parser parser = new(tokens);
             ASTNode root = parser.Parse(fn);
 
-            root.Print();
+            // root.Print();
 
             foreach (var statement in root.children)
             {
