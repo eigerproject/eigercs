@@ -18,5 +18,7 @@ public enum NodeType
     Literal,
     Identifier,
     Array,
-    ElementAccess
+    ElementAccess,
+    Class,
+    AttrAccess
 }

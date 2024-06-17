@@ -20,4 +20,5 @@ public enum TokenType
     DIVEQ,
     LSQUARE,
     RSQUARE,
+    DOT,
 }

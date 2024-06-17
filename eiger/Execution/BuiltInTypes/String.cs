@@ -28,7 +28,7 @@ class String : Value
 
     public override void SetIndex(int idx, Value val)
     {
-        StringBuilder sb = new StringBuilder(value);
+        StringBuilder sb = new(value);
         sb[idx] = ((String)val ?? throw new Errors.EigerError(filename, line, pos, "Failed to set index (value is null)",Errors.EigerError.ErrorType.ParserError)).value[0];
         value = sb.ToString();
     }
@@ -40,9 +40,9 @@ class String : Value
 
     public override dynamic MultedBy(object other)
     {
-        if(other is Number)
+        if(other is Number number)
         {
-            return new String(filename, line, pos, string.Concat(Enumerable.Repeat(value, (int)((Number)other).value)));
+            return new String(filename, line, pos, string.Concat(Enumerable.Repeat(value, (int)number.value)));
         }
         else
             return base.MultedBy(other);

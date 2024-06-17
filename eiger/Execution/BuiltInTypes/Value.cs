@@ -1,4 +1,5 @@
 ﻿using EigerLang.Errors;
+using EigerLang.Parsing;
 
 namespace EigerLang.Execution.BuiltInTypes;
 
@@ -59,6 +60,16 @@ public class Value(string filename,int line, int pos)
     }
 
     public virtual void SetIndex(int idx,Value val)
+    {
+        throw new EigerError(filename, line, pos, Globals.InvalidOperationStr, EigerError.ErrorType.InvalidOperationError);
+    }
+
+    public virtual Value GetAttr(ASTNode attr)
+    {
+        throw new EigerError(filename, line, pos, Globals.InvalidOperationStr, EigerError.ErrorType.InvalidOperationError);
+    }
+
+    public virtual void SetAttr(ASTNode attr, Value val)
     {
         throw new EigerError(filename, line, pos, Globals.InvalidOperationStr, EigerError.ErrorType.InvalidOperationError);
     }

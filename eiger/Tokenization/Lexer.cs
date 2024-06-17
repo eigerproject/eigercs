@@ -174,6 +174,10 @@ public class Lexer
             {
                 result.Add(new Token(current_line, current_pos, TokenType.RPAREN, ")"));
             }
+            else if (current_char == '.') // if it's a dot
+            {
+                result.Add(new Token(current_line, current_pos, TokenType.DOT, "."));
+            }
             else if (current_char == '+') // if it's a plus
             {
                 Advance();

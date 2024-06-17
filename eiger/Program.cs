@@ -42,6 +42,8 @@ public class Program
                     Parser parser = new(tokens);
                     ASTNode root = parser.Parse("<stdin>");
 
+                     root.Print();
+
                     foreach (var statement in root.children)
                     {
                         (bool didReturn, dynamic? val) = Interpreter.VisitNode(statement, Interpreter.globalSymbolTable);

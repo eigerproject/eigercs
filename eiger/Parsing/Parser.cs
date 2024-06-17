@@ -134,6 +134,7 @@ public class Parser(List<Token> tokens)
             case "while": return WhileStatement();
             case "func": return FuncDefStatement();
             case "ret": return RetStatement();
+            case "class": return ClassStatement();
             default: return Expr();
         }
     }
@@ -263,6 +264,25 @@ public class Parser(List<Token> tokens)
         return forNode;
     }
 
+    // class definition
+    ASTNode ClassStatement()
+    {
+        // match class
+        Match(TokenType.IDENTIFIER, "class");
+        // get class name
+        string className = Advance().value ?? throw new EigerError(path,Peek().line,Peek().pos, "Expected class name",EigerError.ErrorType.ParserError);
+        // get class body
+        ASTNode body = StatementList();
+        // match end
+        Match(TokenType.IDENTIFIER, "end");
+        // construct the node
+        ASTNode node = new ASTNode(NodeType.Class, className, body.line, body.pos, path);
+
+        node.AddChild(body);
+
+        return node;
+    }
+
     // while statement
     ASTNode WhileStatement()
     {
@@ -331,7 +351,16 @@ public class Parser(List<Token> tokens)
             TokenType tokenType = Peek().type;
 
             // if its an assignment operator
-            if (assignOps.Contains(tokenType))
+            if (tokenType == TokenType.DOT)
+            {
+                Token op = Advance(); // get operator
+                ASTNode right = Factor(); // get right hand side
+                ASTNode binOpNode = new(NodeType.AttrAccess, op.value, op.line, op.pos, path); // construct the node
+                binOpNode.AddChild(node);
+                binOpNode.AddChild(right);
+                node = binOpNode;
+            }
+            else if (assignOps.Contains(tokenType))
             {
                 Token op = Advance(); // get operator
                 ASTNode right = Expr(); // get right hand side
