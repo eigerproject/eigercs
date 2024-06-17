@@ -412,23 +412,32 @@ class Interpreter
         // -- left
         // -- right
 
-        if (node.children[1].type == NodeType.FuncCall)
+        Value v;
+        Dictionary<string, Value> localSymbolTable = symbolTable;
+        ASTNode currentNode = node.children[1];
+
+        while(true)
+        {
+            if (currentNode.type != NodeType.AttrAccess)
+            {
+                v = VisitNode(node.children[0], symbolTable).Item2.GetAttr(node.children[1]);
+                break;
+            }
+            currentNode = currentNode.children[1];
+        }
+
+        if (v is BaseFunction f && currentNode.type == NodeType.FuncCall)
         {
             List<Value> args = []; // prepare a list for args
-            foreach (ASTNode child in node.children[1].children) //
+            foreach (ASTNode child in currentNode.children) //
             {
                 Value val = VisitNode(child, symbolTable).Item2 ?? throw new EigerError(node.filename, node.line, node.pos, Globals.ArgumentErrorStr, EigerError.ErrorType.ArgumentError);
                 args.Add(val);
             }
-
-            Value v = VisitNode(node.children[0], symbolTable).Item2.GetAttr(node.children[1]);
-            if(v is BaseFunction f)
-                return (false, f.Execute(args, node.line, node.pos, node.filename).Item2);
-            else
-               throw new EigerError(node.filename, node.line, node.pos, $"{node.children[1].value} is not a function", EigerError.ErrorType.RuntimeError);
+            return (false, f.Execute(args, node.line, node.pos, node.filename).Item2);
         }
         else
-            return (false, VisitNode(node.children[0], symbolTable).Item2.GetAttr(node.children[1]));
+            return (false, v);
     }
 
     private static (bool, Value) VisitElementAccessNode(ASTNode node, Dictionary<string, Value> symbolTable)
