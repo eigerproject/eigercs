@@ -322,26 +322,30 @@ class Interpreter
             // compound assignment operators (change the variable's value and return the new value)
             case "+=":
                 {
-                    SetSymbol(symbolTable, node.children[0], GetSymbol(symbolTable, node.children[0]).AddedTo(rightSide));
-                    retVal = rightSide;
+                    Value newVal = GetSymbol(symbolTable, node.children[0]).AddedTo(rightSide);
+                    SetSymbol(symbolTable, node.children[0], newVal);
+                    retVal = newVal;
                 }
                 break;
             case "-=":
                 {
-                    SetSymbol(symbolTable, node.children[0], GetSymbol(symbolTable, node.children[0]).SubbedBy(rightSide));
-                    retVal = rightSide;
+                    Value newVal = GetSymbol(symbolTable, node.children[0]).SubbedBy(rightSide);
+                    SetSymbol(symbolTable, node.children[0], newVal);
+                    retVal = newVal;
                 }
                 break;
             case "*=":
                 {
-                    SetSymbol(symbolTable, node.children[0], GetSymbol(symbolTable, node.children[0]).MultedBy(rightSide));
-                    retVal = rightSide;
+                    Value newVal = GetSymbol(symbolTable, node.children[0]).MultedBy(rightSide);
+                    SetSymbol(symbolTable, node.children[0], newVal);
+                    retVal = newVal;
                 }
                 break;
             case "/=":
                 {
-                    SetSymbol(symbolTable, node.children[0], GetSymbol(symbolTable, node.children[0]).DivedBy(rightSide));
-                    retVal = rightSide;
+                    Value newVal = GetSymbol(symbolTable, node.children[0]).DivedBy(rightSide);
+                    SetSymbol(symbolTable, node.children[0], newVal);
+                    retVal = newVal;
                 }
                 break;
             default: throw new EigerError(node.filename, node.line, node.pos, $"{Globals.InvalidOperationStr}: {node.value}", EigerError.ErrorType.InvalidOperationError);

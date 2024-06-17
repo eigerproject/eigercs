@@ -39,14 +39,14 @@ public class Program
                 Console.WriteLine($"Not an {Globals.fileExtension} file!");
                 return;
             }
-            string content = "";
+            string content;
             try
             {
                 content = File.ReadAllText(filepath); // try reading the file
             }
             catch (IOException)
             {
-                Console.WriteLine("Failed to read file");
+                Console.WriteLine("[INTERNAL] IOError: Failed to read file");
                 return;
             }
 
@@ -57,7 +57,6 @@ public class Program
         {
             Console.WriteLine("[USAGE] eiger <source_path (optional)>");
         }
-
     }
 
     static void Execute(string src, string fn, bool printExprs)
@@ -83,7 +82,7 @@ public class Program
         }
         catch (OverflowException e)
         {
-            Console.WriteLine(e.Message);
+            Console.WriteLine($"[INTERNAL] Overflow: {e.Message}");
         }
         catch (Exception e) { Console.WriteLine(e); }
     }
