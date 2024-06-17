@@ -74,7 +74,7 @@ public class Program
             foreach (var statement in root.children)
             {
                 (bool didReturn, dynamic? val) = Interpreter.VisitNode(statement, Interpreter.globalSymbolTable);
-                if(printExprs && didReturn) Console.WriteLine((string)Convert.ToString(val));
+                if(printExprs || didReturn) Console.WriteLine((string)Convert.ToString(val));
             }
         }
         catch (EigerError e)
