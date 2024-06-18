@@ -18,9 +18,16 @@ public class Dataclass : Value
         this.line = line;
         this.pos = pos;
         this.name = name;
-        this.symbolTable = symbolTable;
+        
 
-        Interpreter.VisitBlockNode(blockNode, symbolTable);
+        // create local symbol table
+        Dictionary<string, Value> localSymbolTable = new(symbolTable);
+
+        localSymbolTable["this"] = this;
+
+        this.symbolTable = localSymbolTable;
+
+        Interpreter.VisitBlockNode(blockNode, localSymbolTable);
     }
 
     public override Value GetAttr(ASTNode attr)
@@ -30,6 +37,11 @@ public class Dataclass : Value
             return new String(filename, line, pos, "[type Dataclass]");
         }
         return Interpreter.GetSymbol(symbolTable, attr);
+    }
+
+    public override void SetAttr(ASTNode attr, Value val)
+    {
+        Interpreter.SetSymbol(symbolTable, attr, val);
     }
 
     public override string ToString()
