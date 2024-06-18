@@ -5,33 +5,43 @@ namespace EigerLang.Execution.BuiltInTypes;
 
 public class Value(string filename, int line, int pos)
 {
-    public virtual dynamic AddedTo(object other)
+    public virtual Value AddedTo(object other)
     {
         throw new EigerError(filename, line, pos, $"{Globals.InvalidOperationStr}: {this.GetType().Name} + {other.GetType().Name}", EigerError.ErrorType.InvalidOperationError);
     }
 
-    public virtual dynamic SubbedBy(object other)
+    public virtual Value SubbedBy(object other)
     {
         throw new EigerError(filename, line, pos, $"{Globals.InvalidOperationStr}: {this.GetType().Name} - {other.GetType().Name}", EigerError.ErrorType.InvalidOperationError);
     }
-    public virtual dynamic MultedBy(object other)
+    public virtual Value MultedBy(object other)
     {
         throw new EigerError(filename, line, pos, $"{Globals.InvalidOperationStr}: {this.GetType().Name} * {other.GetType().Name}", EigerError.ErrorType.InvalidOperationError);
     }
 
-    public virtual dynamic DivedBy(object other)
+    public virtual Value DivedBy(object other)
     {
         throw new EigerError(filename, line, pos, $"{Globals.InvalidOperationStr}: {this.GetType().Name} / {other.GetType().Name}", EigerError.ErrorType.InvalidOperationError);
     }
 
-    public virtual dynamic ModdedBy(object other)
+    public virtual Value ModdedBy(object other)
     {
-        throw new EigerError(filename, line, pos, $"{Globals.InvalidOperationStr}: {this.GetType().Name} / {other.GetType().Name}", EigerError.ErrorType.InvalidOperationError);
+        throw new EigerError(filename, line, pos, $"{Globals.InvalidOperationStr}: {this.GetType().Name} % {other.GetType().Name}", EigerError.ErrorType.InvalidOperationError);
     }
 
-    public virtual dynamic ExpedBy(object other)
+    public virtual Value ExpedBy(object other)
     {
-        throw new EigerError(filename, line, pos, $"{Globals.InvalidOperationStr}: {this.GetType().Name} / {other.GetType().Name}", EigerError.ErrorType.InvalidOperationError);
+        throw new EigerError(filename, line, pos, $"{Globals.InvalidOperationStr}: {this.GetType().Name} ^ {other.GetType().Name}", EigerError.ErrorType.InvalidOperationError);
+    }
+
+    public virtual Value Notted()
+    {
+        throw new EigerError(filename, line, pos, $"{Globals.InvalidOperationStr}: not {this.GetType().Name}", EigerError.ErrorType.InvalidOperationError);
+    }
+
+    public virtual Value Negative()
+    {
+        throw new EigerError(filename, line, pos, $"{Globals.InvalidOperationStr}: -{this.GetType().Name}", EigerError.ErrorType.InvalidOperationError);
     }
 
     public virtual Boolean ComparisonEqeq(object other)

@@ -26,6 +26,11 @@ public class Boolean : Value
         return new Boolean(filename, line, pos, value == other.value);
     }
 
+    public override Value Notted()
+    {
+        return new Boolean(filename, line, pos, !value);
+    }
+
     public override Value GetAttr(ASTNode attr)
     {
         if (attr.value == "type")

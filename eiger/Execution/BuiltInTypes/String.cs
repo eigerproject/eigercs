@@ -34,7 +34,7 @@ class String : Value
         value = sb.ToString();
     }
 
-    public override dynamic AddedTo(dynamic other)
+    public override Value AddedTo(dynamic other)
     {
         return new String(filename, line, pos, value + other.value);
     }
@@ -53,7 +53,7 @@ class String : Value
         return new Number(filename, line, pos, value.Length);
     }
 
-    public override dynamic MultedBy(object other)
+    public override Value MultedBy(object other)
     {
         if(other is Number number)
         {

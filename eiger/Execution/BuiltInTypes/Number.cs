@@ -20,32 +20,37 @@ class Number: Value
         this.value = value;
     }
 
-    public override dynamic AddedTo(dynamic other)
+    public override Value AddedTo(dynamic other)
     {
         return new Number(filename,line,pos, value + other.value);
     }
 
-    public override dynamic SubbedBy(dynamic other)
+    public override Value SubbedBy(dynamic other)
     {
         return new Number(filename, line, pos, value - other.value);
     }
 
-    public override dynamic MultedBy(dynamic other)
+    public override Value MultedBy(dynamic other)
     {
         return new Number(filename, line, pos, value * other.value);
     }
 
-    public override dynamic ModdedBy(dynamic other)
+    public override Value ModdedBy(dynamic other)
     {
         return new Number(filename, line, pos, value % other.value);
     }
 
-    public override dynamic ExpedBy(dynamic other)
+    public override Value ExpedBy(dynamic other)
     {
         return new Number(filename, line, pos, Math.Pow(value, other.value));
     }
 
-    public override dynamic DivedBy(dynamic other)
+    public override Value Negative()
+    {
+        return new Number(filename, line, pos, -value);
+    }
+
+    public override Value DivedBy(dynamic other)
     {
         if (other.value == 0)
             throw new Errors.EigerError(filename, line, pos, "Zero Division",Errors.EigerError.ErrorType.ZeroDivisionError);

@@ -86,6 +86,11 @@ public class Parser(List<Token> tokens)
     // check if the current token matches the expected one and advance
     void Match(TokenType type)
     {
+        if (Peek().type == TokenType.UNDEFINED)
+        {
+            throw new EigerError(path, tokens[^1].line, tokens[^1].pos, $"Unexpected end of Input", EigerError.ErrorType.ParserError);
+        }
+
         if (Peek().type == type)
         {
             Advance();
@@ -99,6 +104,11 @@ public class Parser(List<Token> tokens)
     // check if the current token matches the expected one and advance
     void Match(TokenType type, dynamic expected)
     {
+        if(Peek().type == TokenType.UNDEFINED)
+        {
+            throw new EigerError(path, tokens[^1].line, tokens[^1].pos, $"Unexpected end of Input", EigerError.ErrorType.ParserError);
+        }
+
         if (Peek().type == type && Peek().value == expected)
         {
             Advance();
@@ -458,6 +468,22 @@ public class Parser(List<Token> tokens)
 
             return new ASTNode(NodeType.Literal, numberToken.value, numberToken.line, numberToken.pos, path);
         }
+        // if its a unary operator
+        else if (Peek().type == TokenType.MINUS || Peek().value == "not")
+        {
+            Token op = Advance();
+            ASTNode fact = Factor();
+
+            ASTNode unaryOpNode = new(NodeType.UnaryOp, op.value, op.line, op.pos, path);
+            unaryOpNode.AddChild(fact);
+
+            if (Peek().type == TokenType.DOT)
+            {
+                return ParseAttrAccess(unaryOpNode);
+            }
+
+            return unaryOpNode;
+        }
         // if it's an identifier
         else if (Peek().type == TokenType.IDENTIFIER)
         {
@@ -517,6 +543,10 @@ public class Parser(List<Token> tokens)
         else if (Peek().type == TokenType.LSQUARE)
         {
             return ParseArrayLiteral();
+        }
+        else if(Peek().type == TokenType.UNDEFINED)
+        {
+            throw new EigerError(path, tokens[^1].line, tokens[^1].pos, $"Unexpected end of Input", EigerError.ErrorType.ParserError);
         }
         else
         {

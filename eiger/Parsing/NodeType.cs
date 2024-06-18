@@ -22,5 +22,6 @@ public enum NodeType
     Class,
     AttrAccess,
     Dataclass,
-    Include
+    Include,
+    UnaryOp
 }

@@ -22,6 +22,8 @@ class Interpreter
     public static BuiltInFunctions.InFunction inFunction = new();
     public static BuiltInFunctions.IncharFunction incharFunction = new();
     public static BuiltInFunctions.ClsFunction clsFunction = new();
+    public static BuiltInFunctions.DoubleFunction doubleFunction = new();
+    public static BuiltInFunctions.IntFunction intFunction = new();
 
     // global symbol table
     public static Dictionary<string, Value> globalSymbolTable = new() {
@@ -29,8 +31,13 @@ class Interpreter
         {"emitln",emitlnFunction},
         {"in",inFunction},
         {"inchar",incharFunction},
-        {"cls",clsFunction}
+        {"cls",clsFunction},
+        {"int",intFunction},
+        {"double",doubleFunction},
     };
+
+    // if the interpreter interprets code written in the shell
+    bool inShell = false;
 
     // function for visiting a node
     public static (bool, Value) VisitNode(ASTNode node, Dictionary<string, Value> symbolTable)
@@ -47,6 +54,7 @@ class Interpreter
             case NodeType.Dataclass: return VisitDataclassNode(node, symbolTable);
             case NodeType.Return: return VisitReturnNode(node, symbolTable);
             case NodeType.BinOp: return VisitBinOpNode(node, symbolTable);
+            case NodeType.UnaryOp: return VisitUnaryOpNode(node, symbolTable);
             case NodeType.Literal: return VisitLiteralNode(node, symbolTable);
             case NodeType.Identifier: return VisitIdentifierNode(node, symbolTable);
             case NodeType.Array: return VisitArrayNode(node, symbolTable);
@@ -304,6 +312,30 @@ class Interpreter
         return (false, new Nix(node.filename, node.line, node.pos));
     }
 
+    // visit unary operator node
+    static(bool,Value) VisitUnaryOpNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    {
+        // prepare a variable for return value
+        Value retVal;
+
+        // get unary operator
+        string unaryOp = node.value ?? throw new EigerError(node.filename,node.line,node.pos,"Invalid Unary Operator",EigerError.ErrorType.RuntimeError);
+
+        // get right side without unary operator
+        Value rightSide = VisitNode(node.children[0], symbolTable).Item2;
+
+        // switch for every unary operator
+        switch(unaryOp)
+        {
+            case "-": retVal = rightSide.Negative(); break;
+            case "not": retVal = rightSide.Notted(); break;
+            default:
+                throw new EigerError(node.filename, node.line, node.pos, "Invalid Unary Operator", EigerError.ErrorType.RuntimeError);
+        }
+
+        return (false, retVal);
+    }
+
     // visit binary operator node
     static (bool, Value) VisitBinOpNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
@@ -536,10 +568,14 @@ class Interpreter
     // get symbol from a symboltable with error handling
     public static Value GetSymbol(Dictionary<string, Value> symbolTable, ASTNode key)
     {
+        string err_key = "";
         try
         {
             if (key.type == NodeType.Identifier || key.type == NodeType.FuncCall)
+            {
+                err_key = key.value ?? "";
                 return symbolTable[key.value];
+            }
             else if (key.type == NodeType.ElementAccess)
             {
                 ASTNode listNode = key.children[0];
@@ -551,19 +587,24 @@ class Interpreter
                 string listKey = key.children[0].value ?? throw new EigerError(key.filename, key.line, key.pos, "Identifier value not found",EigerError.ErrorType.ParserError);
                 int idx = (int)((Number)(VisitNode(idxNode, symbolTable).Item2)).value;
 
+                err_key = listKey;
+
                 return symbolTable[listKey].GetIndex(idx);
             }
             else if(key.type == NodeType.AttrAccess)
             {
                 ASTNode leftNode = key.children[0];
                 ASTNode rightNode = key.children[1];
+
+                err_key = leftNode.value ?? "";
+
                 return symbolTable[leftNode.value].GetAttr(rightNode);
             }
             else throw new EigerError(key.filename, key.line, key.pos, $"Invalid Node {key.type}", EigerError.ErrorType.ParserError);
         }
         catch (KeyNotFoundException)
         {
-            throw new EigerError(key.filename, key.line, key.pos, $"Variable is undefined",EigerError.ErrorType.RuntimeError);
+            throw new EigerError(key.filename, key.line, key.pos, $"{err_key} is undefined",EigerError.ErrorType.RuntimeError);
         }
     }
 
