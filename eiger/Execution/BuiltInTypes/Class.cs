@@ -28,7 +28,7 @@ public class Class : Value
         // create local symbol table
         Dictionary<string, Value> localSymbolTable = new(symbolTable);
 
-        Instance inst = new(filename, line, pos, this, localSymbolTable,symbolTable);
+        Instance inst = new(filename, line, pos, this, localSymbolTable, symbolTable);
 
         localSymbolTable["this"] = inst;
 

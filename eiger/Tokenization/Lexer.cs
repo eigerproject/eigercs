@@ -151,7 +151,7 @@ public class Lexer
                 Advance();
                 continue;
             }
-            else if (char.IsLetter(current_char)) // if it's a letter outside a string
+            else if (char.IsLetter(current_char) || current_char == '_') // if it's a letter outside a string
             {
                 result.Add(MakeIdent());
             }

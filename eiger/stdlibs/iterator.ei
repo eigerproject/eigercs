@@ -1,18 +1,18 @@
 class Iterator
-    func Iterator(iter)
-        if iter ?= nix then
+    func Iterator(_iter)
+        if _iter ?= nix then
             emitln("Invalid Collection")
             ret nix
         end
-        this.iter = iter
-        this.length = iter.length
+        this.iter = _iter
+        this.length = _iter.length
         this.ptr = 0
     end
 
     func Iterate()
         if this.ptr < this.length then
-            retVal = this.iter[this.ptr]
-            ptr += 1                        ~ TODO: Make this to work with `this.ptr += 1`
+            retVal = iter[ptr]
+            ptr += 1
             ret retVal
         else
             ret nix
@@ -20,16 +20,16 @@ class Iterator
     end
 
     func HasNext()
-        ret this.ptr < this.length
+        ret ptr < length
     end
 
     func Reset()
-        this.ptr = 0
+        ptr = 0
     end
 
     func Peek()
-        if this.ptr < this.length then
-            ret this.iter[this.ptr]
+        if ptr < length then
+            ret iter[this.ptr]
         else
             ret nix
         end

@@ -1,0 +1,14 @@
+﻿class Person
+	func Person(nm)
+		if nm ?= "test" then
+			this.name = "Testing"
+		else
+			this.name = nm
+		end
+	end
+
+end
+
+x = Person("test")
+
+emitln(x.name)
