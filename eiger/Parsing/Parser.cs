@@ -537,6 +537,16 @@ public class Parser(List<Token> tokens)
             Match(TokenType.LPAREN);
             ASTNode node = Expr();
             Match(TokenType.RPAREN);
+
+            if (Peek().type == TokenType.LSQUARE)
+            {
+                return ParseElementAccess(node);
+            }
+            else if (Peek().type == TokenType.DOT) // if it's an atrribute access of a literal like a.AsString()
+            {
+                return ParseAttrAccess(node);
+            }
+
             return node;
         }
         // if it's an array
@@ -587,6 +597,12 @@ public class Parser(List<Token> tokens)
         ASTNode attrAccessNode = new ASTNode(NodeType.AttrAccess, op.value, op.line, op.pos, path); // construct the node
         attrAccessNode.AddChild(target);
         attrAccessNode.AddChild(right);
+
+        if (Peek().type == TokenType.LSQUARE)
+        {
+            return ParseElementAccess(attrAccessNode);
+        }
+
         return attrAccessNode;
     }
 
@@ -604,6 +620,12 @@ public class Parser(List<Token> tokens)
                 children = { target, indexNode }
             };
         }
+
+        if (Peek().type == TokenType.DOT) // if it's an atrribute access of a literal like a.AsString()
+        {
+            return ParseAttrAccess(target);
+        }
+
         return target;
     }
 }
