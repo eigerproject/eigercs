@@ -324,6 +324,8 @@ class Interpreter
             case "-": retVal = leftSide.SubbedBy(rightSide); break;
             case "*": retVal = leftSide.MultedBy(rightSide); break;
             case "/": retVal = leftSide.DivedBy(rightSide); break;
+            case "%": retVal = leftSide.ModdedBy(rightSide); break;
+            case "^": retVal = leftSide.ExpedBy(rightSide); break;
             case "?=": retVal = leftSide.ComparisonEqeq(rightSide); break;
             case "<": retVal = leftSide.ComparisonLT(rightSide); break;
             case ">": retVal = leftSide.ComparisonGT(rightSide); break;

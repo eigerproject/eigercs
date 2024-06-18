@@ -35,6 +35,16 @@ class Number: Value
         return new Number(filename, line, pos, value * other.value);
     }
 
+    public override dynamic ModdedBy(dynamic other)
+    {
+        return new Number(filename, line, pos, value % other.value);
+    }
+
+    public override dynamic ExpedBy(dynamic other)
+    {
+        return new Number(filename, line, pos, Math.Pow(value, other.value));
+    }
+
     public override dynamic DivedBy(dynamic other)
     {
         if (other.value == 0)

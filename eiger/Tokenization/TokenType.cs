@@ -21,4 +21,6 @@ public enum TokenType
     LSQUARE,
     RSQUARE,
     DOT,
+    CARET,
+    PERC,
 }

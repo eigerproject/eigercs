@@ -20,6 +20,7 @@ public class Parser(List<Token> tokens)
     {
         TokenType.MUL, TokenType.DIV, TokenType.EQEQ, TokenType.NEQEQ,
         TokenType.GT, TokenType.LT, TokenType.GTE, TokenType.LTE,
+        TokenType.PERC, TokenType.CARET
     };
 
     // expression level operators

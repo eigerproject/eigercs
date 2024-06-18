@@ -24,6 +24,16 @@ public class Value(string filename, int line, int pos)
         throw new EigerError(filename, line, pos, $"{Globals.InvalidOperationStr}: {this.GetType().Name} / {other.GetType().Name}", EigerError.ErrorType.InvalidOperationError);
     }
 
+    public virtual dynamic ModdedBy(object other)
+    {
+        throw new EigerError(filename, line, pos, $"{Globals.InvalidOperationStr}: {this.GetType().Name} / {other.GetType().Name}", EigerError.ErrorType.InvalidOperationError);
+    }
+
+    public virtual dynamic ExpedBy(object other)
+    {
+        throw new EigerError(filename, line, pos, $"{Globals.InvalidOperationStr}: {this.GetType().Name} / {other.GetType().Name}", EigerError.ErrorType.InvalidOperationError);
+    }
+
     public virtual Boolean ComparisonEqeq(object other)
     {
         throw new EigerError(filename, line, pos, $"{Globals.InvalidOperationStr}: {this.GetType().Name} ?= {other.GetType().Name}", EigerError.ErrorType.InvalidOperationError);

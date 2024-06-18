@@ -183,6 +183,14 @@ public class Lexer
             {
                 result.Add(new Token(current_line, current_pos, TokenType.DOT, "."));
             }
+            else if (current_char == '^') // if it's a caret
+            {
+                result.Add(new Token(current_line, current_pos, TokenType.CARET, "^"));
+            }
+            else if (current_char == '%') // if it's a percent
+            {
+                result.Add(new Token(current_line, current_pos, TokenType.PERC, "%"));
+            }
             else if (current_char == '+') // if it's a plus
             {
                 Advance();
