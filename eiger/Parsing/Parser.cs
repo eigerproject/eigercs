@@ -487,11 +487,11 @@ public class Parser(List<Token> tokens)
         {
             Token identToken = Advance();
             // Check for function call or element access
-            if (Peek().type == TokenType.DOT)
+            if (Peek().type == TokenType.DOT && checkFuncCall)
             {
                 return ParseAttrAccess(new ASTNode(NodeType.Identifier, identToken.value, identToken.line, identToken.pos, path));
             }
-            else if (Peek().type == TokenType.LSQUARE)
+            else if (Peek().type == TokenType.LSQUARE && checkFuncCall)
             {
                 return ParseElementAccess(new ASTNode(NodeType.Identifier, identToken.value, identToken.line, identToken.pos, path));
             }
@@ -584,23 +584,34 @@ public class Parser(List<Token> tokens)
 
     ASTNode ParseAttrAccess(ASTNode target)
     {
-        Token op = Advance(); // get operator (.)
-        ASTNode right = Factor(false); // get right hand side
-        ASTNode attrAccessNode = new ASTNode(NodeType.AttrAccess, null, op.line, op.pos, path); // construct the node
-        attrAccessNode.AddChild(target);
-        attrAccessNode.AddChild(right);
-
-        if (Peek().type == TokenType.LSQUARE)
+        while (true)
         {
-            return ParseElementAccess(attrAccessNode);
-        }
-        else if (Peek().type == TokenType.LPAREN)
-        {
-            return FunctionCallStatement(attrAccessNode);
+            if (Peek().type == TokenType.DOT)
+            {
+                Token op = Advance(); // get operator (.)
+                ASTNode right = Factor(false); // get right hand side
+                ASTNode attrAccessNode = new ASTNode(NodeType.AttrAccess, null, op.line, op.pos, path); // construct the node
+                attrAccessNode.AddChild(target);
+                attrAccessNode.AddChild(right);
+                target = attrAccessNode;
+            }
+            else if (Peek().type == TokenType.LSQUARE)
+            {
+                target = ParseElementAccess(target);
+            }
+            else if (Peek().type == TokenType.LPAREN)
+            {
+                target = FunctionCallStatement(target);
+            }
+            else
+            {
+                break;
+            }
         }
 
-        return attrAccessNode;
+        return target;
     }
+
 
     // Parse element access
     ASTNode ParseElementAccess(ASTNode target)
