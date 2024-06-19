@@ -18,7 +18,7 @@ public class Parser(List<Token> tokens)
     // term level operators
     HashSet<TokenType> termOps = new()
     {
-        TokenType.MUL, TokenType.DIV, TokenType.EQEQ, TokenType.NEQEQ,
+        TokenType.MUL, TokenType.DIV, TokenType.NEQEQ,
         TokenType.GT, TokenType.LT, TokenType.GTE, TokenType.LTE,
         TokenType.PERC, TokenType.CARET
     };
@@ -32,7 +32,7 @@ public class Parser(List<Token> tokens)
     // assignment level operators
     HashSet<TokenType> assignOps = new()
     {
-        TokenType.EQ, TokenType.PLUSEQ,TokenType.MINUSEQ,TokenType.MULEQ,TokenType.DIVEQ
+        TokenType.EQ, TokenType.PLUSEQ,TokenType.MINUSEQ,TokenType.MULEQ,TokenType.DIVEQ,TokenType.EQEQ
     };
 
     string path = "<stdin>";
