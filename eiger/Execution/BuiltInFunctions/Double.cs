@@ -24,9 +24,9 @@ class DoubleFunction : BuiltInFunction
             {
                 return (true, new Number(filepath, line, pos, Convert.ToDouble(s.value)));
             }
-            catch(FormatException)
+            catch (FormatException)
             {
-                throw new Errors.EigerError(filepath,line, pos, "Failed to convert to double",Errors.EigerError.ErrorType.ArgumentError);
+                throw new Errors.EigerError(filepath, line, pos, "Failed to convert to double", Errors.EigerError.ErrorType.ArgumentError);
             }
         }
         else

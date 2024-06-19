@@ -64,9 +64,9 @@ public class Lexer
             {
                 if (ptr + 1 < source.Length && char.IsDigit(source[ptr + 1]))
                     isFloat = true; // it's a floating point number
-                else { Reverse();break; };
+                else { Reverse(); break; };
             }
-            
+
             strval += current_char;
             Advance();
             if (!(ptr < source.Length && (char.IsDigit(current_char) || (current_char == '.' && !isFloat))))
@@ -110,12 +110,12 @@ public class Lexer
         }
         return new Token(current_line, current_pos, TokenType.STRING, val);
     }
-    
+
     // skip line comment
     void SkipComment()
     {
         Advance();
-        while(current_char != '\n' && ptr < source.Length)
+        while (current_char != '\n' && ptr < source.Length)
         {
             Advance();
         }
@@ -271,7 +271,7 @@ public class Lexer
                 if (current_char == '=') // if the next one is an equal sign 
                     result.Add(new Token(current_line, current_pos, TokenType.EQEQ, "?="));
                 else
-                    throw new EigerError(path, current_line, current_pos, $"{Globals.InvalidCharStr} {current_char}",EigerError.ErrorType.LexerError);
+                    throw new EigerError(path, current_line, current_pos, $"{Globals.InvalidCharStr} {current_char}", EigerError.ErrorType.LexerError);
             }
             else if (current_char == '!') // if it's an exclamation mark
             {
@@ -291,7 +291,7 @@ public class Lexer
     }
 
     // constructor
-    public Lexer(string source,string path)
+    public Lexer(string source, string path)
     {
         this.source = source;
         this.path = path;

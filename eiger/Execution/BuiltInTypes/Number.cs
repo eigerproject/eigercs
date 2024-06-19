@@ -6,13 +6,13 @@ using EigerLang.Parsing;
 
 namespace EigerLang.Execution.BuiltInTypes;
 
-class Number: Value
+class Number : Value
 {
     public double value;
     string filename;
     int line, pos;
 
-    public Number(string filename, int line, int pos, double value) : base(filename,line,pos)
+    public Number(string filename, int line, int pos, double value) : base(filename, line, pos)
     {
         this.filename = filename;
         this.line = line;
@@ -22,7 +22,7 @@ class Number: Value
 
     public override Value AddedTo(dynamic other)
     {
-        return new Number(filename,line,pos, value + other.value);
+        return new Number(filename, line, pos, value + other.value);
     }
 
     public override Value SubbedBy(dynamic other)
@@ -53,7 +53,7 @@ class Number: Value
     public override Value DivedBy(dynamic other)
     {
         if (other.value == 0)
-            throw new Errors.EigerError(filename, line, pos, "Zero Division",Errors.EigerError.ErrorType.ZeroDivisionError);
+            throw new Errors.EigerError(filename, line, pos, "Zero Division", Errors.EigerError.ErrorType.ZeroDivisionError);
 
         return new Number(filename, line, pos, value / other.value);
     }
@@ -92,7 +92,7 @@ class Number: Value
     {
         if (attr.value == "type")
         {
-            return new String(filename, line, pos, "[type Number]");
+            return new String(filename, line, pos, "number");
         }
         return base.GetAttr(attr);
     }

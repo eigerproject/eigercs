@@ -137,9 +137,9 @@ class Interpreter
 
         while (value != toValue)
         {
-            (bool didReturn,Value v) = VisitBlockNode(forBlock, localSymbolTable, symbolTable);
+            (bool didReturn, Value v) = VisitBlockNode(forBlock, localSymbolTable, symbolTable);
 
-            if(didReturn)
+            if (didReturn)
                 return (true, v);
 
             value += step;
@@ -223,15 +223,15 @@ class Interpreter
         if (func is BaseFunction f) // BaseFunction is the class both custom and built-in functions extend from
         {
             List<Value> args = []; // prepare a list for args
-            for(int i = 1 ;i < node.children.Count;i++)
+            for (int i = 1; i < node.children.Count; i++)
             {
-                Value val = VisitNode(node.children[i], symbolTable).Item2 ?? throw new EigerError(node.filename, node.line, node.pos, Globals.ArgumentErrorStr,EigerError.ErrorType.ArgumentError);
+                Value val = VisitNode(node.children[i], symbolTable).Item2 ?? throw new EigerError(node.filename, node.line, node.pos, Globals.ArgumentErrorStr, EigerError.ErrorType.ArgumentError);
                 args.Add(val);
             }
 
             return f.Execute(args, node.line, node.pos, node.filename);
         }
-        else if(func is Class c) // we're calling a class constructor
+        else if (func is Class c) // we're calling a class constructor
         {
             List<Value> args = []; // prepare a list for args
             for (int i = 1; i < node.children.Count; i++)
@@ -264,7 +264,7 @@ class Interpreter
     }
 
     // Visit class definition node
-    static (bool, Value) VisitClassNode(ASTNode node,  Dictionary<string, Value> symbolTable)
+    static (bool, Value) VisitClassNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         // ClassNode structure
         // ClassNode : <class name>
@@ -316,19 +316,19 @@ class Interpreter
     }
 
     // visit unary operator node
-    static(bool,Value) VisitUnaryOpNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static (bool, Value) VisitUnaryOpNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         // prepare a variable for return value
         Value retVal;
 
         // get unary operator
-        string unaryOp = node.value ?? throw new EigerError(node.filename,node.line,node.pos,"Invalid Unary Operator",EigerError.ErrorType.RuntimeError);
+        string unaryOp = node.value ?? throw new EigerError(node.filename, node.line, node.pos, "Invalid Unary Operator", EigerError.ErrorType.RuntimeError);
 
         // get right side without unary operator
         Value rightSide = VisitNode(node.children[0], symbolTable).Item2;
 
         // switch for every unary operator
-        switch(unaryOp)
+        switch (unaryOp)
         {
             case "-": retVal = rightSide.Negative(); break;
             case "not": retVal = rightSide.Notted(); break;
@@ -444,7 +444,7 @@ class Interpreter
         return (false, new Array(node.filename, node.line, node.pos, [.. list]));
     }
 
-    private static (bool,Value) VisitAttrAccessNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    private static (bool, Value) VisitAttrAccessNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         // AttrAccessNode structure
         // AttrAccessNode
@@ -454,7 +454,7 @@ class Interpreter
         Value v;
         ASTNode currentNode = node.children[1];
 
-        while(true)
+        while (true)
         {
             if (currentNode.type != NodeType.AttrAccess)
             {
@@ -500,12 +500,12 @@ class Interpreter
 
         try
         {
-            int idx = Convert.ToInt32(((Number)(value ?? throw new EigerError(node.filename, node.line, node.pos, "Index is unknown",EigerError.ErrorType.ParserError))).value);
+            int idx = Convert.ToInt32(((Number)(value ?? throw new EigerError(node.filename, node.line, node.pos, "Index is unknown", EigerError.ErrorType.ParserError))).value);
             return (false, iter.GetIndex(idx));
         }
         catch (IndexOutOfRangeException)
         {
-            throw new EigerError(node.filename, node.line, node.pos, Globals.IndexErrorStr,EigerError.ErrorType.IndexError);
+            throw new EigerError(node.filename, node.line, node.pos, Globals.IndexErrorStr, EigerError.ErrorType.IndexError);
         }
     }
 
@@ -579,7 +579,7 @@ class Interpreter
                 err_key = key.value ?? "";
                 return symbolTable[key.value];
             }
-            else if(key.type == NodeType.FuncCall)
+            else if (key.type == NodeType.FuncCall)
             {
                 err_key = key.children[0].value ?? "";
                 return symbolTable[key.children[0].value];
@@ -592,14 +592,14 @@ class Interpreter
                 if (listNode.type != NodeType.Identifier)
                     throw new EigerError(key.filename, key.line, key.pos, "Must be identifier", EigerError.ErrorType.RuntimeError);
 
-                string listKey = key.children[0].value ?? throw new EigerError(key.filename, key.line, key.pos, "Identifier value not found",EigerError.ErrorType.ParserError);
+                string listKey = key.children[0].value ?? throw new EigerError(key.filename, key.line, key.pos, "Identifier value not found", EigerError.ErrorType.ParserError);
                 int idx = (int)((Number)(VisitNode(idxNode, symbolTable).Item2)).value;
 
                 err_key = listKey;
 
                 return symbolTable[listKey].GetIndex(idx);
             }
-            else if(key.type == NodeType.AttrAccess)
+            else if (key.type == NodeType.AttrAccess)
             {
                 ASTNode leftNode = key.children[0];
                 ASTNode rightNode = key.children[1];
@@ -612,7 +612,7 @@ class Interpreter
         }
         catch (KeyNotFoundException)
         {
-            throw new EigerError(key.filename, key.line, key.pos, $"{err_key} is undefined",EigerError.ErrorType.RuntimeError);
+            throw new EigerError(key.filename, key.line, key.pos, $"{err_key} is undefined", EigerError.ErrorType.RuntimeError);
         }
     }
 
@@ -632,9 +632,9 @@ class Interpreter
                 ASTNode idxNode = key.children[1];
 
                 if (listNode.type != NodeType.Identifier)
-                    throw new EigerError(key.filename, key.line, key.pos, "Assignee must be identifier",EigerError.ErrorType.RuntimeError);
+                    throw new EigerError(key.filename, key.line, key.pos, "Assignee must be identifier", EigerError.ErrorType.RuntimeError);
 
-                string listKey = key.children[0].value ?? throw new EigerError(key.filename, key.line, key.pos, "Identifier value not found",EigerError.ErrorType.ParserError);
+                string listKey = key.children[0].value ?? throw new EigerError(key.filename, key.line, key.pos, "Identifier value not found", EigerError.ErrorType.ParserError);
                 int idx = (int)((Number)(VisitNode(idxNode, symbolTable).Item2)).value;
 
                 symbolTable[listKey].SetIndex(idx, value);
@@ -647,16 +647,16 @@ class Interpreter
             {
                 ASTNode leftNode = key.children[0];
                 ASTNode rightNode = key.children[1];
-                symbolTable[leftNode.value].SetAttr(rightNode,value);
+                symbolTable[leftNode.value].SetAttr(rightNode, value);
             }
             else
             {
-                throw new EigerError(key.filename, key.line, key.pos, "Assignee must be identifier",EigerError.ErrorType.RuntimeError);
+                throw new EigerError(key.filename, key.line, key.pos, "Assignee must be identifier", EigerError.ErrorType.RuntimeError);
             }
         }
         catch (KeyNotFoundException)
         {
-            throw new EigerError(key.filename, key.line, key.pos, $"Variable is undefined",EigerError.ErrorType.RuntimeError);
+            throw new EigerError(key.filename, key.line, key.pos, $"Variable is undefined", EigerError.ErrorType.RuntimeError);
         }
     }
 }

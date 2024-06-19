@@ -20,8 +20,8 @@ public class ASTNode(NodeType type, dynamic? value, int line, int pos, string fi
 
     public void Print(int indent = 0)
     {
-        Console.Write("├──");
-        for (int i = 0; i < indent; ++i) Console.Write("──");
+        Console.Write("--");
+        for (int i = 0; i < indent; ++i) Console.Write("--");
         Console.Write(" ");
         if (value != null)
             Console.WriteLine($"{type} : `{value}`");

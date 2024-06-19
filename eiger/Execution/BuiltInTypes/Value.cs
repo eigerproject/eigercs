@@ -91,13 +91,13 @@ public class Value(string filename, int line, int pos)
 
     public virtual Value GetAttr(ASTNode attr)
     {
-        if(attr.type == NodeType.AttrAccess)
+        if (attr.type == NodeType.AttrAccess)
         {
             return GetAttr(attr.children[0]).GetAttr(attr.children[1]);
         }
-        if(attr.value == "asString")
+        if (attr.value == "asString")
         {
-            return new String(filename, line, pos,ToString() ?? "");
+            return new String(filename, line, pos, ToString() ?? "");
         }
         if (attr.value == "length")
         {

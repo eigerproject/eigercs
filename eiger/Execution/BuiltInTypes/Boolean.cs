@@ -35,7 +35,7 @@ public class Boolean : Value
     {
         if (attr.value == "type")
         {
-            return new String(filename, line, pos, "[type Boolean]");
+            return new String(filename, line, pos, "boolean");
         }
         return base.GetAttr(attr);
     }

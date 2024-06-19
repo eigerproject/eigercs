@@ -45,7 +45,7 @@ public class Class : Value
     {
         if (attr.value == "type")
         {
-            return new String(filename, line, pos, "[type Class]");
+            return new String(filename, line, pos, "class");
         }
         return base.GetAttr(attr);
     }

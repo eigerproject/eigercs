@@ -24,14 +24,14 @@ class Nix : Value
     {
         if (attr.value == "type")
         {
-            return new String(filename, line, pos, "[type Nix]");
+            return new String(filename, line, pos, "nix");
         }
         return base.GetAttr(attr);
     }
 
     public override Boolean ComparisonEqeq(object other)
     {
-        return new Boolean(filename,line,pos, other is Nix);
+        return new Boolean(filename, line, pos, other is Nix);
     }
 
     public override Boolean ComparisonNeqeq(object other)

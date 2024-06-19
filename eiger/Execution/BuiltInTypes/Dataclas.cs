@@ -18,7 +18,7 @@ public class Dataclass : Value
         this.line = line;
         this.pos = pos;
         this.name = name;
-        
+
 
         // create local symbol table
         Dictionary<string, Value> localSymbolTable = new(symbolTable);
@@ -34,7 +34,7 @@ public class Dataclass : Value
     {
         if (attr.value == "type")
         {
-            return new String(filename, line, pos, "[type Dataclass]");
+            return new String(filename, line, pos, "dataclass");
         }
         return Interpreter.GetSymbol(symbolTable, attr);
     }

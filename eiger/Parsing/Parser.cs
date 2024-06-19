@@ -103,7 +103,7 @@ public class Parser(List<Token> tokens)
     // check if the current token matches the expected one and advance
     void Match(TokenType type, dynamic expected)
     {
-        if(Peek().type == TokenType.UNDEFINED)
+        if (Peek().type == TokenType.UNDEFINED)
         {
             throw new EigerError(path, tokens[^1].line, tokens[^1].pos, $"Unexpected end of Input", EigerError.ErrorType.ParserError);
         }
@@ -545,7 +545,7 @@ public class Parser(List<Token> tokens)
         {
             return ParseArrayLiteral();
         }
-        else if(Peek().type == TokenType.UNDEFINED)
+        else if (Peek().type == TokenType.UNDEFINED)
         {
             throw new EigerError(path, tokens[^1].line, tokens[^1].pos, $"Unexpected end of Input", EigerError.ErrorType.ParserError);
         }

@@ -27,7 +27,7 @@ public class Program
 
                 if (inp == "") continue;
 
-                Execute(inp, "<stdin>",true);
+                Execute(inp, "<stdin>", true);
             }
         }
         // if given filepath
@@ -50,7 +50,7 @@ public class Program
                 return;
             }
 
-            Execute(content, filepath,false);
+            Execute(content, filepath, false);
         }
         // invalid syntax, print usage
         else
@@ -74,13 +74,13 @@ public class Program
                 Console.WriteLine(t.ToLongString());
             }  */
 
-             // root.Print();
-          
+            // root.Print();
+
 
             foreach (var statement in root.children)
             {
                 (bool didReturn, dynamic? val) = Interpreter.VisitNode(statement, Interpreter.globalSymbolTable);
-                if(printExprs || didReturn) Console.WriteLine((string)Convert.ToString(val));
+                if (printExprs || didReturn) Console.WriteLine((string)Convert.ToString(val));
             }
         }
         catch (EigerError e)

@@ -14,6 +14,6 @@ class IncharFunction : BuiltInFunction
     public override (bool, Value) Execute(List<Value> args, int line, int pos, string filepath)
     {
         CheckArgs(filepath, line, pos, args.Count);
-        return (true, new BuiltInTypes.String(filepath,line,pos, Console.ReadKey().KeyChar.ToString()));
+        return (true, new BuiltInTypes.String(filepath, line, pos, Console.ReadKey().KeyChar.ToString()));
     }
 }

@@ -25,19 +25,19 @@ class Array : Value
     {
         if (other is Array)
         {
-            return new Array(filename, line, pos, [.. array, ..((Array)other).array]);
+            return new Array(filename, line, pos, [.. array, .. ((Array)other).array]);
         }
         else
         {
             return new Array(filename, line, pos, [.. array, (Value)other]);
         }
-        
+
     }
 
     public override Value GetIndex(int idx)
     {
-        if(idx < 0 || idx >= array.Length)
-            throw new EigerError(filename,line, pos,"Index outside of bounds",EigerError.ErrorType.IndexError);
+        if (idx < 0 || idx >= array.Length)
+            throw new EigerError(filename, line, pos, "Index outside of bounds", EigerError.ErrorType.IndexError);
         return array[idx];
     }
 
@@ -45,7 +45,7 @@ class Array : Value
     {
         if (attr.value == "type")
         {
-            return new String(filename, line, pos, "[type Array]");
+            return new String(filename, line, pos, "array");
         }
         return base.GetAttr(attr);
     }
@@ -73,7 +73,7 @@ class Array : Value
                 strep += ", ";
             }
         }
-        strep+= "]";
+        strep += "]";
         return strep;
     }
 }

@@ -14,7 +14,7 @@ class String : Value
     int line;
     int pos;
 
-    public String(string filename, int line, int pos,string value) : base(filename, line,pos)
+    public String(string filename, int line, int pos, string value) : base(filename, line, pos)
     {
         this.value = value;
         this.filename = filename;
@@ -24,13 +24,13 @@ class String : Value
 
     public override Value GetIndex(int idx)
     {
-        return new String(filename,line,pos, value[idx].ToString());
+        return new String(filename, line, pos, value[idx].ToString());
     }
 
     public override void SetIndex(int idx, Value val)
     {
         StringBuilder sb = new(value);
-        sb[idx] = ((String)val ?? throw new Errors.EigerError(filename, line, pos, "Failed to set index (value is null)",Errors.EigerError.ErrorType.ParserError)).value[0];
+        sb[idx] = ((String)val ?? throw new Errors.EigerError(filename, line, pos, "Failed to set index (value is null)", Errors.EigerError.ErrorType.ParserError)).value[0];
         value = sb.ToString();
     }
 
@@ -43,7 +43,7 @@ class String : Value
     {
         if (attr.value == "type")
         {
-            return new String(filename, line, pos, "[type String]");
+            return new String(filename, line, pos, "string");
         }
         return base.GetAttr(attr);
     }
@@ -55,7 +55,7 @@ class String : Value
 
     public override Value MultedBy(object other)
     {
-        if(other is Number number)
+        if (other is Number number)
         {
             return new String(filename, line, pos, string.Concat(Enumerable.Repeat(value, (int)number.value)));
         }
