@@ -211,33 +211,36 @@ class Interpreter
     static (bool, Value) VisitFuncCallNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         // FuncCallNode structure:
-        // FuncCallNode : <function name>
+        // FuncCallNode
+        // -- functionRef
         // -- arg1
         // -- arg2
         // -- ...
 
+        Value func = VisitNode(node.children[0], symbolTable).Item2;
+
         // if the symbol we're calling is a function (it might be something else, like a variable)
-        if (GetSymbol(symbolTable, node) is BaseFunction) // BaseFunction is the class both custom and built-in functions extend from
+        if (func is BaseFunction f) // BaseFunction is the class both custom and built-in functions extend from
         {
             List<Value> args = []; // prepare a list for args
-            foreach (ASTNode child in node.children) //
+            for(int i = 1 ;i < node.children.Count;i++)
             {
-                Value? val = VisitNode(child, symbolTable).Item2 ?? throw new EigerError(node.filename, node.line, node.pos, Globals.ArgumentErrorStr,EigerError.ErrorType.ArgumentError);
+                Value val = VisitNode(node.children[i], symbolTable).Item2 ?? throw new EigerError(node.filename, node.line, node.pos, Globals.ArgumentErrorStr,EigerError.ErrorType.ArgumentError);
                 args.Add(val);
             }
 
-            return ((BaseFunction)symbolTable[node.value]).Execute(args, node.line, node.pos, node.filename);
+            return f.Execute(args, node.line, node.pos, node.filename);
         }
-        else if(GetSymbol(symbolTable, node) is Class) // we're calling a class constructor
+        else if(func is Class c) // we're calling a class constructor
         {
             List<Value> args = []; // prepare a list for args
-            foreach (ASTNode child in node.children) //
+            for (int i = 1; i < node.children.Count; i++)
             {
-                Value? val = VisitNode(child, symbolTable).Item2 ?? throw new EigerError(node.filename, node.line, node.pos, Globals.ArgumentErrorStr, EigerError.ErrorType.ArgumentError);
+                Value val = VisitNode(node.children[i], symbolTable).Item2 ?? throw new EigerError(node.filename, node.line, node.pos, Globals.ArgumentErrorStr, EigerError.ErrorType.ArgumentError);
                 args.Add(val);
             }
 
-            return ((Class)symbolTable[node.value]).Execute(args);
+            return c.Execute(args);
         }
         else
             throw new EigerError(node.filename, node.line, node.pos, $"{node.value} is not a function", EigerError.ErrorType.RuntimeError);
@@ -449,7 +452,6 @@ class Interpreter
         // -- right
 
         Value v;
-        Dictionary<string, Value> localSymbolTable = symbolTable;
         ASTNode currentNode = node.children[1];
 
         while(true)
@@ -493,11 +495,12 @@ class Interpreter
         // -- value
         // -- idx
 
-        Value? iter = VisitNode(node.children[0], symbolTable).Item2;
-        (bool, Value?) value = VisitNode(node.children[1], symbolTable);
+        Value iter = VisitNode(node.children[0], symbolTable).Item2;
+        Value value = VisitNode(node.children[1], symbolTable).Item2;
+
         try
         {
-            int idx = Convert.ToInt32(((Number)(value.Item2 ?? throw new EigerError(node.filename, node.line, node.pos, "Index is unknown",EigerError.ErrorType.ParserError))).value);
+            int idx = Convert.ToInt32(((Number)(value ?? throw new EigerError(node.filename, node.line, node.pos, "Index is unknown",EigerError.ErrorType.ParserError))).value);
             return (false, iter.GetIndex(idx));
         }
         catch (IndexOutOfRangeException)
@@ -571,10 +574,15 @@ class Interpreter
         string err_key = "";
         try
         {
-            if (key.type == NodeType.Identifier || key.type == NodeType.FuncCall)
+            if (key.type == NodeType.Identifier)
             {
                 err_key = key.value ?? "";
                 return symbolTable[key.value];
+            }
+            else if(key.type == NodeType.FuncCall)
+            {
+                err_key = key.children[0].value ?? "";
+                return symbolTable[key.children[0].value];
             }
             else if (key.type == NodeType.ElementAccess)
             {

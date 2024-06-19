@@ -72,10 +72,10 @@ public class Program
             foreach(Token t in tokens)
             {
                 Console.WriteLine(t.ToLongString());
-            }
+            }  */
 
-            root.Print();
-            */
+            // root.Print();
+          
 
             foreach (var statement in root.children)
             {
