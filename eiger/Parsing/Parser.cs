@@ -18,8 +18,7 @@ public class Parser(List<Token> tokens)
     // term level operators
     HashSet<TokenType> termOps = new()
     {
-        TokenType.MUL, TokenType.DIV, TokenType.NEQEQ,
-        TokenType.GT, TokenType.LT, TokenType.GTE, TokenType.LTE,
+        TokenType.MUL, TokenType.DIV,
         TokenType.PERC, TokenType.CARET
     };
 
@@ -29,10 +28,10 @@ public class Parser(List<Token> tokens)
         TokenType.PLUS, TokenType.MINUS
     };
 
-    // assignment level operators
-    HashSet<TokenType> assignOps = new()
+    // comparison or assignment level operators
+    HashSet<TokenType> comparOps = new()
     {
-        TokenType.EQ, TokenType.PLUSEQ,TokenType.MINUSEQ,TokenType.MULEQ,TokenType.DIVEQ,TokenType.EQEQ
+        TokenType.EQ, TokenType.PLUSEQ,TokenType.MINUSEQ,TokenType.MULEQ,TokenType.DIVEQ,TokenType.EQEQ, TokenType.NEQEQ,TokenType.GT, TokenType.LT, TokenType.GTE, TokenType.LTE,
     };
 
     string path = "<stdin>";
@@ -405,7 +404,7 @@ public class Parser(List<Token> tokens)
             TokenType tokenType = Peek().type;
 
             // if it's an expression operator
-            if (assignOps.Contains(tokenType))
+            if (comparOps.Contains(tokenType))
             {
                 Token op = Advance(); // get operator
                 ASTNode right = Expr(); // get right hand side
