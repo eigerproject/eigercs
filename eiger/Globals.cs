@@ -9,7 +9,7 @@ public static class Globals
 {
     public static string langName = "Eigerlang";
     public static string langVer = "0.01a";
-    public static string docUrl = "https://null";
+    public static string docUrl = "https://eigerproject.github.io/docs";
     public static string fileExtension = ".ei";
 
     public static string IndexErrorStr = "Index out of bounds";
