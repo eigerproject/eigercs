@@ -124,7 +124,7 @@ public class Parser(List<Token> tokens)
         ASTNode root = new(NodeType.Block, null, 1, 0, path);
         // add statements until the end of block (end or else)
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
-        while (current < tokens.Count && Peek().value.ToString() != "end" && Peek().value.ToString() != "else")
+        while (current < tokens.Count && Peek().value.ToString() != "end" && Peek().value.ToString() != "else" && Peek().value.ToString() != "elif")
         {
             root.AddChild(Statement());
         }
@@ -360,7 +360,7 @@ public class Parser(List<Token> tokens)
     // if statement
     ASTNode IfStatement()
     {
-        // natch if
+        // match if
         Token ifToken = Peek();
         Match(TokenType.IDENTIFIER, "if");
         // match condition (which is an expression)
@@ -369,9 +369,33 @@ public class Parser(List<Token> tokens)
         Match(TokenType.IDENTIFIER, "then");
         // get if block
         ASTNode ifBlock = StatementList();
+
+        // list to store else if branches
+        List<ASTNode> elseIfBranches = new List<ASTNode>();
+
         // save space for the else block (if it exists)
         ASTNode? elseBranch = null;
-        // if the current token is an else
+
+        // check for else if statements
+        while (Peek().value == "elif")
+        {
+            // match else if
+            Match(TokenType.IDENTIFIER, "elif");
+            // match condition (which is an expression)
+            ASTNode elseIfCondition = Expr();
+            // match then
+            Match(TokenType.IDENTIFIER, "then");
+            // get else if block
+            ASTNode elseIfBlock = StatementList();
+
+            // construct the else if node
+            ASTNode elseIfNode = new(NodeType.If, null, ifToken.line, ifToken.pos, path);
+            elseIfNode.AddChild(elseIfCondition);
+            elseIfNode.AddChild(elseIfBlock);
+            elseIfBranches.Add(elseIfNode);
+        }
+
+        // if the current token is else
         if (Peek().value == "else")
         {
             // match else
@@ -379,13 +403,18 @@ public class Parser(List<Token> tokens)
             // get else block
             elseBranch = StatementList();
         }
+
         // match end
         Match(TokenType.IDENTIFIER, "end");
 
-        // construct the node, first the condition, then the if block, then the else block (if exists)
+        // construct the node, first the condition, then the if block, then the else if blocks, then the else block (if exists)
         ASTNode ifNode = new(NodeType.If, null, ifToken.line, ifToken.pos, path);
         ifNode.AddChild(condition);
         ifNode.AddChild(ifBlock);
+        foreach (var elseIfNode in elseIfBranches)
+        {
+            ifNode.AddChild(elseIfNode);
+        }
         if (elseBranch != null)
         {
             ifNode.AddChild(elseBranch);

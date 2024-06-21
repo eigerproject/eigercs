@@ -172,17 +172,15 @@ class Interpreter
     }
 
     // visit if node
+    // visit if node
     static (bool, Value) VisitIfNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         // IfNode structure
         // IfNode
         // -- condition
         // -- ifBlock
-        // -- elseBlock
-
-        // if the node has 3 children (condition,ifBlock,elseBlock), it has an else block
-        // otherwise not
-        bool hasElseBlock = node.children.Count == 3;
+        // -- [elseIfNode ...]
+        // -- elseBlock (if exists)
 
         // visit condition
         Boolean condition = (Boolean)VisitNode(node.children[0], symbolTable).Item2;
@@ -193,19 +191,33 @@ class Interpreter
             // visit the if block (2nd child node)
             return VisitBlockNode(node.children[1], new(symbolTable), symbolTable);
         }
-        // if the condition is false and it has an else block
-        else if (hasElseBlock)
+
+        // check for else if blocks
+        for (int i = 2; i < node.children.Count; i++)
         {
-            // visit the else block (3rd child node)
-            return VisitBlockNode(node.children[2], new(symbolTable), symbolTable);
+            ASTNode child = node.children[i];
+            if (child.type == NodeType.If)
+            {
+                // visit else if condition
+                Boolean elseIfCondition = (Boolean)VisitNode(child.children[0], symbolTable).Item2;
+                if (Convert.ToBoolean(elseIfCondition.value))
+                {
+                    // visit the else if block (2nd child of else if node)
+                    return VisitBlockNode(child.children[1], new(symbolTable), symbolTable);
+                }
+            }
+            else
+            {
+                // assume this is the else block
+                // visit the else block
+                return VisitBlockNode(child, new(symbolTable), symbolTable);
+            }
         }
-        // if the condition is false and it does not have an else block
-        else
-        {
-            // do nothing
-            return (false, new Nix(node.filename, node.line, node.pos));
-        }
+
+        // if no condition is true and there's no else block, do nothing
+        return (false, new Nix(node.filename, node.line, node.pos));
     }
+
 
     // visit function call node
     static (bool, Value) VisitFuncCallNode(ASTNode node, Dictionary<string, Value> symbolTable)
