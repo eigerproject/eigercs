@@ -37,7 +37,7 @@ class Array : Value
     {
         if(other is Array arr)
         {
-            return new Boolean(filename, line, pos, arr.array.SequenceEqual(array));
+            return new Boolean(filename, line, pos, arr.array.Length == array.Length && arr.array.SequenceEqual(array));
         }
         else
         {

@@ -123,4 +123,12 @@ public class Value(string filename, int line, int pos)
         }
         throw new EigerError(filename, line, pos, "Invalid Data type", EigerError.ErrorType.ParserError);
     }
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is not null)
+            return ComparisonEqeq(obj).value;
+        else
+            return false;
+    }
 }
