@@ -23,15 +23,38 @@ class Array : Value
 
     public override Value AddedTo(object other)
     {
-        if (other is Array)
+        if (other is Array arr)
         {
-            return new Array(filename, line, pos, [.. array, .. ((Array)other).array]);
+            return new Array(filename, line, pos, [.. array, .. arr.array]);
         }
         else
         {
             return new Array(filename, line, pos, [.. array, (Value)other]);
         }
+    }
 
+    public override Boolean ComparisonEqeq(object other)
+    {
+        if(other is Array arr)
+        {
+            return new Boolean(filename, line, pos, arr.array.SequenceEqual(array));
+        }
+        else
+        {
+            return new Boolean(filename, line, pos, false);
+        }
+    }
+
+    public override Boolean ComparisonNeqeq(object other)
+    {
+        if (other is Array arr)
+        {
+            return new Boolean(filename, line, pos, !arr.array.SequenceEqual(array));
+        }
+        else
+        {
+            return new Boolean(filename, line, pos, true);
+        }
     }
 
     public override Value GetIndex(int idx)
