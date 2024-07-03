@@ -128,6 +128,10 @@ public class Lexer
 
         // reset values (just in case)
         ptr = 0;
+
+        // if the code is empty, return empty list
+        if (source.Length == 0) return result;
+
         current_char = source[ptr];
         current_pos = 1;
         current_line = 1;
