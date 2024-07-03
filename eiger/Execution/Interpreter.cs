@@ -531,24 +531,22 @@ class Interpreter
 
         if (node.children[0].type == NodeType.Identifier)
         {
-            path = $"./stdlibs/{node.children[0].value}";
+            path = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "stdlibs", node.children[0].value + Globals.fileExtension);
         }
         else if (node.children[0].type == NodeType.Literal && node.children[0].value is string s)
         {
-            path = s;
+            path = Path.Join(AppDomain.CurrentDomain.BaseDirectory,s);
         }
         else
         {
             throw new EigerError(node.filename, node.line, node.pos, "Invalid path", EigerError.ErrorType.RuntimeError);
         }
 
-        if (!path.EndsWith(Globals.fileExtension))
-            path += Globals.fileExtension;
-
         if (Path.GetExtension(path) != Globals.fileExtension) // check extension
         {
             throw new EigerError(node.filename, node.line, node.pos, $"Not a {Globals.fileExtension} file", EigerError.ErrorType.RuntimeError);
         }
+
         string content;
         try
         {
@@ -559,23 +557,7 @@ class Interpreter
             throw new EigerError(node.filename, node.line, node.pos, "Failed to read file", EigerError.ErrorType.RuntimeError);
         }
 
-        try
-        {
-            Lexer lex = new(content, path);
-            List<Token> tokens = lex.Tokenize();
-            Parser parser = new(tokens);
-            ASTNode root = parser.Parse(path);
-            VisitBlockNode(root, symbolTable);
-        }
-        catch (EigerError e)
-        {
-            Console.WriteLine(e.Message);
-        }
-        catch (OverflowException e)
-        {
-            Console.WriteLine($"[INTERNAL] Overflow: {e.Message}");
-        }
-        catch (Exception e) { Console.WriteLine(e); }
+        Program.Execute(content, path, false);
 
         return (false, new Nix(node.filename, node.line, node.pos));
     }
