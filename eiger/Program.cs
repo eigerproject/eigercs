@@ -3,11 +3,10 @@
  * WRITTEN BY VARDAN PETROSYAN
 */
 
-using EigerLang;
 using EigerLang.Errors;
-using EigerLang.Tokenization;
-using EigerLang.Parsing;
 using EigerLang.Execution;
+using EigerLang.Parsing;
+using EigerLang.Tokenization;
 
 namespace EigerLang;
 
@@ -46,7 +45,7 @@ public class Program
             }
             catch (IOException)
             {
-                Console.WriteLine("[INTERNAL] IOError: Failed to read file");
+                Console.WriteLine("[EIGER] Failed to read file");
                 return;
             }
 
@@ -80,7 +79,7 @@ public class Program
         }
         catch (OverflowException e)
         {
-            Console.WriteLine($"[INTERNAL] Overflow: {e.Message}");
+            Console.WriteLine($"[EIGER] Overflow: {e.Message}");
         }
         catch (Exception e) { Console.WriteLine(e); }
     }
