@@ -8,10 +8,10 @@
     |
     <a href="https://eigerproject.github.io/docs" target="_blank">Documentation</a>
     <br><br>
-    <img src="https://img.shields.io/github/license/eigerproject/eigercs?label=license&style=for-the-badge">
-    <img src="https://img.shields.io/github/contributors/eigerproject/eigercs?label=contributors&style=for-the-badge">
-    <img src="https://img.shields.io/github/checks-status/eigerproject/eigercs/master?style=for-the-badge">
-    <img src="https://img.shields.io/github/stars/eigerproject/eigerlang?style=for-the-badge">
+    <img src="https://img.shields.io/github/license/eigerproject/eigercs?label=license">
+    <img src="https://img.shields.io/github/contributors/eigerproject/eigercs?label=contributors">
+    <img src="https://github.com/eigerproject/eigerlang/actions/workflows/test.yml/badge.svg">
+    <img src="https://img.shields.io/github/stars/eigerproject/eigerlang">
   </div>
   <h3>Current Features</h3>
   <ul>
