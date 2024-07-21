@@ -9,6 +9,7 @@
     <a href="https://eigerproject.github.io/docs" target="_blank">Documentation</a>
     <br><br>
     <img src="https://img.shields.io/github/license/eigerproject/eigercs?label=license">
+    <img src="https://img.shields.io/github/repo-size/eigerproject/eigerlang?label=Code%20Size">
     <img src="https://img.shields.io/github/contributors/eigerproject/eigercs?label=contributors">
     <img src="https://github.com/eigerproject/eigerlang/actions/workflows/test.yml/badge.svg">
     <img src="https://img.shields.io/github/stars/eigerproject/eigerlang">
