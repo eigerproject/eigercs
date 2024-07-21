@@ -1,8 +1,10 @@
 class Iterator
     func Iterator(_iter)
-        if _iter ?= nix then
-            emitln("Invalid Collection")
-            ret nix
+        if _iter.type != "string" then
+            if _iter.type != "array" then
+                emitln("Not Iterable!")
+                ret nix
+            end
         end
         this.iter = _iter
         this.length = _iter.length

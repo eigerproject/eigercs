@@ -8,7 +8,7 @@ namespace EigerLang;
 public static class Globals
 {
     public const string langName = "Eigerlang";
-    public const string langVer = "dev ver.";
+    public const string langVer = "0.3cs";
     public const string docUrl = "https://eigerproject.github.io/docs";
     public const string fileExtension = ".ei";
 

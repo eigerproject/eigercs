@@ -1,0 +1,24 @@
+﻿class Event
+	subscribers = []
+
+	func Event() end
+	
+	func Subscribe(subscriber) subscribers += subscriber end
+	
+	func Unsubscribe(subscriber)
+		newSubscribers = []
+		for i = 0 to subscribers.length do
+			if subscribers[i] != subscriber do
+				newSubscribers += subscibers[i]
+			end
+		end
+		subscribers = newSubscribers
+	end
+	
+	func Invoke(eventArgs)
+		for i = 0 to subscribers.length do
+			f = subscribers[i]
+			f(eventArgs)
+		end
+	end
+end

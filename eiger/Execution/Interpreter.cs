@@ -6,8 +6,6 @@
 using EigerLang.Errors;
 using EigerLang.Execution.BuiltInTypes;
 using EigerLang.Parsing;
-using EigerLang.Tokenization;
-using Microsoft.CSharp.RuntimeBinder;
 using Array = EigerLang.Execution.BuiltInTypes.Array;
 
 using Boolean = EigerLang.Execution.BuiltInTypes.Boolean;
@@ -535,7 +533,7 @@ class Interpreter
         }
         else if (node.children[0].type == NodeType.Literal && node.children[0].value is string s)
         {
-            path = Path.Join(AppDomain.CurrentDomain.BaseDirectory,s);
+            path = Path.Join(Directory.GetCurrentDirectory(), s);
         }
         else
         {
