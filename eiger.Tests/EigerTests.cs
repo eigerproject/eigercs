@@ -172,5 +172,46 @@ namespace EigerLang.Tests
                 "I am Name1 Surname1!I am Name2 Surname2!Name1 greeted Name2!"
             );
         }
+
+        [TestMethod]
+        public void BlockScopeTests()
+        {
+            TestCode(
+                "x = 10\nif x ?= 10 then\n y = 20\n emit(y)\nend\nemit(x)",
+                "2010"
+            );
+
+            TestCode(
+                "x = 10\nif x ?= 10 then\n x = 20\n emit(x)\nend\nemit(x)",
+                "2020"
+            );
+
+            TestCode(
+                "x = 5\nfunc example()\n y = x + 2\n emit(y)\nend\nexample()",
+                "7"
+            );
+
+            TestCode(
+                "x = 5\nfunc example()\n x = 10\n emit(x)\nend\nexample()\nemit(x)",
+                "1010"
+            );
+        }
+
+        [TestMethod]
+        public void NestedBlocksTests()
+        {
+            // Nested blocks and scopes
+            TestCode(
+                "x = 5 y = 0\nif x ?= 5 then\n y = 10\n if y ?= 10 then\n z = 15\n emit(z)\n end\n end\nemit(y)\nemit(x)",
+                "15105"
+            );
+
+            // Variables defined in inner blocks not affecting outer blocks
+            TestCode(
+                "x = 5\nif x ?= 5 then\n y = 10\n if y ?= 10 then\n x = 20\n emit(x)\n end\n emit(y)\nend\nemit(x)",
+                "201020"
+            );
+        }
+
     }
 }
