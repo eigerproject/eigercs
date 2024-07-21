@@ -1,6 +1,5 @@
 ﻿/*
  * EIGERLANG GLOBALS
- * WRITTEN BY VARDAN PETROSYAN
 */
 
 namespace EigerLang;

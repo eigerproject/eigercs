@@ -1,12 +1,9 @@
 ﻿/*
  * EIGERLANG PARSER
- * WRITTEN BY VARDAN PETROSYAN
 */
 
 using EigerLang.Errors;
 using EigerLang.Tokenization;
-using System.ComponentModel.Design;
-using System.Xml.Linq;
 
 namespace EigerLang.Parsing;
 
@@ -16,20 +13,20 @@ public class Parser(List<Token> tokens)
     int current;
 
     // term level operators
-    HashSet<TokenType> termOps = new()
+    readonly HashSet<TokenType> termOps = new()
     {
         TokenType.MUL, TokenType.DIV,
         TokenType.PERC, TokenType.CARET
     };
 
     // expression level operators
-    HashSet<TokenType> exprOps = new()
+    readonly HashSet<TokenType> exprOps = new()
     {
         TokenType.PLUS, TokenType.MINUS
     };
 
     // comparison or assignment level operators
-    HashSet<TokenType> comparOps = new()
+    readonly HashSet<TokenType> comparOps = new()
     {
         TokenType.EQ, TokenType.PLUSEQ,TokenType.MINUSEQ,TokenType.MULEQ,TokenType.DIVEQ,TokenType.EQEQ, TokenType.NEQEQ,TokenType.GT, TokenType.LT, TokenType.GTE, TokenType.LTE,
     };
@@ -48,10 +45,9 @@ public class Parser(List<Token> tokens)
     {
         // if the pointer is inside the bounds of the token array
         if (current < tokens.Count)
-        {
             // return the current token and advance
             return tokens[current++];
-        }
+
         // if not, throw error
         throw new EigerError(path, tokens[^1].line, tokens[^1].pos, "Unexpected End of Input", EigerError.ErrorType.ParserError);
     }
@@ -61,10 +57,8 @@ public class Parser(List<Token> tokens)
     {
         // if the pointer is inside the bounds of the token array
         if (current < tokens.Count)
-        {
             // return the current token
             return tokens[current];
-        }
 
         // i don't know what to return here, this not a good solution
         return new Token(-1, -1, TokenType.UNDEFINED);
@@ -75,10 +69,8 @@ public class Parser(List<Token> tokens)
     {
         // if the pointer is inside the bounds of the token array
         if (current + 1 < tokens.Count)
-        {
             // return the next token without advancing
             return tokens[current + 1];
-        }
         return null;
     }
 
@@ -86,36 +78,24 @@ public class Parser(List<Token> tokens)
     void Match(TokenType type)
     {
         if (Peek().type == TokenType.UNDEFINED)
-        {
             throw new EigerError(path, tokens[^1].line, tokens[^1].pos, $"Unexpected end of Input", EigerError.ErrorType.ParserError);
-        }
 
         if (Peek().type == type)
-        {
             Advance();
-        }
         else
-        {
             throw new EigerError(path, Peek().line, Peek().pos, $"{Globals.UnexpectedTokenStr} `{Peek().value}`", EigerError.ErrorType.ParserError);
-        }
     }
 
     // check if the current token matches the expected one and advance
     void Match(TokenType type, dynamic expected)
     {
         if (Peek().type == TokenType.UNDEFINED)
-        {
             throw new EigerError(path, tokens[^1].line, tokens[^1].pos, $"Unexpected end of Input", EigerError.ErrorType.ParserError);
-        }
 
         if (Peek().type == type && Peek().value == expected)
-        {
             Advance();
-        }
         else
-        {
             throw new EigerError(path, Peek().line, Peek().pos, $"{Globals.UnexpectedTokenStr} `{Peek().value}`", EigerError.ErrorType.ParserError);
-        }
     }
 
     // statement list
@@ -125,9 +105,7 @@ public class Parser(List<Token> tokens)
         // add statements until the end of block (end or else)
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
         while (current < tokens.Count && Peek().value.ToString() != "end" && Peek().value.ToString() != "else" && Peek().value.ToString() != "elif")
-        {
             root.AddChild(Statement());
-        }
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
         return root;
     }
@@ -137,19 +115,19 @@ public class Parser(List<Token> tokens)
     {
         // store the peeked token
         Token peeked = Peek();
-        switch (peeked.value)
+        return peeked.value switch
         {
             // if it's a statement, parse a statement, else, parse an expression
-            case "if": return IfStatement();
-            case "for": return ForToStatement();
-            case "while": return WhileStatement();
-            case "func": return FuncDefStatement();
-            case "ret": return RetStatement();
-            case "class": return ClassStatement();
-            case "dataclass": return DataclassStatement();
-            case "include": return IncludeStatement();
-            default: return Expr();
-        }
+            "if" => IfStatement(),
+            "for" => ForToStatement(),
+            "while" => WhileStatement(),
+            "func" => FuncDefStatement(),
+            "ret" => RetStatement(),
+            "class" => ClassStatement(),
+            "dataclass" => DataclassStatement(),
+            "include" => IncludeStatement(),
+            _ => Expr(),
+        };
     }
 
     // include statement
@@ -206,9 +184,7 @@ public class Parser(List<Token> tokens)
         node.AddChild(rootNode);
 
         foreach (var arg in args)
-        {
             node.AddChild(arg);
-        }
 
         return node;
     }
@@ -239,9 +215,7 @@ public class Parser(List<Token> tokens)
         {
             Match(TokenType.RPAREN);
             if (Peek().type == TokenType.DOT) // if it's an atrribute access of function call like Person("test").a
-            {
                 return ParseAttrAccess(node);
-            }
             return node;
         }
 
@@ -412,13 +386,9 @@ public class Parser(List<Token> tokens)
         ifNode.AddChild(condition);
         ifNode.AddChild(ifBlock);
         foreach (var elseIfNode in elseIfBranches)
-        {
             ifNode.AddChild(elseIfNode);
-        }
         if (elseBranch != null)
-        {
             ifNode.AddChild(elseBranch);
-        }
         return ifNode;
     }
 
@@ -453,9 +423,7 @@ public class Parser(List<Token> tokens)
             }
             // done parsing expression
             else
-            {
                 break;
-            }
         }
         return node;
     }
@@ -479,111 +447,79 @@ public class Parser(List<Token> tokens)
         return node;
     }
 
-    // factor
+    ASTNode CreateLiteralNode(Token token)
+    {
+        return new ASTNode(NodeType.Literal, token.value, token.line, token.pos, path);
+    }
+
+    ASTNode HandleUnaryOp(Token op)
+    {
+        ASTNode fact = Factor();
+        ASTNode unaryOpNode = new(NodeType.UnaryOp, op.value, op.line, op.pos, path);
+        unaryOpNode.AddChild(fact);
+
+        return (Peek().type == TokenType.DOT) ? ParseAttrAccess(unaryOpNode) : unaryOpNode;
+    }
+
+    ASTNode HandleIdentifier(Token identToken, bool checkFuncCall)
+    {
+        ASTNode identNode = new ASTNode(NodeType.Identifier, identToken.value, identToken.line, identToken.pos, path);
+
+        if (checkFuncCall)
+        {
+            if (Peek().type == TokenType.DOT) return ParseAttrAccess(identNode);
+            if (Peek().type == TokenType.LSQUARE) return ParseElementAccess(identNode);
+            if (Peek().type == TokenType.LPAREN) return FunctionCallStatement(identNode);
+        }
+
+        return (identToken.value == "true" || identToken.value == "false" || identToken.value == "nix") ? CreateLiteralNode(identToken) : identNode;
+    }
+
+    ASTNode HandleStringLiteral(Token stringToken)
+    {
+        ASTNode stringNode = CreateLiteralNode(stringToken);
+        if (Peek().type == TokenType.LSQUARE) return ParseElementAccess(stringNode);
+        if (Peek().type == TokenType.DOT) return ParseAttrAccess(stringNode);
+        return stringNode;
+    }
+
+    ASTNode HandleParenthesisExpression()
+    {
+        Match(TokenType.LPAREN);
+        ASTNode node = Expr();
+        Match(TokenType.RPAREN);
+
+        if (Peek().type == TokenType.LSQUARE) return ParseElementAccess(node);
+        if (Peek().type == TokenType.DOT) return ParseAttrAccess(node);
+        return node;
+    }
+
     ASTNode Factor(bool checkFuncCall = true)
     {
-        // if its a number literal
-        if (Peek().type == TokenType.NUMBER)
+        switch (Peek().type)
         {
-            Token numberToken = Advance();
+            case TokenType.NUMBER:
+                Token numberToken = Advance();
+                return (Peek().type == TokenType.DOT) ? ParseAttrAccess(CreateLiteralNode(numberToken)) : CreateLiteralNode(numberToken);
+            case TokenType.MINUS:
+            case TokenType.IDENTIFIER when Peek().value == "not":
+                return HandleUnaryOp(Advance());
+            case TokenType.IDENTIFIER:
+                return HandleIdentifier(Advance(), checkFuncCall);
+            case TokenType.STRING:
+                return HandleStringLiteral(Advance());
+            case TokenType.LPAREN:
+                return HandleParenthesisExpression();
+            case TokenType.LSQUARE:
+                return ParseArrayLiteral();
+            case TokenType.UNDEFINED:
+                throw new EigerError(path, tokens[^1].line, tokens[^1].pos, $"Unexpected end of Input", EigerError.ErrorType.ParserError);
 
-            if (Peek().type == TokenType.DOT) // if it's an atrribute access of a literal like a.AsString()
-            {
-                return ParseAttrAccess(new ASTNode(NodeType.Literal, numberToken.value, numberToken.line, numberToken.pos, path));
-            }
-
-            return new ASTNode(NodeType.Literal, numberToken.value, numberToken.line, numberToken.pos, path);
-        }
-        // if its a unary operator
-        else if (Peek().type == TokenType.MINUS || Peek().value == "not")
-        {
-            Token op = Advance();
-            ASTNode fact = Factor();
-
-            ASTNode unaryOpNode = new(NodeType.UnaryOp, op.value, op.line, op.pos, path);
-            unaryOpNode.AddChild(fact);
-
-            if (Peek().type == TokenType.DOT)
-            {
-                return ParseAttrAccess(unaryOpNode);
-            }
-
-            return unaryOpNode;
-        }
-        // if it's an identifier
-        else if (Peek().type == TokenType.IDENTIFIER)
-        {
-            Token identToken = Advance();
-            // Check for function call or element access
-            if (Peek().type == TokenType.DOT && checkFuncCall)
-            {
-                return ParseAttrAccess(new ASTNode(NodeType.Identifier, identToken.value, identToken.line, identToken.pos, path));
-            }
-            else if (Peek().type == TokenType.LSQUARE && checkFuncCall)
-            {
-                return ParseElementAccess(new ASTNode(NodeType.Identifier, identToken.value, identToken.line, identToken.pos, path));
-            }
-            else if (Peek().type == TokenType.LPAREN && checkFuncCall)
-            {
-                return FunctionCallStatement(new ASTNode(NodeType.Identifier, identToken.value, identToken.line, identToken.pos, path));
-            }
-            else
-            {
-                if (identToken.value == "true" || identToken.value == "false" || identToken.value == "nix")
-                    return new ASTNode(NodeType.Literal, identToken.value, identToken.line, identToken.pos, path);
-                else
-                    return new ASTNode(NodeType.Identifier, identToken.value, identToken.line, identToken.pos, path);
-            }
-        }
-        // if it's a string literal
-        else if (Peek().type == TokenType.STRING)
-        {
-            Token stringToken = Advance();
-            ASTNode stringNode = new ASTNode(NodeType.Literal, stringToken.value, stringToken.line, stringToken.pos, path);
-            // Check for element access
-            if (Peek().type == TokenType.LSQUARE)
-            {
-                return ParseElementAccess(stringNode);
-            }
-            else if (Peek().type == TokenType.DOT) // if it's an atrribute access of a literal like a.AsString()
-            {
-                return ParseAttrAccess(stringNode);
-            }
-            return stringNode;
-        }
-        // parenthesis in expressions
-        else if (Peek().type == TokenType.LPAREN)
-        {
-            Match(TokenType.LPAREN);
-            ASTNode node = Expr();
-            Match(TokenType.RPAREN);
-
-            if (Peek().type == TokenType.LSQUARE)
-            {
-                return ParseElementAccess(node);
-            }
-            else if (Peek().type == TokenType.DOT) // if it's an atrribute access of a literal like a.AsString()
-            {
-                return ParseAttrAccess(node);
-            }
-
-            return node;
-        }
-        // if it's an array
-        else if (Peek().type == TokenType.LSQUARE)
-        {
-            return ParseArrayLiteral();
-        }
-        else if (Peek().type == TokenType.UNDEFINED)
-        {
-            throw new EigerError(path, tokens[^1].line, tokens[^1].pos, $"Unexpected end of Input", EigerError.ErrorType.ParserError);
-        }
-        else
-        {
-            // unexpected token
-            throw new EigerError(path, Peek().line, Peek().pos, $"{Globals.UnexpectedTokenStr} `{Peek().value}`", EigerError.ErrorType.ParserError);
+            default:
+                throw new EigerError(path, Peek().line, Peek().pos, $"{Globals.UnexpectedTokenStr} `{Peek().value}`", EigerError.ErrorType.ParserError);
         }
     }
+
 
     // Parse array literal
     ASTNode ParseArrayLiteral()
@@ -600,13 +536,9 @@ public class Parser(List<Token> tokens)
         }
         // Check for element access
         if (Peek().type == TokenType.LSQUARE)
-        {
             return ParseElementAccess(arrayNode);
-        }
         else if (Peek().type == TokenType.DOT) // if it's an atrribute access of a literal like a.AsString()
-        {
             return ParseAttrAccess(arrayNode);
-        }
         return arrayNode;
     }
 
@@ -624,19 +556,12 @@ public class Parser(List<Token> tokens)
                 target = attrAccessNode;
             }
             else if (Peek().type == TokenType.LSQUARE)
-            {
                 target = ParseElementAccess(target);
-            }
             else if (Peek().type == TokenType.LPAREN)
-            {
                 target = FunctionCallStatement(target);
-            }
             else
-            {
                 break;
-            }
         }
-
         return target;
     }
 
@@ -657,9 +582,7 @@ public class Parser(List<Token> tokens)
         }
 
         if (Peek().type == TokenType.DOT) // if it's an atrribute access of a literal like a.AsString()
-        {
             return ParseAttrAccess(target);
-        }
 
         return target;
     }

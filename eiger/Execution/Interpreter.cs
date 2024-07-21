@@ -1,13 +1,11 @@
 ﻿/*
  * EIGERLANG INTERPRETER
- * WRITTEN BY VARDAN PETROSYAN
 */
 
 using EigerLang.Errors;
 using EigerLang.Execution.BuiltInTypes;
 using EigerLang.Parsing;
 using Array = EigerLang.Execution.BuiltInTypes.Array;
-
 using Boolean = EigerLang.Execution.BuiltInTypes.Boolean;
 
 namespace EigerLang.Execution;
@@ -33,9 +31,6 @@ class Interpreter
         {"int",intFunction},
         {"double",doubleFunction},
     };
-
-    // if the interpreter interprets code written in the shell
-    bool inShell = false;
 
     // function for visiting a node
     public static (bool, Value) VisitNode(ASTNode node, Dictionary<string, Value> symbolTable)
@@ -352,71 +347,52 @@ class Interpreter
     // visit binary operator node
     static (bool, Value) VisitBinOpNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
-        // prepare a variable for return value
-        Value retVal;
-
         Value leftSide = new Nix(node.filename, node.line, node.pos);
 
         if (node.value != "=")
             leftSide = VisitNode(node.children[0], symbolTable).Item2;
 
         Value rightSide = VisitNode(node.children[1], symbolTable).Item2;
-
-        switch (node.value)
+        // prepare a variable for return value
+        Value retVal = node.value switch
         {
             // check each available binary operator
-            case "+": retVal = leftSide.AddedTo(rightSide); break;
-            case "-": retVal = leftSide.SubbedBy(rightSide); break;
-            case "*": retVal = leftSide.MultedBy(rightSide); break;
-            case "/": retVal = leftSide.DivedBy(rightSide); break;
-            case "%": retVal = leftSide.ModdedBy(rightSide); break;
-            case "^": retVal = leftSide.ExpedBy(rightSide); break;
-            case "?=": retVal = leftSide.ComparisonEqeq(rightSide); break;
-            case "<": retVal = leftSide.ComparisonLT(rightSide); break;
-            case ">": retVal = leftSide.ComparisonGT(rightSide); break;
-            case "<=": retVal = leftSide.ComparisonLTE(rightSide); break;
-            case ">=": retVal = leftSide.ComparisonGTE(rightSide); break;
-            case "!=": retVal = leftSide.ComparisonNeqeq(rightSide); break;
-            // assignment operator (assign a value to a variable and return it)
-            case "=":
-                {
-                    SetSymbol(symbolTable, node.children[0], rightSide);
-                    retVal = rightSide;
-                }
-                break;
-            // compound assignment operators (change the variable's value and return the new value)
-            case "+=":
-                {
-                    Value newVal = GetSymbol(symbolTable, node.children[0]).AddedTo(rightSide);
-                    SetSymbol(symbolTable, node.children[0], newVal);
-                    retVal = newVal;
-                }
-                break;
-            case "-=":
-                {
-                    Value newVal = GetSymbol(symbolTable, node.children[0]).SubbedBy(rightSide);
-                    SetSymbol(symbolTable, node.children[0], newVal);
-                    retVal = newVal;
-                }
-                break;
-            case "*=":
-                {
-                    Value newVal = GetSymbol(symbolTable, node.children[0]).MultedBy(rightSide);
-                    SetSymbol(symbolTable, node.children[0], newVal);
-                    retVal = newVal;
-                }
-                break;
-            case "/=":
-                {
-                    Value newVal = GetSymbol(symbolTable, node.children[0]).DivedBy(rightSide);
-                    SetSymbol(symbolTable, node.children[0], newVal);
-                    retVal = newVal;
-                }
-                break;
-            default: throw new EigerError(node.filename, node.line, node.pos, $"{Globals.InvalidOperationStr}: {node.value}", EigerError.ErrorType.InvalidOperationError);
-        }
+            "+" => leftSide.AddedTo(rightSide),
+            "-" => leftSide.SubbedBy(rightSide),
+            "*" => leftSide.MultedBy(rightSide),
+            "/" => leftSide.DivedBy(rightSide),
+            "%" => leftSide.ModdedBy(rightSide),
+            "^" => leftSide.ExpedBy(rightSide),
+            "?=" => leftSide.ComparisonEqeq(rightSide),
+            "<" => leftSide.ComparisonLT(rightSide),
+            ">" => leftSide.ComparisonGT(rightSide),
+            "<=" => leftSide.ComparisonLTE(rightSide),
+            ">=" => leftSide.ComparisonGTE(rightSide),
+            "!=" => leftSide.ComparisonNeqeq(rightSide),
+            "=" => HandleAssignment(node, rightSide, symbolTable),
+            "+=" => HandleCompoundAssignment(node, rightSide, symbolTable, (left, right) => left.AddedTo(right)),
+            "-=" => HandleCompoundAssignment(node, rightSide, symbolTable, (left, right) => left.SubbedBy(right)),
+            "*=" => HandleCompoundAssignment(node, rightSide, symbolTable, (left, right) => left.MultedBy(right)),
+            "/=" => HandleCompoundAssignment(node, rightSide, symbolTable, (left, right) => left.DivedBy(right)),
+            _ => throw new EigerError(node.filename, node.line, node.pos, $"{Globals.InvalidOperationStr}: {node.value}", EigerError.ErrorType.InvalidOperationError),
+        };
         return (false, retVal);
     }
+
+    private static Value HandleAssignment(ASTNode node, Value rightSide, Dictionary<string, Value> symbolTable)
+    {
+        SetSymbol(symbolTable, node.children[0], rightSide);
+        return rightSide;
+    }
+
+    private static Value HandleCompoundAssignment(ASTNode node, Value rightSide, Dictionary<string, Value> symbolTable, Func<Value, Value, Value> operation)
+    {
+        Value leftValue = GetSymbol(symbolTable, node.children[0]);
+        Value newValue = operation(leftValue, rightSide);
+        SetSymbol(symbolTable, node.children[0], newValue);
+        return newValue;
+    }
+
 
     // visit literal node (pretty self-explanatory)
     static (bool, Value) VisitLiteralNode(ASTNode node, Dictionary<string, Value> symbolTable)

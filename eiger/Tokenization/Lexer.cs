@@ -1,6 +1,5 @@
 ﻿/*
  * EIGERLANG LEXER (TOKENIZER)
- * WRITTEN BY VARDAN PETROSYAN
 */
 
 using EigerLang.Errors;
@@ -125,11 +124,8 @@ public class Lexer
     public List<Token> Tokenize()
     {
         List<Token> result = new List<Token>();
-
-        // reset values (just in case)
         ptr = 0;
 
-        // if the code is empty, return empty list
         if (source.Length == 0) return result;
 
         current_char = source[ptr];
@@ -139,160 +135,90 @@ public class Lexer
         while (ptr < source.Length)
         {
             if (current_char == '\0') break;
-            else if (current_char == ' ' || current_char == '\t' || current_char == '\r') // if it's a whitespace, ignore
-            {
-                Advance();
-                continue;
-            }
-            else if (current_char == '~') // if it's a comment
-            {
+            else if (char.IsWhiteSpace(current_char))
+            { }
+            else if (current_char == '~')
                 SkipComment();
-            }
-            else if (current_char == '\n') // if it's a newline
+            else if (current_char == '\n')
             {
                 current_line++;
                 current_pos = 1;
                 Advance();
-                continue;
             }
-            else if (char.IsLetter(current_char) || current_char == '_') // if it's a letter outside a string
-            {
+           
+            else if (char.IsLetter(current_char) || current_char == '_')
                 result.Add(MakeIdent());
-            }
-            else if (char.IsDigit(current_char)) // if it's a digit outside a string
-            {
+            else if (char.IsDigit(current_char))
                 result.Add(MakeNumber());
-            }
-            else if (current_char == '"') // if its a double quote (string)
-            {
+            else if (current_char == '"')
                 result.Add(MakeString());
-            }
-            else if (current_char == '(') // if it's a left parenthasis
-            {
-                result.Add(new Token(current_line, current_pos, TokenType.LPAREN, "("));
-            }
-            else if (current_char == ']') // if it's a right parenthasis
-            {
-                result.Add(new Token(current_line, current_pos, TokenType.RSQUARE, "]"));
-            }
-            else if (current_char == '[') // if it's a left parenthasis
-            {
-                result.Add(new Token(current_line, current_pos, TokenType.LSQUARE, "["));
-            }
-            else if (current_char == ')') // if it's a right parenthasis
-            {
-                result.Add(new Token(current_line, current_pos, TokenType.RPAREN, ")"));
-            }
-            else if (current_char == '.') // if it's a dot
-            {
-                result.Add(new Token(current_line, current_pos, TokenType.DOT, "."));
-            }
-            else if (current_char == '^') // if it's a caret
-            {
-                result.Add(new Token(current_line, current_pos, TokenType.CARET, "^"));
-            }
-            else if (current_char == '%') // if it's a percent
-            {
-                result.Add(new Token(current_line, current_pos, TokenType.PERC, "%"));
-            }
-            else if (current_char == '+') // if it's a plus
-            {
-                Advance();
-                if (current_char == '=') // if the next one is an equal sign
-                    result.Add(new Token(current_line, current_pos, TokenType.PLUSEQ, "+="));
-                else
-                {
-                    result.Add(new Token(current_line, current_pos, TokenType.PLUS, "+"));
-                    Reverse();
-                }
-            }
-            else if (current_char == '-') // if it's a minus
-            {
-                Advance();
-                if (current_char == '=') // if the next one is an equal sign
-                    result.Add(new Token(current_line, current_pos, TokenType.MINUSEQ, "-="));
-                else
-                {
-                    result.Add(new Token(current_line, current_pos, TokenType.MINUS, "-"));
-                    Reverse();
-                }
-            }
-            else if (current_char == '*') // if it's a star
-            {
-                Advance();
-                if (current_char == '=') // if the next one is an equal sign
-                    result.Add(new Token(current_line, current_pos, TokenType.MULEQ, "*="));
-                else
-                {
-                    result.Add(new Token(current_line, current_pos, TokenType.MUL, "*"));
-                    Reverse();
-                }
-            }
-            else if (current_char == '/') // if it's a division
-            {
-                Advance();
-                if (current_char == '=') // if the next one is an equal sign
-                    result.Add(new Token(current_line, current_pos, TokenType.DIVEQ, "/="));
-                else
-                {
-                    result.Add(new Token(current_line, current_pos, TokenType.DIV, "/"));
-                    Reverse();
-                }
-            }
-            else if (current_char == '=') // if it's an equal sign
-            {
-                result.Add(new Token(current_line, current_pos, TokenType.EQ, "="));
-            }
-            else if (current_char == ',') // if it's a comma
-            {
-                result.Add(new Token(current_line, current_pos, TokenType.COMMA, ","));
-            }
-            else if (current_char == '>') // if it's a greater-than
-            {
-                Advance();
-                if (current_char == '=') // if the next one is an equal sign
-                    result.Add(new Token(current_line, current_pos, TokenType.GTE, ">="));
-                else
-                {
-                    result.Add(new Token(current_line, current_pos, TokenType.GT, ">"));
-                    Reverse();
-                }
-            }
-            else if (current_char == '<') // if it's a less-than
-            {
-                Advance();
-                if (current_char == '=') // if the next one is an equal sign
-                    result.Add(new Token(current_line, current_pos, TokenType.LTE, "<="));
-                else
-                {
-                    result.Add(new Token(current_line, current_pos, TokenType.LT, "<"));
-                    Reverse();
-                }
-            }
-            else if (current_char == '?') // if it's a question mark
-            {
-                Advance();
-                if (current_char == '=') // if the next one is an equal sign 
-                    result.Add(new Token(current_line, current_pos, TokenType.EQEQ, "?="));
-                else
-                    throw new EigerError(path, current_line, current_pos, $"{Globals.InvalidCharStr} {current_char}", EigerError.ErrorType.LexerError);
-            }
-            else if (current_char == '!') // if it's an exclamation mark
-            {
-                Advance();
-                if (current_char == '=') // if the next one is an equal sign
-                    result.Add(new Token(current_line, current_pos, TokenType.NEQEQ, "!="));
-                else
-                    throw new EigerError(path, current_line, current_pos, $"{Globals.InvalidCharStr} {current_char}", EigerError.ErrorType.LexerError);
-            }
             else
-            {
-                throw new EigerError(path, current_line, current_pos, $"{Globals.InvalidCharStr} {current_char}", EigerError.ErrorType.LexerError);
-            }
+                HandleSpecialCharacters(result);
+
             Advance();
         }
         return result;
     }
+
+    private void HandleSpecialCharacters(List<Token> result)
+    {
+        var singleCharTokens = new Dictionary<char, TokenType>
+        {
+            { '(', TokenType.LPAREN },
+            { ')', TokenType.RPAREN },
+            { '[', TokenType.LSQUARE },
+            { ']', TokenType.RSQUARE },
+            { '.', TokenType.DOT },
+            { '^', TokenType.CARET },
+            { '%', TokenType.PERC },
+            { ',', TokenType.COMMA },
+            { '=', TokenType.EQ }
+        };
+
+        var compoundCharTokens = new Dictionary<char, (TokenType single, TokenType compound)>
+        {
+            { '+', (TokenType.PLUS, TokenType.PLUSEQ) },
+            { '-', (TokenType.MINUS, TokenType.MINUSEQ) },
+            { '*', (TokenType.MUL, TokenType.MULEQ) },
+            { '/', (TokenType.DIV, TokenType.DIVEQ) },
+            { '>', (TokenType.GT, TokenType.GTE) },
+            { '<', (TokenType.LT, TokenType.LTE) }
+        };
+
+        if (singleCharTokens.TryGetValue(current_char, out TokenType value))
+            result.Add(new Token(current_line, current_pos, value, current_char.ToString()));
+        else if (compoundCharTokens.TryGetValue(current_char, out (TokenType single, TokenType compound) value2))
+            HandleCompoundOrSingleToken(result, value2.single, value2.compound, current_char);
+        else if (current_char == '?' || current_char == '!')
+            HandleInvalidCompoundToken(result, current_char == '?' ? TokenType.EQEQ : TokenType.NEQEQ, current_char);
+        else
+            throw new EigerError(path, current_line, current_pos, $"{Globals.InvalidCharStr} {current_char}", EigerError.ErrorType.LexerError);
+    }
+
+
+    private void HandleCompoundOrSingleToken(List<Token> result, TokenType singleTokenType, TokenType compoundTokenType, char compoundChar)
+    {
+        Advance();
+        if (current_char == '=')
+            result.Add(new Token(current_line, current_pos, compoundTokenType, $"{compoundChar}="));
+        else
+        {
+            result.Add(new Token(current_line, current_pos, singleTokenType, $"{compoundChar}"));
+            Reverse();
+        }
+    }
+
+    private void HandleInvalidCompoundToken(List<Token> result, TokenType compoundTokenType, char compoundChar)
+    {
+        Advance();
+        if (current_char == '=')
+            result.Add(new Token(current_line, current_pos, compoundTokenType, $"{compoundChar}="));
+        else
+        {
+            throw new EigerError(path, current_line, current_pos, $"{Globals.InvalidCharStr} {compoundChar}", EigerError.ErrorType.LexerError);
+        }
+    }
+
 
     // constructor
     public Lexer(string source, string path)

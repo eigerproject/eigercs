@@ -1,6 +1,5 @@
 ﻿/*
  * EIGERLANG MAIN
- * WRITTEN BY VARDAN PETROSYAN
 */
 
 using EigerLang.Errors;

@@ -1,6 +1,5 @@
 ﻿/*
  * EIGERLANG NODETYPE ENUM
- * WRITTEN BY VARDAN PETROSYAN
 */
 
 namespace EigerLang.Parsing;

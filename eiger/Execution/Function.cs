@@ -1,11 +1,10 @@
 ﻿/*
  * EIGERLANG FUNCTION CLASSES
- * WRITTEN BY VARDAN PETROSYAN
 */
 
 using EigerLang.Errors;
-using EigerLang.Parsing;
 using EigerLang.Execution.BuiltInTypes;
+using EigerLang.Parsing;
 
 namespace EigerLang.Execution;
 

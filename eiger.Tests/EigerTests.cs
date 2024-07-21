@@ -129,6 +129,25 @@ namespace EigerLang.Tests
         }
 
         [TestMethod]
+        public void OOPInlineTest()
+        {
+            // Test creating and using a class instance inline
+            TestCode(
+                "class Person\n" +
+                "    func Person(name, surname)\n" +
+                "        this.name = name\n" +
+                "        this.surname = surname\n" +
+                "    end\n" +
+                "    func Introduction()\n" +
+                "        emitln(\"I am \" + this.name + \" \" + this.surname + \"!\")\n" +
+                "    end\n" +
+                "end\n" +
+                "Person(\"a\", \"b\").Introduction()",
+                "I am a b!"
+            );
+        }
+
+        [TestMethod]
         public void OOPClassTests()
         {
             // Test class instantiation and method calls
@@ -151,21 +170,6 @@ namespace EigerLang.Tests
                 "py.Introduction()\n" +
                 "px.Greet(py)",
                 "I am Name1 Surname1!I am Name2 Surname2!Name1 greeted Name2!"
-            );
-
-            // Test creating and using a class instance inline
-            TestCode(
-                "class Person\n" +
-                "    func Person(name, surname)\n" +
-                "        this.name = name\n" +
-                "        this.surname = surname\n" +
-                "    end\n" +
-                "    func Introduction()\n" +
-                "        emitln(\"I am \" + this.name + \" \" + this.surname + \"!\")\n" +
-                "    end\n" +
-                "end\n" +
-                "Person(\"a\", \"b\").Introduction()",
-                "I am a b!"
             );
         }
     }

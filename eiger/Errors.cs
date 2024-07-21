@@ -1,6 +1,5 @@
 ﻿/*
  * EIGERLANG ERRORS
- * WRITTEN BY VARDAN PETROSYAN
 */
 
 namespace EigerLang.Errors;

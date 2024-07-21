@@ -1,6 +1,5 @@
 ﻿/*
  * EIGERLANG ASTNODE CLASS
- * WRITTEN BY VARDAN PETROSYAN
 */
 
 namespace EigerLang.Parsing;

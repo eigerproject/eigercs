@@ -1,6 +1,5 @@
 ﻿/*
  * EIGERLANG TOKEN TYPE
- * WRITTEN BY VARDAN PETROSYAN
 */
 
 namespace EigerLang.Tokenization;
