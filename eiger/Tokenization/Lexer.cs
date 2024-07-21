@@ -123,7 +123,7 @@ public class Lexer
     // main function to tokenize code
     public List<Token> Tokenize()
     {
-        List<Token> result = new List<Token>();
+        List<Token> result = [];
         ptr = 0;
 
         if (source.Length == 0) return result;
@@ -145,7 +145,7 @@ public class Lexer
                 current_pos = 1;
                 Advance();
             }
-           
+
             else if (char.IsLetter(current_char) || current_char == '_')
                 result.Add(MakeIdent());
             else if (char.IsDigit(current_char))

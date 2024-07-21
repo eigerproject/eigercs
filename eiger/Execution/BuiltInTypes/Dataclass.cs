@@ -8,6 +8,7 @@ public class Dataclass : Value
     public string filename;
     public int line, pos;
     public Dictionary<string, Value> symbolTable;
+    public Dictionary<string, Value> properties;
 
     public Dataclass(string filename, int line, int pos, string name, Dictionary<string, Value> symbolTable, ASTNode blockNode) : base(filename, line, pos)
     {
@@ -18,27 +19,28 @@ public class Dataclass : Value
 
 
         // create local symbol table
-        Dictionary<string, Value> localSymbolTable = new(symbolTable);
-
-        localSymbolTable["this"] = this;
+        Dictionary<string, Value> localSymbolTable = new(symbolTable)
+        {
+            ["this"] = this
+        };
 
         this.symbolTable = localSymbolTable;
 
         Interpreter.VisitBlockNode(blockNode, localSymbolTable);
+        properties = Interpreter.GetDictionaryDifference(symbolTable, localSymbolTable);
     }
 
     public override Value GetAttr(ASTNode attr)
     {
         if (attr.value == "type")
-        {
             return new String(filename, line, pos, "dataclass");
-        }
-        return Interpreter.GetSymbol(symbolTable, attr);
+
+        return Interpreter.GetSymbol(properties, attr);
     }
 
     public override void SetAttr(ASTNode attr, Value val)
     {
-        Interpreter.SetSymbol(symbolTable, attr, val);
+        Interpreter.SetSymbol(properties, attr, val);
     }
 
     public override string ToString()

@@ -1,7 +1,4 @@
-﻿using EigerLang.Errors;
-using EigerLang.Parsing;
-using System;
-using System.IO;
+﻿using EigerLang.Parsing;
 
 namespace EigerLang.Execution.BuiltInTypes;
 
@@ -33,6 +30,8 @@ public class Class : Value
         localSymbolTable["this"] = inst;
 
         Interpreter.VisitBlockNode(blockNode, localSymbolTable);
+
+        localSymbolTable = Interpreter.GetDictionaryDifference(symbolTable, localSymbolTable);
 
         if (localSymbolTable.TryGetValue(name, out Value value))
             if (value is Function constructorFunc)

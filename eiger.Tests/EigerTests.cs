@@ -28,7 +28,7 @@ namespace EigerLang.Tests
         {
             _stringBuilder.Clear(); // Clear the StringBuilder
             Program.Execute(code, "<stdin>", printexprs);
-            string actual = _stringWriter.ToString().Trim().Replace("\r\n","\r");
+            string actual = _stringWriter.ToString().Trim().Replace("\r\n", "\r");
             Assert.AreEqual(expected.Trim(), actual.Trim());
         }
 

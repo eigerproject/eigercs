@@ -82,7 +82,6 @@ class Interpreter
         // loop through each statement
         foreach (var child in node.children)
         {
-            // visit each statement
             (bool didReturn, Value value) = VisitNode(child, symbolTable);
 
             // Sync local and parent symbol tables
@@ -224,29 +223,13 @@ class Interpreter
 
         Value func = VisitNode(node.children[0], symbolTable).Item2;
 
-        // if the symbol we're calling is a function (it might be something else, like a variable)
-        if (func is BaseFunction f) // BaseFunction is the class both custom and built-in functions extend from
-        {
-            List<Value> args = []; // prepare a list for args
-            for (int i = 1; i < node.children.Count; i++)
-            {
-                Value val = VisitNode(node.children[i], symbolTable).Item2 ?? throw new EigerError(node.filename, node.line, node.pos, Globals.ArgumentErrorStr, EigerError.ErrorType.ArgumentError);
-                args.Add(val);
-            }
+        // if the symbol we're calling is a function or a class (it might be something else, like a variable)
+        List<Value> args = PrepareArguments(node, symbolTable);
 
+        if (func is BaseFunction f)
             return f.Execute(args, node.line, node.pos, node.filename);
-        }
-        else if (func is Class c) // we're calling a class constructor
-        {
-            List<Value> args = []; // prepare a list for args
-            for (int i = 1; i < node.children.Count; i++)
-            {
-                Value val = VisitNode(node.children[i], symbolTable).Item2 ?? throw new EigerError(node.filename, node.line, node.pos, Globals.ArgumentErrorStr, EigerError.ErrorType.ArgumentError);
-                args.Add(val);
-            }
-
+        else if (func is Class c)
             return c.Execute(args);
-        }
         else
             throw new EigerError(node.filename, node.line, node.pos, $"{node.value} is not a function", EigerError.ErrorType.RuntimeError);
     }
@@ -323,24 +306,18 @@ class Interpreter
     // visit unary operator node
     static (bool, Value) VisitUnaryOpNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
-        // prepare a variable for return value
-        Value retVal;
-
         // get unary operator
         string unaryOp = node.value ?? throw new EigerError(node.filename, node.line, node.pos, "Invalid Unary Operator", EigerError.ErrorType.RuntimeError);
 
         // get right side without unary operator
         Value rightSide = VisitNode(node.children[0], symbolTable).Item2;
-
-        // switch for every unary operator
-        switch (unaryOp)
+        // prepare a variable for return value
+        Value retVal = unaryOp switch
         {
-            case "-": retVal = rightSide.Negative(); break;
-            case "not": retVal = rightSide.Notted(); break;
-            default:
-                throw new EigerError(node.filename, node.line, node.pos, "Invalid Unary Operator", EigerError.ErrorType.RuntimeError);
-        }
-
+            "-" => rightSide.Negative(),
+            "not" => rightSide.Notted(),
+            _ => throw new EigerError(node.filename, node.line, node.pos, "Invalid Unary Operator", EigerError.ErrorType.RuntimeError),
+        };
         return (false, retVal);
     }
 
@@ -582,6 +559,32 @@ class Interpreter
         {
             throw new EigerError(key.filename, key.line, key.pos, $"{err_key} is undefined", EigerError.ErrorType.RuntimeError);
         }
+    }
+
+    static List<Value> PrepareArguments(ASTNode node, Dictionary<string, Value> symbolTable)
+    {
+        List<Value> args = new List<Value>();
+        for (int i = 1; i < node.children.Count; i++)
+        {
+            Value val = VisitNode(node.children[i], symbolTable).Item2 ?? throw new EigerError(node.filename, node.line, node.pos, Globals.ArgumentErrorStr, EigerError.ErrorType.ArgumentError);
+            args.Add(val);
+        }
+        return args;
+    }
+
+    public static Dictionary<string, Value> GetDictionaryDifference(Dictionary<string, Value> dict1, Dictionary<string, Value> dict2)
+    {
+        var diff = new Dictionary<string, Value>();
+
+        foreach (var kvp in dict2)
+        {
+            if (!dict1.ContainsKey(kvp.Key) || dict1[kvp.Key] != kvp.Value)
+            {
+                diff[kvp.Key] = kvp.Value;
+            }
+        }
+
+        return diff;
     }
 
     public static void SetSymbol(Dictionary<string, Value> symbolTable, string key, Value value)

@@ -1,5 +1,4 @@
-﻿using EigerLang.Errors;
-using EigerLang.Parsing;
+﻿using EigerLang.Parsing;
 
 namespace EigerLang.Execution.BuiltInTypes;
 
