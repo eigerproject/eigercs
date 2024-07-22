@@ -13,7 +13,7 @@ public class EigerError : Exception
 
     public enum ErrorType
     {
-        RuntimeError, IndexError, ParserError, LexerError, ZeroDivisionError, ArgumentError, InvalidOperationError
+        RuntimeError, IndexError, ParserError, LexerError, ZeroDivisionError, ArgumentError, InvalidOperationError, IOError
     }
 
     public EigerError(string file, int line, int pos, string message, ErrorType type) : base($"Error in file {file} at line {line}, {pos}:\n{type}: {message}")

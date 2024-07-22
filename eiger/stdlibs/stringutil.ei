@@ -1,0 +1,67 @@
+﻿dataclass StringUtil
+    func Split(string, seperator)
+        parts = []
+        temp = ""
+
+        for i = 0 to string.length do
+            if string[i] ?= seperator then
+                parts += temp
+                temp = "" 
+            else
+                temp += string[i]
+            end
+        end
+
+        parts += temp
+
+        ret parts
+    end
+
+    func StartsWith(sString, dString)
+        if dString.length > sString.length then
+            ret false
+        end
+
+        for i = 0 to dString.length do
+            if dString[i] != sString[i] then
+                ret false
+            end
+        end
+
+        ret true
+    end
+
+    func EndsWith(sString, dString)
+        if dString.length > sString.length then
+            ret false
+        end
+
+        for i = 0 to dString.length do
+            if dString[dString.length - i - 1] != sString[sString.length - i - 1] then
+                ret false
+            end
+        end
+
+        ret true
+    end
+
+    func Contains(sString, dString)
+        if dString.length > sString.length then
+            ret false
+        end
+
+        for i = 0 to sString.length - dString.length + 1 do
+            match = true
+            for j = 0 to dString.length do
+                if sString[i + j] != dString[j] then
+                    match = false
+                end
+            end
+            if match then
+                ret true
+            end
+        end
+
+        ret false
+    end
+end

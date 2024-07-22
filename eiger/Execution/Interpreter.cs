@@ -20,6 +20,7 @@ class Interpreter
     public static BuiltInFunctions.ClsFunction clsFunction = new();
     public static BuiltInFunctions.DoubleFunction doubleFunction = new();
     public static BuiltInFunctions.IntFunction intFunction = new();
+    public static BuiltInFunctions.FreadFunction freadFunction = new();
 
     // global symbol table
     public static Dictionary<string, Value> globalSymbolTable = new() {
@@ -30,6 +31,7 @@ class Interpreter
         {"cls",clsFunction},
         {"int",intFunction},
         {"double",doubleFunction},
+        {"fread",freadFunction},
     };
 
     // function for visiting a node
