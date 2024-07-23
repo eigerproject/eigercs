@@ -83,7 +83,7 @@ public class Parser(List<Token> tokens)
         if (Peek().type == type)
             Advance();
         else
-            throw new EigerError(path, Peek().line, Peek().pos, $"{Globals.UnexpectedTokenStr} `{Peek().value}`", EigerError.ErrorType.ParserError);
+            throw new EigerError(path, Peek().line, Peek().pos, $"{Globals.UnexpectedTokenStr} `{Peek().value}`, expected a {type}", EigerError.ErrorType.ParserError);
     }
 
     // check if the current token matches the expected one and advance
@@ -95,7 +95,7 @@ public class Parser(List<Token> tokens)
         if (Peek().type == type && Peek().value == expected)
             Advance();
         else
-            throw new EigerError(path, Peek().line, Peek().pos, $"{Globals.UnexpectedTokenStr} `{Peek().value}`", EigerError.ErrorType.ParserError);
+            throw new EigerError(path, Peek().line, Peek().pos, $"{Globals.UnexpectedTokenStr} `{Peek().value}`, expected {expected}", EigerError.ErrorType.ParserError);
     }
 
     // statement list
@@ -141,14 +141,17 @@ public class Parser(List<Token> tokens)
     }
 
     // function definition
-    ASTNode FuncDefStatement()
+    ASTNode FuncDefStatement(bool includeName = true)
     {
         // match func
+        Token funcTok = Peek();
         Match(TokenType.IDENTIFIER, "func");
 
         // get func name
-        Token funcTok = Peek();
-        string funcName = Advance().value ?? "";
+        string funcName = "";
+
+        if (includeName)
+            funcName = Advance().value ?? "";
 
         // create func def node
         ASTNode node = new(NodeType.FuncDef, funcName, funcTok.line, funcTok.pos, path);
@@ -174,14 +177,28 @@ public class Parser(List<Token> tokens)
             Match(TokenType.RPAREN);
         }
 
-        // parse the body
-        ASTNode rootNode = StatementList();
+        if (Peek().type == TokenType.GT)
+        {
+            node.type = NodeType.FuncDefInline;
 
-        // match end
-        Match(TokenType.IDENTIFIER, "end");
+            // match GTE
+            Match(TokenType.GT);
 
-        // add the root node first, then the argnames
-        node.AddChild(rootNode);
+            ASTNode expr = Expr();
+
+            node.AddChild(expr);
+        }
+        else
+        {
+            // parse the body
+            ASTNode rootNode = StatementList();
+
+            // match end
+            Match(TokenType.IDENTIFIER, "end");
+
+            // add the root node first, then the argnames
+            node.AddChild(rootNode);
+        }
 
         foreach (var arg in args)
             node.AddChild(arg);
@@ -463,16 +480,24 @@ public class Parser(List<Token> tokens)
 
     ASTNode HandleIdentifier(Token identToken, bool checkFuncCall)
     {
-        ASTNode identNode = new ASTNode(NodeType.Identifier, identToken.value, identToken.line, identToken.pos, path);
-
-        if (checkFuncCall)
+        if (identToken.value == "func")
         {
-            if (Peek().type == TokenType.DOT) return ParseAttrAccess(identNode);
-            if (Peek().type == TokenType.LSQUARE) return ParseElementAccess(identNode);
-            if (Peek().type == TokenType.LPAREN) return FunctionCallStatement(identNode);
+            return FuncDefStatement(false);
         }
+        else
+        {
+            Advance();
+            ASTNode identNode = new ASTNode(NodeType.Identifier, identToken.value, identToken.line, identToken.pos, path);
 
-        return (identToken.value == "true" || identToken.value == "false" || identToken.value == "nix") ? CreateLiteralNode(identToken) : identNode;
+            if (checkFuncCall)
+            {
+                if (Peek().type == TokenType.DOT) return ParseAttrAccess(identNode);
+                if (Peek().type == TokenType.LSQUARE) return ParseElementAccess(identNode);
+                if (Peek().type == TokenType.LPAREN) return FunctionCallStatement(identNode);
+            }
+
+            return (identToken.value == "true" || identToken.value == "false" || identToken.value == "nix") ? CreateLiteralNode(identToken) : identNode;
+        }
     }
 
     ASTNode HandleStringLiteral(Token stringToken)
@@ -505,7 +530,7 @@ public class Parser(List<Token> tokens)
             case TokenType.IDENTIFIER when Peek().value == "not":
                 return HandleUnaryOp(Advance());
             case TokenType.IDENTIFIER:
-                return HandleIdentifier(Advance(), checkFuncCall);
+                return HandleIdentifier(Peek(), checkFuncCall);
             case TokenType.STRING:
                 return HandleStringLiteral(Advance());
             case TokenType.LPAREN:

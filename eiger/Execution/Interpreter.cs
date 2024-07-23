@@ -45,6 +45,7 @@ class Interpreter
             case NodeType.While: return VisitWhileNode(node, symbolTable);
             case NodeType.FuncCall: return VisitFuncCallNode(node, symbolTable);
             case NodeType.FuncDef: return VisitFuncDefNode(node, symbolTable);
+            case NodeType.FuncDefInline: return VisitFuncDefInlineNode(node, symbolTable);
             case NodeType.Class: return VisitClassNode(node, symbolTable);
             case NodeType.Dataclass: return VisitDataclassNode(node, symbolTable);
             case NodeType.Return: return VisitReturnNode(node, symbolTable);
@@ -299,10 +300,42 @@ class Interpreter
         }
 
         // add the function to the current scope
-        symbolTable[funcName] = new Function(node, funcName, argnames, root, symbolTable);
+        if (funcName != "")
+            symbolTable[funcName] = new Function(node, funcName, argnames, root, symbolTable);
 
-        // return nothing
-        return (false, new Nix(node.filename, node.line, node.pos));
+        return (false, new Function(node, funcName, argnames, root, symbolTable));
+    }
+
+    // Visit inline function definition node
+    static (bool, Value) VisitFuncDefInlineNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    {
+        // VisitFuncDefInlineNode structure
+        // VisitFuncDefInlineNode : <function name>
+        // -- funcExpr
+        // -- argName1
+        // -- argName2
+        // -- ...
+
+        // get function name
+        string funcName = node.value ?? "";
+
+        // get funciton body
+        ASTNode root = node.children[0];
+
+        // prepare list for argnames
+        List<string> argnames = new();
+
+        // loop through each arg (starting from 2nd child node
+        for (int i = 1; i < node.children.Count; i++)
+        {
+            // assuming the node is guaranteed to be an identifier, we can get it's name and add to the name
+            // this will be useful later when calling the function, we will add each given argument with that
+            // name in the function's local scope
+            argnames.Add(node.children[i].value);
+        }
+
+        // return the function
+        return (false, new InlineFunction(node, funcName, argnames, root, symbolTable));
     }
 
     // visit unary operator node
@@ -332,6 +365,7 @@ class Interpreter
             leftSide = VisitNode(node.children[0], symbolTable).Item2;
 
         Value rightSide = VisitNode(node.children[1], symbolTable).Item2;
+
         // prepare a variable for return value
         Value retVal = node.value switch
         {

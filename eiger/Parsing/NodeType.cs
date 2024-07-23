@@ -13,6 +13,7 @@ public enum NodeType
     Return,
     FuncCall,
     FuncDef,
+    FuncDefInline,
     BinOp,
     Literal,
     Identifier,

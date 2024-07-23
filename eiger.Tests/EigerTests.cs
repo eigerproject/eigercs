@@ -213,5 +213,49 @@ namespace EigerLang.Tests
             );
         }
 
+        [TestMethod]
+        public void InlineFunctionTests()
+        {
+            // Inline function tests
+            TestCode(
+                "f = func(a, b) > a + b emitln(f(2, 3))",
+                "5"
+            );
+
+            TestCode(
+                "f = func(a) > a * a emitln(f(4))",
+                "16"
+            );
+        }
+
+        [TestMethod]
+        public void AnonymousFunctionTests()
+        {
+            // Anonymous function tests
+            TestCode(
+                "anonymous = func(a, b) ret a + b end\nemitln(anonymous(2, 3))",
+                "5"
+            );
+
+            TestCode(
+                "anonymous = func(a) ret a * a end\nemitln(anonymous(4))",
+                "16"
+            );
+        }
+
+        [TestMethod]
+        public void CombinedFunctionTests()
+        {
+            // Combined inline and anonymous function tests
+            TestCode(
+                "anonymous_and_inline = func(a, b) > a + b\nemitln(anonymous_and_inline(2, 3))",
+                "5"
+            );
+
+            TestCode(
+                "anonymous_and_inline = func(a) > a * a\nemitln(anonymous_and_inline(4))",
+                "16"
+            );
+        }
     }
 }

@@ -56,7 +56,42 @@ class Function : BaseFunction
 
     public override string ToString()
     {
+        if (name == "") return "[function]";
         return $"[function {name}]";
+    }
+}
+
+class InlineFunction : BaseFunction
+{
+    // function body
+    ASTNode root;
+
+    public InlineFunction(ASTNode node, string name, List<string> arg_n, ASTNode root, Dictionary<string, Value> symbolTable) : base(node, name, arg_n, symbolTable)
+    {
+        this.root = root;
+    }
+
+    public override (bool, Value) Execute(List<Value> args, int line, int pos, string path)
+    {
+        CheckArgs(path, line, pos, args.Count);
+
+        // create local symbol table
+        Dictionary<string, Value> localSymbolTable = new(symbolTable);
+
+        // add args to that local symbol table
+        for (int i = 0; i < args.Count; i++)
+        {
+            localSymbolTable[arg_n[i]] = args[i];
+        }
+
+        // visit the body and return the result
+        return (true, Interpreter.VisitNode(root, localSymbolTable).Item2);
+    }
+
+    public override string ToString()
+    {
+        if (name == "") return "[inline function]";
+        return $"[inline function {name}]";
     }
 }
 
