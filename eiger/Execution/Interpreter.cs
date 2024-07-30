@@ -23,6 +23,7 @@ class Interpreter
     public static BuiltInFunctions.FreadFunction freadFunction = new();
     public static BuiltInFunctions.RandFunction randFunction = new();
     public static BuiltInFunctions.ColorFunction colorFunction = new();
+    public static BuiltInFunctions.AsciiFunction asciiFunction = new();
     public static Number fgColor = new("<std>", 0, 0, (int)ConsoleColor.Gray)
     {
         isReadonly = true
@@ -46,6 +47,7 @@ class Interpreter
         {"color",colorFunction},
         {"color_fg",fgColor},
         {"color_bg",bgColor},
+        {"ascii",asciiFunction},
     };
 
     // function for visiting a node
