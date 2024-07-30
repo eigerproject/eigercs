@@ -1,0 +1,110 @@
+include ColorUtil
+include StringUtil
+
+dataclass GuessType
+    None = 0
+    Contains = 1
+    Correct = 2
+end
+
+class GuessChar
+    char = nix
+    tp = nix
+    func GuessChar(char, tp)
+        this.char = char
+        this.tp = tp
+    end
+end
+
+Words = StringUtil.Split(fread("words.txt"), "\n")
+
+word = Words[int(rand() * (Words.length - 1))]
+guesses = [
+    [nix,nix,nix,nix,nix],
+    [nix,nix,nix,nix,nix],
+    [nix,nix,nix,nix,nix],
+    [nix,nix,nix,nix,nix],
+    [nix,nix,nix,nix,nix],
+    [nix,nix,nix,nix,nix]
+]
+guess = 0
+
+func printGameScreen()
+    cls()
+    ColorUtil.SetForegroundColor(ColorUtil.Colors.Green)
+    emitln("EIWORDLE\n")
+    ColorUtil.SetForegroundColor(ColorUtil.Colors.Gray)
+    
+    for i = 0 to guesses.length do
+        ColorUtil.SetForegroundColor(ColorUtil.Colors.DarkGray)
+        emit((i+1).asString + ". ")
+        for j = 0 to 5 do
+            if nix != guesses[i][j] then
+                if (guesses[i][j]).tp ?= GuessType.Correct then
+                    ColorUtil.SetForegroundColor(ColorUtil.Colors.Green)
+                elif (guesses[i][j]).tp ?= GuessType.Contains then
+                    ColorUtil.SetForegroundColor(ColorUtil.Colors.Yellow)
+                else
+                    ColorUtil.SetForegroundColor(ColorUtil.Colors.Red)
+                end
+                emit((guesses[i][j]).char)
+            end
+        end
+        emit("\n")
+    end
+end
+
+func processGuess(input)
+    counts = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    marked = [false, false, false, false, false]
+
+    for i = 0 to 5 do
+        if input[i] ?= word[i] then
+            guesses[guess][i] = GuessChar((input[i]), GuessType.Correct)
+            marked[i] = true
+        else
+            guesses[guess][i] = GuessChar((input[i]), GuessType.None)
+        end
+    end
+
+    for i = 0 to 5 do
+        counts[ascii(word[i]) - 97] += 1
+    end
+    for i = 0 to 5 do
+        if input[i] ?= word[i] then
+            counts[ascii(word[i]) - 97] -= 1
+        end
+    end
+    for i = 0 to 5 do
+        if (not marked[i]) then
+            if StringUtil.Contains(word, input[i]) then
+                if counts[ascii(input[i]) - 97] > 0 then
+                    guesses[guess][i] = GuessChar(guesses[guess][i].char, GuessType.Contains)
+                    counts[ascii(input[i]) - 97] -= 1
+                end
+            end
+        end
+    end
+end
+
+playing = true
+while playing do
+    if guess >= 6 then
+        playing = false
+    else
+        printGameScreen()
+        i = in()
+        if i.length ?= 5 then
+            processGuess(i)
+            guess += 1
+        end
+        if i ?= word then
+            printGameScreen()
+            playing = false
+        end
+    end
+end 
+emit("The word was... ")
+ColorUtil.SetForegroundColor(ColorUtil.Colors.Green)
+emitln(word)
+ColorUtil.SetForegroundColor(ColorUtil.Colors.Gray)
