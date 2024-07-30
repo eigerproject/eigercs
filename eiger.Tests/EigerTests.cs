@@ -134,6 +134,8 @@ namespace EigerLang.Tests
             // Test creating and using a class instance inline
             TestCode(
                 "class Person\n" +
+                "    name = nix" +
+                "    surname = nix" +
                 "    func Person(name, surname)\n" +
                 "        this.name = name\n" +
                 "        this.surname = surname\n" +
@@ -153,6 +155,8 @@ namespace EigerLang.Tests
             // Test class instantiation and method calls
             TestCode(
                 "class Person\n" +
+                "    name = nix" +
+                "    surname = nix" +
                 "    func Person(name, surname)\n" +
                 "        this.name = name\n" +
                 "        this.surname = surname\n" +
