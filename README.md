@@ -57,7 +57,7 @@
   py.Introduction()
   px.Greet(py)
   
-  emitln(Person("a","b").Introduction())
+  Person("a","b").Introduction()
   ```
   
   This is a very simple example showing Eiger's OOP capabilities
