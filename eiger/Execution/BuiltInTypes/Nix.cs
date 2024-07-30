@@ -5,8 +5,6 @@ namespace EigerLang.Execution.BuiltInTypes;
 class Nix : Value
 {
     public readonly dynamic? value = null;
-    string filename;
-    int line, pos;
 
     public Nix(string filename, int line, int pos) : base(filename, line, pos)
     {

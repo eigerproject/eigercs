@@ -4,6 +4,7 @@
 
 using EigerLang.Errors;
 using EigerLang.Execution;
+using EigerLang.Execution.BuiltInTypes;
 using EigerLang.Parsing;
 using EigerLang.Tokenization;
 
@@ -20,7 +21,9 @@ public class Program
             Console.WriteLine($"{Globals.langName} {Globals.langVer}\nDocumentation: {Globals.docUrl}\n");
             while (true)
             {
+                Console.ForegroundColor = ConsoleColor.DarkGray;
                 Console.Write("#-> ");
+                Console.ResetColor();
                 string inp = Console.ReadLine() ?? "";
 
                 if (inp == "") continue;
@@ -34,6 +37,7 @@ public class Program
             string filepath = args[0];
             if (Path.GetExtension(filepath) != Globals.fileExtension) // check extension
             {
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"Not an {Globals.fileExtension} file!");
                 return;
             }
@@ -44,6 +48,7 @@ public class Program
             }
             catch (IOException)
             {
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("[EIGER] Failed to read file");
                 return;
             }
@@ -68,18 +73,42 @@ public class Program
 
             foreach (var statement in root.children)
             {
-                (bool didReturn, dynamic? val) = Interpreter.VisitNode(statement, Interpreter.globalSymbolTable);
-                if (printExprs) Console.WriteLine((string)Convert.ToString(val));
+                (bool didReturn, Value val) = Interpreter.VisitNode(statement, Interpreter.globalSymbolTable);
+                if (printExprs)
+                {
+                    switch (val.GetType().Name)
+                    {
+                        case "Number":
+                            Console.ForegroundColor = ConsoleColor.Cyan; break;
+                        case "String":
+                            Console.ForegroundColor = ConsoleColor.Yellow; break;
+                        case "Nix":
+                            Console.ForegroundColor = ConsoleColor.DarkGray; break;
+                        case "Function":
+                        case "Class":
+                        case "Instance":
+                        case "Dataclass":
+                            Console.ForegroundColor = ConsoleColor.Green; break;
+                        default:
+                            Console.ResetColor(); break;
+                    }
+                    Console.WriteLine(Convert.ToString(val));
+                    Console.ResetColor();
+                }
             }
         }
         catch (EigerError e)
         {
+            Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(e.Message);
+            Console.ResetColor();
         }
         catch (OverflowException e)
         {
+            Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine($"[EIGER] Overflow: {e.Message}");
+            Console.ResetColor();
         }
-        catch (Exception e) { Console.WriteLine(e); }
+        catch (Exception e) { Console.ForegroundColor = ConsoleColor.Red; Console.WriteLine(e); Console.ResetColor(); }
     }
 }

@@ -5,8 +5,6 @@ namespace EigerLang.Execution.BuiltInTypes;
 public class Dataclass : Value
 {
     public readonly dynamic name;
-    public string filename;
-    public int line, pos;
     public Dictionary<string, Value> symbolTable;
     public Dictionary<string, Value> properties;
 

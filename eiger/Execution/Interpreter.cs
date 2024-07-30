@@ -21,6 +21,16 @@ class Interpreter
     public static BuiltInFunctions.DoubleFunction doubleFunction = new();
     public static BuiltInFunctions.IntFunction intFunction = new();
     public static BuiltInFunctions.FreadFunction freadFunction = new();
+    public static BuiltInFunctions.RandFunction randFunction = new();
+    public static BuiltInFunctions.ColorFunction colorFunction = new();
+    public static Number fgColor = new("<std>", 0, 0, (int)ConsoleColor.Gray)
+    {
+        isReadonly = true
+    };
+    public static Number bgColor = new("<std>", 0, 0, (int)ConsoleColor.Black)
+    {
+        isReadonly = true
+    };
 
     // global symbol table
     public static Dictionary<string, Value> globalSymbolTable = new() {
@@ -32,6 +42,10 @@ class Interpreter
         {"int",intFunction},
         {"double",doubleFunction},
         {"fread",freadFunction},
+        {"rand",randFunction},
+        {"color",colorFunction},
+        {"color_fg",fgColor},
+        {"color_bg",bgColor},
     };
 
     // function for visiting a node
@@ -394,6 +408,13 @@ class Interpreter
 
     private static Value HandleAssignment(ASTNode node, Value rightSide, Dictionary<string, Value> symbolTable)
     {
+        try
+        {
+            Value leftValue = GetSymbol(symbolTable, node.children[0], true);
+            if (leftValue.isReadonly)
+                throw new EigerError(leftValue.filename, leftValue.line, leftValue.pos, "variable is read-only", EigerError.ErrorType.RuntimeError);
+        }
+        catch (KeyNotFoundException) { }
         SetSymbol(symbolTable, node.children[0], rightSide);
         return rightSide;
     }
@@ -402,7 +423,10 @@ class Interpreter
     {
         Value leftValue = GetSymbol(symbolTable, node.children[0]);
         Value newValue = operation(leftValue, rightSide);
-        SetSymbol(symbolTable, node.children[0], newValue);
+        if (leftValue.isReadonly)
+            throw new EigerError(leftValue.filename, leftValue.line, leftValue.pos, $"{leftValue} is read-only", EigerError.ErrorType.RuntimeError);
+        else
+            SetSymbol(symbolTable, node.children[0], newValue);
         return newValue;
     }
 
@@ -550,7 +574,7 @@ class Interpreter
     }
 
     // get symbol from a symboltable with error handling
-    public static Value GetSymbol(Dictionary<string, Value> symbolTable, ASTNode key)
+    public static Value GetSymbol(Dictionary<string, Value> symbolTable, ASTNode key, bool returnKeyError = false)
     {
         string err_key = "";
         try
@@ -593,7 +617,10 @@ class Interpreter
         }
         catch (KeyNotFoundException)
         {
-            throw new EigerError(key.filename, key.line, key.pos, $"{err_key} is undefined", EigerError.ErrorType.RuntimeError);
+            if (returnKeyError)
+                throw new KeyNotFoundException();
+            else
+                throw new EigerError(key.filename, key.line, key.pos, $"{err_key} is undefined", EigerError.ErrorType.RuntimeError);
         }
     }
 

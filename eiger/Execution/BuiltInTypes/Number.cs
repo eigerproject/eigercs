@@ -9,8 +9,6 @@ namespace EigerLang.Execution.BuiltInTypes;
 class Number : Value
 {
     public double value;
-    string filename;
-    int line, pos;
 
     public Number(string filename, int line, int pos, double value) : base(filename, line, pos)
     {

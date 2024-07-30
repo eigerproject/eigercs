@@ -5,6 +5,10 @@ namespace EigerLang.Execution.BuiltInTypes;
 
 public class Value(string filename, int line, int pos)
 {
+    public bool isReadonly = false;
+    public string filename;
+    public int line, pos;
+
     public virtual Value AddedTo(object other)
     {
         throw new EigerError(filename, line, pos, $"{Globals.InvalidOperationStr}: {this.GetType().Name} + {other.GetType().Name}", EigerError.ErrorType.InvalidOperationError);

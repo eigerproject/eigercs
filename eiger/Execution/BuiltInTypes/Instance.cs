@@ -5,11 +5,10 @@ namespace EigerLang.Execution.BuiltInTypes;
 public class Instance : Value
 {
     public readonly dynamic? value = null;
-    string filename, name;
+    string name;
     Class createdFrom;
     Dictionary<string, Value> symbolTable;
     Dictionary<string, Value> parentSymbolTable;
-    int line, pos;
 
     public Instance(string filename, int line, int pos, Class createdFrom, Dictionary<string, Value> symbolTable, Dictionary<string, Value> parentSymbolTable) : base(filename, line, pos)
     {

@@ -10,8 +10,6 @@ namespace EigerLang.Execution.BuiltInTypes;
 class Array : Value
 {
     public Value[] array;
-    string filename;
-    int line, pos;
 
     public Array(string fn, int ln, int ps, Value[] array) : base(fn, ln, ps)
     {
@@ -35,7 +33,7 @@ class Array : Value
 
     public override Boolean ComparisonEqeq(object other)
     {
-        if(other is Array arr)
+        if (other is Array arr)
         {
             return new Boolean(filename, line, pos, arr.array.Length == array.Length && arr.array.SequenceEqual(array));
         }

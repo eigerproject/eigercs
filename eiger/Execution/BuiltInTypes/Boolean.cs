@@ -9,8 +9,6 @@ namespace EigerLang.Execution.BuiltInTypes;
 public class Boolean : Value
 {
     public bool value;
-    string filename;
-    int line, pos;
 
     public Boolean(string filename, int line, int pos, bool value) : base(filename, line, pos)
     {

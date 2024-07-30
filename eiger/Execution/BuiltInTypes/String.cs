@@ -10,9 +10,6 @@ namespace EigerLang.Execution.BuiltInTypes;
 class String : Value
 {
     public string value;
-    string filename;
-    int line;
-    int pos;
 
     public String(string filename, int line, int pos, string value) : base(filename, line, pos)
     {
