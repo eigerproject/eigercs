@@ -594,15 +594,11 @@ class Interpreter
                 ASTNode listNode = key.children[0];
                 ASTNode idxNode = key.children[1];
 
-                if (listNode.type != NodeType.Identifier)
-                    throw new EigerError(key.filename, key.line, key.pos, "Must be identifier", EigerError.ErrorType.RuntimeError);
+                Value list = GetSymbol(symbolTable, listNode);
 
-                string listKey = key.children[0].value ?? throw new EigerError(key.filename, key.line, key.pos, "Identifier value not found", EigerError.ErrorType.ParserError);
-                int idx = (int)((Number)(VisitNode(idxNode, symbolTable).Item2)).value;
+                int idx = (int)((Number)VisitNode(idxNode, symbolTable).Item2).value;
 
-                err_key = listKey;
-
-                return symbolTable[listKey].GetIndex(idx);
+                return list.GetIndex(idx);
             }
             else if (key.type == NodeType.AttrAccess)
             {
@@ -664,14 +660,9 @@ class Interpreter
             {
                 ASTNode listNode = key.children[0];
                 ASTNode idxNode = key.children[1];
-
-                if (listNode.type != NodeType.Identifier)
-                    throw new EigerError(key.filename, key.line, key.pos, "Assignee must be identifier", EigerError.ErrorType.RuntimeError);
-
-                string listKey = key.children[0].value ?? throw new EigerError(key.filename, key.line, key.pos, "Identifier value not found", EigerError.ErrorType.ParserError);
+                Value list = GetSymbol(symbolTable, listNode);
                 int idx = (int)((Number)(VisitNode(idxNode, symbolTable).Item2)).value;
-
-                symbolTable[listKey].SetIndex(idx, value);
+                list.SetIndex(idx, value);
             }
             else if (key.type == NodeType.Identifier)
             {
