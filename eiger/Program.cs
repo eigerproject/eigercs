@@ -9,7 +9,6 @@ using EigerLang.Parsing;
 using EigerLang.Tokenization;
 
 namespace EigerLang;
-
 public class Program
 {
     static void Main(string[] args)
