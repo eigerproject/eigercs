@@ -11,10 +11,10 @@ class EmitlnFunction : BuiltInFunction
 {
     public EmitlnFunction() : base("emitln", ["value"]) { }
 
-    public override (bool, Value) Execute(List<Value> args, int line, int pos, string filepath)
+    public override (bool, bool, Value) Execute(List<Value> args, int line, int pos, string filepath)
     {
         CheckArgs(filepath, line, pos, args.Count);
         Console.WriteLine(args[0]);
-        return (false, new Nix(filepath, line, pos));
+        return (false, false, new Nix(filepath, line, pos));
     }
 }

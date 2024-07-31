@@ -123,6 +123,7 @@ public class Parser(List<Token> tokens)
             "while" => WhileStatement(),
             "func" => FuncDefStatement(),
             "ret" => RetStatement(),
+            "brk" => BreakStatement(),
             "class" => ClassStatement(),
             "dataclass" => DataclassStatement(),
             "include" => IncludeStatement(),
@@ -203,6 +204,17 @@ public class Parser(List<Token> tokens)
         foreach (var arg in args)
             node.AddChild(arg);
 
+        return node;
+    }
+
+    // return statement
+    ASTNode BreakStatement()
+    {
+        // match brk
+        Token breakToken = Peek();
+        Match(TokenType.IDENTIFIER, "brk");
+        // create node
+        ASTNode node = new(NodeType.Break, null, breakToken.line, breakToken.pos, path);
         return node;
     }
 

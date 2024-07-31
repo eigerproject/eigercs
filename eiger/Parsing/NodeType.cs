@@ -23,5 +23,6 @@ public enum NodeType
     AttrAccess,
     Dataclass,
     Include,
-    UnaryOp
+    UnaryOp,
+    Break
 }

@@ -261,5 +261,122 @@ namespace EigerLang.Tests
                 "16"
             );
         }
+
+        [TestMethod]
+        public void BasicBreakInWhileLoopTest()
+        {
+            // This code should break out of the loop when x == 2, so the output should be "012"
+            TestCode(
+                "x = 0\nwhile x != 5 do\n emit(x)\n if x ?= 2 then brk end\n x += 1\nend",
+                "012"
+            );
+        }
+
+        [TestMethod]
+        public void NestedLoopsWithBreakTest()
+        {
+            // This code should break out of the inner loop when j == 1, so the output should be "01"
+            TestCode(
+                "for i = 0 to 2 do\n for j = 0 to 2 do\n emit(j)\n if j ?= 1 then brk end\n end\nend",
+                "01"
+            );
+        }
+
+        [TestMethod]
+        public void BreakWithNestedConditionsTest()
+        {
+            // This code will break from the loop when x == 2, so the output should be "012"
+            TestCode(
+                "x = 0\nwhile x != 5 do\n emit(x)\n if x ?= 2 then\n brk\n end\n x += 1\nend",
+                "012"
+            );
+        }
+
+        [TestMethod]
+        public void BreakStatementTests()
+        {
+            // Test `brk` in a while loop
+            TestCode(
+                "x = 0\nwhile x < 5 do\n if x ?= 3 then brk end\n emit(x)\n x += 1\nend",
+                "012"
+            );
+
+            // Test `brk` in a for loop
+            TestCode(
+                "for i = 0 to 5 do\n if i ?= 3 then brk end\n emit(i)\nend",
+                "012"
+            );
+        }
+
+
+        [TestMethod]
+        public void BasicReturnValueTest()
+        {
+            // This code will return the value 10 from the function and print it
+            TestCode(
+                "func return_ten()\n ret 10\nend\nemitln(return_ten())",
+                "10"
+            );
+        }
+
+        [TestMethod]
+        public void ReturnStatementTests()
+        {
+            // Simple return statement
+            TestCode(
+                "func returnFive()\n ret 5\nend\nemitln(returnFive())",
+                "5"
+            );
+
+            // Return result of calculation
+            TestCode(
+                "func add(a, b)\n ret a + b\nend\nemitln(add(4, 6))",
+                "10"
+            );
+
+            // Return value based on condition
+            TestCode(
+                "func conditionalReturn(x)\n if x ?= 1 then ret 10\n else ret 20\nend\nend\nemitln(conditionalReturn(1))",
+                "10"
+            );
+
+            TestCode(
+                "func conditionalReturn(x)\n if x ?= 1 then ret 10\n else ret 20\nend\nend\nemitln(conditionalReturn(2))",
+                "20"
+            );
+
+            // Test return in nested function calls
+            TestCode(
+                "func multiply(a, b)\n ret a * b\nend\nfunc addAndMultiply(a, b, c)\n sum = a + b\n ret multiply(sum, c)\nend\nemitln(addAndMultiply(2, 3, 4))",
+                "20"
+            );
+
+            // Test return with early exit
+            TestCode(
+                "func earlyReturn(x)\n if x ?= 1 then ret 10 \n emitln(\"This should not print\")\n ret 20\nend end\nemitln(earlyReturn(1))",
+                "10"
+            );
+
+            // Test nested return statements in functions
+            TestCode(
+                "func outer()\n func inner(x)\n if x ?= 1 then ret 5 end\n ret 6\nend\n ret inner(1)\nend\nemitln(outer())",
+                "5"
+            );
+
+            TestCode(
+                "func outer()\n func inner(x)\n if x ?= 1 then ret 5 end\n ret 6\nend\n ret inner(2)\nend\nemitln(outer())",
+                "6"
+            );
+        }
+
+        [TestMethod]
+        public void ReturnInsideLoopsTest()
+        {
+            // This code will return 3 immediately from the function, thus only printing "3"
+            TestCode(
+                "func find_number()\n x = 0\n while x != 5 do\n if x ?= 3 then ret x end\n x += 1\n end\nend\nemitln(find_number())",
+                "3"
+            );
+        }
     }
 }

@@ -10,11 +10,11 @@ namespace EigerLang.Execution.BuiltInFunctions;
 class RandFunction : BuiltInFunction
 {
     public RandFunction() : base("rand", []) { }
-    Random rand = new();
+    readonly Random rand = new();
 
-    public override (bool, Value) Execute(List<Value> args, int line, int pos, string filepath)
+    public override (bool, bool, Value) Execute(List<Value> args, int line, int pos, string filepath)
     {
         CheckArgs(filepath, line, pos, args.Count);
-        return (false, new Number(filepath, line, pos, rand.NextDouble()));
+        return (false, false, new Number(filepath, line, pos, rand.NextDouble()));
     }
 }

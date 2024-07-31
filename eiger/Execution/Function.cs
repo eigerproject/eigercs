@@ -23,7 +23,7 @@ abstract class BaseFunction(ASTNode node, string name, List<string> arg_n, Dicti
             throw new EigerError(path, line, pos, $"Function {name} takes {arg_n.Count} arguments, got {argCount}", EigerError.ErrorType.ArgumentError);
     }
 
-    public abstract (bool, Value) Execute(List<Value> args, int line, int pos, string path); // abstract execute function
+    public abstract (bool, bool, Value) Execute(List<Value> args, int line, int pos, string path); // abstract execute function
 }
 
 // custom functions
@@ -37,7 +37,7 @@ class Function : BaseFunction
         this.root = root;
     }
 
-    public override (bool, Value) Execute(List<Value> args, int line, int pos, string path)
+    public override (bool, bool, Value) Execute(List<Value> args, int line, int pos, string path)
     {
         CheckArgs(path, line, pos, args.Count);
 
@@ -71,7 +71,7 @@ class InlineFunction : BaseFunction
         this.root = root;
     }
 
-    public override (bool, Value) Execute(List<Value> args, int line, int pos, string path)
+    public override (bool, bool, Value) Execute(List<Value> args, int line, int pos, string path)
     {
         CheckArgs(path, line, pos, args.Count);
 
@@ -85,7 +85,8 @@ class InlineFunction : BaseFunction
         }
 
         // visit the body and return the result
-        return (true, Interpreter.VisitNode(root, localSymbolTable).Item2);
+        (bool shouldBreak, bool shouldReturn, Value v) = Interpreter.VisitNode(root, localSymbolTable);
+        return (shouldBreak, true, v);
     }
 
     public override string ToString()
@@ -100,7 +101,7 @@ abstract class BuiltInFunction : BaseFunction
 {
     public BuiltInFunction(string name, List<string> arg_n) : base(new(NodeType.Block, 0, 0, 0, "<unset>"), name, arg_n, Interpreter.globalSymbolTable) { }
 
-    public override (bool, Value) Execute(List<Value> args, int line, int pos, string file) { return (false, new Nix(file, line, pos)); }
+    public override (bool, bool, Value) Execute(List<Value> args, int line, int pos, string file) { return (false, false, new Nix(file, line, pos)); }
 
     public override string ToString()
     {

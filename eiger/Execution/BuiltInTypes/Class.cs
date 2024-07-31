@@ -18,7 +18,7 @@ public class Class : Value
         this.blockNode = blockNode;
     }
 
-    public (bool, Instance) Execute(List<Value> args)
+    public (bool, bool, Instance) Execute(List<Value> args)
     {
         // create local symbol table
         Dictionary<string, Value> localSymbolTable = new(symbolTable);
@@ -35,7 +35,7 @@ public class Class : Value
             if (value is Function constructorFunc)
                 constructorFunc.Execute(args, line, pos, filename);
 
-        return (false, inst);
+        return (false, false, inst);
     }
 
     public override Value GetAttr(ASTNode attr)
