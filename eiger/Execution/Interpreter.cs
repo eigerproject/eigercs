@@ -25,6 +25,7 @@ class Interpreter
     public static BuiltInFunctions.ColorFunction colorFunction = new();
     public static BuiltInFunctions.AsciiFunction asciiFunction = new();
     public static BuiltInFunctions.TimeFunction timeFunction = new();
+    public static BuiltInFunctions.ExitFunction exitFunction = new();
     public static Number fgColor = new("<std>", 0, 0, (int)ConsoleColor.Gray)
     {
         isReadonly = true
@@ -50,6 +51,7 @@ class Interpreter
         {"color_bg",bgColor},
         {"ascii",asciiFunction},
         {"time", timeFunction},
+        {"exit", exitFunction},
     };
 
     // function for visiting a node
