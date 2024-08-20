@@ -20,7 +20,7 @@
       <li>Control Flow</li>
       <li>Loops</li>
       <li>Functions</li>
-      <li>Object Oriented Programming (Unfinished)</li>
+      <li>Object Oriented Programming <i>(WIP)</i></li>
   </ul>
   <h2 align="center">Installation</h2>
   <i><p align="center">
@@ -36,6 +36,9 @@
   
   ```
   class Person
+      let name
+      let surname
+
       func Person(name, surname)
           this.name = name
           this.surname = surname
@@ -50,8 +53,8 @@
       end
   end
   
-  px = Person("Name1", "Surname1")
-  py = Person("Name2", "Surname2")
+  let px = Person("Name1", "Surname1")
+  let py = Person("Name2", "Surname2")
   
   px.Introduction()
   py.Introduction()
