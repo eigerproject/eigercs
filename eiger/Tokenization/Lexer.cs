@@ -135,17 +135,15 @@ public class Lexer
         while (ptr < source.Length)
         {
             if (current_char == '\0') break;
-            else if (char.IsWhiteSpace(current_char))
-            { }
             else if (current_char == '~')
                 SkipComment();
             else if (current_char == '\n')
             {
                 current_line++;
                 current_pos = 1;
-                Advance();
             }
-
+            else if (char.IsWhiteSpace(current_char))
+            { }
             else if (char.IsLetter(current_char) || current_char == '_')
                 result.Add(MakeIdent());
             else if (char.IsDigit(current_char))
