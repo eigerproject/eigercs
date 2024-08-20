@@ -54,6 +54,28 @@ class Interpreter
         {"exit", exitFunction},
     };
 
+    static Dictionary<string, Value> defaultGlobalSymbolTable = new() {
+        {"emit",emitFunction},
+        {"emitln",emitlnFunction},
+        {"in",inFunction},
+        {"inchar",incharFunction},
+        {"cls",clsFunction},
+        {"int",intFunction},
+        {"double",doubleFunction},
+        {"fread",freadFunction},
+        {"rand",randFunction},
+        {"color",colorFunction},
+        {"color_fg",fgColor},
+        {"color_bg",bgColor},
+        {"ascii",asciiFunction},
+        {"time", timeFunction},
+        {"exit", exitFunction},
+    };
+
+    // to reset the symbol table (used in tests)
+    public static void ResetSymbolTable() =>
+        globalSymbolTable = new(defaultGlobalSymbolTable);
+
     // function for visiting a node
     public static (bool, bool, Value) VisitNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
