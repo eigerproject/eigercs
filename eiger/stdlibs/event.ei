@@ -1,14 +1,14 @@
 ﻿class Event
-	subscribers = []
+	let subscribers = []
 
 	func Event() end
 	
 	func Subscribe(subscriber) subscribers += subscriber end
 	
 	func Unsubscribe(subscriber)
-		newSubscribers = []
+		let newSubscribers = []
 		for i = 0 to subscribers.length do
-			if subscribers[i] != subscriber do
+			if subscribers[i] != subscriber then
 				newSubscribers += subscibers[i]
 			end
 		end
@@ -17,7 +17,7 @@
 	
 	func Invoke(eventArgs)
 		for i = 0 to subscribers.length do
-			f = subscribers[i]
+			let f = subscribers[i]
 			f(eventArgs)
 		end
 	end

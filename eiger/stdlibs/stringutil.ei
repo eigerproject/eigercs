@@ -1,7 +1,7 @@
 ﻿dataclass StringUtil
     func Split(string, seperator)
-        parts = []
-        temp = ""
+        let parts = []
+        let temp = ""
 
         for i = 0 to string.length do
             if string[i] ?= seperator then
