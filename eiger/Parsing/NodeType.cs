@@ -7,6 +7,7 @@ namespace EigerLang.Parsing;
 public enum NodeType
 {
     Block,
+    Let,
     If,
     While,
     ForTo,

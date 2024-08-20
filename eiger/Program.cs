@@ -61,6 +61,12 @@ public class Program
         }
     }
 
+    // Reset the interpreter
+    public static void Reset()
+    {
+        Interpreter.ResetSymbolTable();
+    }
+
     public static void Execute(string src, string fn, bool printExprs)
     {
         try

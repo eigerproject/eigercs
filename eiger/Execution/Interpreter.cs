@@ -54,12 +54,35 @@ class Interpreter
         {"exit", exitFunction},
     };
 
+    static Dictionary<string, Value> defaultGlobalSymbolTable = new() {
+        {"emit",emitFunction},
+        {"emitln",emitlnFunction},
+        {"in",inFunction},
+        {"inchar",incharFunction},
+        {"cls",clsFunction},
+        {"int",intFunction},
+        {"double",doubleFunction},
+        {"fread",freadFunction},
+        {"rand",randFunction},
+        {"color",colorFunction},
+        {"color_fg",fgColor},
+        {"color_bg",bgColor},
+        {"ascii",asciiFunction},
+        {"time", timeFunction},
+        {"exit", exitFunction},
+    };
+
+    // to reset the symbol table (used in tests)
+    public static void ResetSymbolTable() =>
+        globalSymbolTable = new(defaultGlobalSymbolTable);
+
     // function for visiting a node
     public static (bool, bool, Value) VisitNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         switch (node.type)
         {
             case NodeType.Block: return VisitBlockNode(node, symbolTable);
+            case NodeType.Let: return VisitLetNode(node, symbolTable);
             case NodeType.If: return VisitIfNode(node, symbolTable);
             case NodeType.ForTo: return VisitForToNode(node, symbolTable);
             case NodeType.While: return VisitWhileNode(node, symbolTable);
@@ -235,6 +258,24 @@ class Interpreter
 
         // if no condition is true and there's no else block, do nothing
         return (false, false, new Nix(node.filename, node.line, node.pos));
+    }
+
+    // visit let variable declaration node
+    static (bool, bool, Value) VisitLetNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    {
+        // LetNode structure:
+        // LetNode: variableName
+        // -- initialValue (optional)
+
+        if (symbolTable.ContainsKey(node.value))
+            throw new EigerError(node.filename, node.line, node.pos, $"Variable {node.value} already declared", EigerError.ErrorType.RuntimeError);
+
+        Value v = node.children.Count == 1
+            ? VisitNode(node.children[0], symbolTable).Item3
+            : new Nix(node.filename, node.line, node.pos);
+
+        symbolTable.Add(node.value, v);
+        return (false, false, v);
     }
 
 
@@ -418,13 +459,10 @@ class Interpreter
 
     private static Value HandleAssignment(ASTNode node, Value rightSide, Dictionary<string, Value> symbolTable)
     {
-        try
-        {
-            Value leftValue = GetSymbol(symbolTable, node.children[0], true);
-            if (leftValue.isReadonly)
-                throw new EigerError(leftValue.filename, leftValue.line, leftValue.pos, "variable is read-only", EigerError.ErrorType.RuntimeError);
-        }
-        catch (KeyNotFoundException) { }
+        Value leftValue = GetSymbol(symbolTable, node.children[0]);
+        if (leftValue.isReadonly)
+            throw new EigerError(leftValue.filename, leftValue.line, leftValue.pos, $"{leftValue} is read-only!", EigerError.ErrorType.RuntimeError);
+
         SetSymbol(symbolTable, node.children[0], rightSide);
         return rightSide;
     }
@@ -434,7 +472,7 @@ class Interpreter
         Value leftValue = GetSymbol(symbolTable, node.children[0]);
         Value newValue = operation(leftValue, rightSide);
         if (leftValue.isReadonly)
-            throw new EigerError(leftValue.filename, leftValue.line, leftValue.pos, $"{leftValue} is read-only", EigerError.ErrorType.RuntimeError);
+            throw new EigerError(leftValue.filename, leftValue.line, leftValue.pos, $"{leftValue} is read-only!", EigerError.ErrorType.RuntimeError);
         else
             SetSymbol(symbolTable, node.children[0], newValue);
         return newValue;
@@ -584,7 +622,7 @@ class Interpreter
     }
 
     // get symbol from a symboltable with error handling
-    public static Value GetSymbol(Dictionary<string, Value> symbolTable, ASTNode key, bool returnKeyError = false)
+    public static Value GetSymbol(Dictionary<string, Value> symbolTable, ASTNode key)
     {
         string err_key = "";
         try
@@ -623,10 +661,7 @@ class Interpreter
         }
         catch (KeyNotFoundException)
         {
-            if (returnKeyError)
-                throw new KeyNotFoundException();
-            else
-                throw new EigerError(key.filename, key.line, key.pos, $"{err_key} is undefined", EigerError.ErrorType.RuntimeError);
+            throw new EigerError(key.filename, key.line, key.pos, $"{err_key} is undefined", EigerError.ErrorType.RuntimeError);
         }
     }
 

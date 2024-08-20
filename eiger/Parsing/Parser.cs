@@ -118,6 +118,7 @@ public class Parser(List<Token> tokens)
         return peeked.value switch
         {
             // if it's a statement, parse a statement, else, parse an expression
+            "let" => LetStatement(),
             "if" => IfStatement(),
             "for" => ForToStatement(),
             "while" => WhileStatement(),
@@ -358,6 +359,27 @@ public class Parser(List<Token> tokens)
         whileNode.AddChild(condition);
         whileNode.AddChild(doBlock);
         return whileNode;
+    }
+
+    // let statement
+    ASTNode LetStatement()
+    {
+        // match let
+        Token letToken = Peek();
+        Match(TokenType.IDENTIFIER, "let");
+
+        Token variableName = Advance();
+
+        ASTNode letNode = new ASTNode(NodeType.Let, variableName.value, letToken.line, letToken.pos, path);
+
+        // if the variable has an initial value (let x = 10)
+        if(Peek().type == TokenType.EQ)
+        {
+            Match(TokenType.EQ);
+            letNode.AddChild(Expr());
+        }
+
+        return letNode;
     }
 
     // if statement
