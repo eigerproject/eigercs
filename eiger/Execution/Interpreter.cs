@@ -312,6 +312,9 @@ class Interpreter
         // ---- definition2
         // ---- ...
 
+        if (symbolTable.ContainsKey(node.value))
+            throw new EigerError(node.filename, node.line, node.pos, $"{node.value} already declared", EigerError.ErrorType.RuntimeError);
+
         Dataclass classdef = new(node.filename, node.line, node.pos, node.value, new Dictionary<string, Value>(symbolTable), node.children[0]);
 
         SetSymbol(symbolTable, node.value, classdef);
@@ -328,6 +331,9 @@ class Interpreter
         // ---- statement1
         // ---- statement2
         // ---- ...
+
+        if (symbolTable.ContainsKey(node.value))
+            throw new EigerError(node.filename, node.line, node.pos, $"{node.value} already declared", EigerError.ErrorType.RuntimeError);
 
         Class classdef = new(node.filename, node.line, node.pos, node.value, symbolTable, node.children[0]);
 
