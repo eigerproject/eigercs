@@ -10,6 +10,8 @@ public class Class : Value
 
     public Class(string filename, int line, int pos, string name, Dictionary<string, Value> symbolTable, ASTNode blockNode) : base(filename, line, pos)
     {
+        if (name == "new")
+            throw new EigerLang.Errors.EigerError(filename, line, pos, "`new` is an invalid name for a class", Errors.EigerError.ErrorType.RuntimeError);
         this.filename = filename;
         this.line = line;
         this.pos = pos;
