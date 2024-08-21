@@ -1,4 +1,7 @@
 class Iterator
+    let iter
+    let length
+    let ptr = 0
     func Iterator(_iter)
         if _iter.type != "string" then
             if _iter.type != "array" then
@@ -8,12 +11,11 @@ class Iterator
         end
         this.iter = _iter
         this.length = _iter.length
-        this.ptr = 0
     end
 
     func Iterate()
         if this.ptr < this.length then
-            retVal = iter[ptr]
+            let retVal = iter[ptr]
             ptr += 1
             ret retVal
         else
@@ -21,13 +23,9 @@ class Iterator
         end
     end
 
-    func HasNext()
-        ret ptr < length
-    end
+    func HasNext() > ptr < length
 
-    func Reset()
-        ptr = 0
-    end
+    func Reset() > ptr = 0
 
     func Peek()
         if ptr < length then

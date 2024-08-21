@@ -2,8 +2,8 @@
 
 dataclass math ~ Declare a namespace
 	~ Mathematical Constants
-	pi = 3.14159265358979323846
-	e = 2.718281828459045
+	let pi = 3.14159265358979323846
+	let e = 2.718281828459045
 
 	~ get the unsigned value of a number
 	func abs(n)
@@ -15,19 +15,13 @@ dataclass math ~ Declare a namespace
 	end
 
 	~ get the square root of a number
-	func sqrt(n)
-		ret n ^ 0.5
-	end
+	func sqrt(n) > n ^ 0.5
 
 	~ get exponentiation of two functions
-	func pow(b, e)
-		ret b ^ e
-	end
+	func pow(b, e) > b ^ e
 
 	~ get remainder of two numbers
-	func mod(a, b)
-		ret a % b
-	end
+	func mod(a, b) > a % b
 
 	~ get factorial of a number using recursion
 	func factorial(n)
@@ -41,7 +35,7 @@ dataclass math ~ Declare a namespace
 	~ Improved sine function using a higher-order Taylor series
 	func sin(x)
 		~ Normalize the angle to the range [0, 2*pi)
-		two_pi = 2 * pi
+		let two_pi = 2 * pi
 		x = x % two_pi
 
 		~ Handle negative angles
@@ -50,21 +44,21 @@ dataclass math ~ Declare a namespace
 		end
 
 		~ Determine the sign based on the angle's quadrant
-		sign = 1
+		let sign = 1
 		if x > pi then
 			x = x - pi
 			sign = -1
 		end
 
 		~ Use Taylor series expansion for sine
-		result = 0
-		power = x
-		fact = 1
-		sign_toggle = 1
+		let result = 0
+		let power = x
+		let fact = 1
+		let sign_toggle = 1
 
 		for i = 0 to 10 do
 			~ Taylor series term
-			term = sign_toggle * (power / fact)
+			let term = sign_toggle * (power / fact)
 
 			~ Add term to result
 			result += term
@@ -78,7 +72,5 @@ dataclass math ~ Declare a namespace
 		ret sign * result
 	end
 
-	func cos(n)
-		ret sin(pi / 2 - n)
-	end
+	func cos(n) > sin(pi / 2 - n)
 end
