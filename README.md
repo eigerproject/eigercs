@@ -39,7 +39,8 @@
       let name
       let surname
 
-      func Person(name, surname)
+      ~ constructor
+      func new(name, surname)
           this.name = name
           this.surname = surname
       end

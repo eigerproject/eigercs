@@ -355,6 +355,10 @@ class Interpreter
         // get function name
         string funcName = node.value ?? "";
 
+        // a symbol with that name already exists
+        if (symbolTable.ContainsKey(funcName) && funcName != "")
+            throw new EigerError(node.filename, node.line, node.pos, $"{funcName} already declared", EigerError.ErrorType.RuntimeError);
+
         // get funciton body
         ASTNode root = node.children[0];
 
@@ -390,6 +394,9 @@ class Interpreter
         // get function name
         string funcName = node.value ?? "";
 
+        if (symbolTable.ContainsKey(funcName) && funcName != "")
+            throw new EigerError(node.filename, node.line, node.pos, $"{funcName} already declared", EigerError.ErrorType.RuntimeError);
+
         // get funciton body
         ASTNode root = node.children[0];
 
@@ -405,8 +412,14 @@ class Interpreter
             argnames.Add(node.children[i].value);
         }
 
+        InlineFunction f = new InlineFunction(node, funcName, argnames, root, symbolTable);
+
+        // add the function to the current scope
+        if (funcName != "")
+            symbolTable[funcName] = f;
+
         // return the function
-        return (false, false, new InlineFunction(node, funcName, argnames, root, symbolTable));
+        return (false, false, f);
     }
 
     // visit unary operator node
@@ -727,12 +740,12 @@ class Interpreter
             }
             else
             {
-                throw new EigerError(key.filename, key.line, key.pos, "Assignee must be identifier", EigerError.ErrorType.RuntimeError);
+                throw new EigerError(key.filename, key.line, key.pos, "Left side of assignment is invalid", EigerError.ErrorType.RuntimeError);
             }
         }
         catch (KeyNotFoundException)
         {
-            throw new EigerError(key.filename, key.line, key.pos, $"Variable is undefined", EigerError.ErrorType.RuntimeError);
+            throw new EigerError(key.filename, key.line, key.pos, "Variable is undefined", EigerError.ErrorType.RuntimeError);
         }
     }
 }
