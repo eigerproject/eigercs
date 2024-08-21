@@ -92,6 +92,7 @@ public class Program
                         case "Nix":
                             Console.ForegroundColor = ConsoleColor.DarkGray; break;
                         case "Function":
+                        case "InlineFunction":
                         case "Class":
                         case "Instance":
                         case "Dataclass":

@@ -31,7 +31,7 @@ public class Class : Value
 
         localSymbolTable = Interpreter.GetDictionaryDifference(symbolTable, localSymbolTable);
 
-        if (localSymbolTable.TryGetValue(name, out Value value))
+        if (localSymbolTable.TryGetValue("new", out Value value))
             if (value is Function constructorFunc)
                 constructorFunc.Execute(args, line, pos, filename);
 
