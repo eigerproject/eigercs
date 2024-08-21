@@ -137,7 +137,7 @@ public class EigerTests
             "class Person\n" +
             "    let name" +
             "    let surname" +
-            "    func Person(name, surname)\n" +
+            "    func new(name, surname)\n" +
             "        this.name = name\n" +
             "        this.surname = surname\n" +
             "    end\n" +
@@ -158,7 +158,7 @@ public class EigerTests
             "class Person\n" +
             "    let name" +
             "    let surname" +
-            "    func Person(name, surname)\n" +
+            "    func new(name, surname)\n" +
             "        this.name = name\n" +
             "        this.surname = surname\n" +
             "    end\n" +

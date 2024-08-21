@@ -10,6 +10,8 @@ public class Class : Value
 
     public Class(string filename, int line, int pos, string name, Dictionary<string, Value> symbolTable, ASTNode blockNode) : base(filename, line, pos)
     {
+        if (name == "new")
+            throw new EigerLang.Errors.EigerError(filename, line, pos, "`new` is an invalid name for a class", Errors.EigerError.ErrorType.RuntimeError);
         this.filename = filename;
         this.line = line;
         this.pos = pos;
@@ -31,7 +33,7 @@ public class Class : Value
 
         localSymbolTable = Interpreter.GetDictionaryDifference(symbolTable, localSymbolTable);
 
-        if (localSymbolTable.TryGetValue(name, out Value value))
+        if (localSymbolTable.TryGetValue("new", out Value value))
             if (value is Function constructorFunc)
                 constructorFunc.Execute(args, line, pos, filename);
 

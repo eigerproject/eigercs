@@ -3,11 +3,11 @@ using EigerLang.Parsing;
 
 namespace EigerLang.Execution.BuiltInTypes;
 
-public class Value(string filename, int line, int pos)
+public class Value(string _filename, int _line, int _pos)
 {
     public bool isReadonly = false;
-    public string filename;
-    public int line, pos;
+    public string filename = _filename;
+    public int line = _line, pos = _pos;
 
     public virtual Value AddedTo(object other)
     {
@@ -50,11 +50,17 @@ public class Value(string filename, int line, int pos)
 
     public virtual Boolean ComparisonEqeq(object other)
     {
+        if (other is Nix)
+            return new Boolean(filename, line, pos, this is Nix);
+
         throw new EigerError(filename, line, pos, $"{Globals.InvalidOperationStr}: {this.GetType().Name} ?= {other.GetType().Name}", EigerError.ErrorType.InvalidOperationError);
     }
 
     public virtual Boolean ComparisonNeqeq(object other)
     {
+        if (other is Nix)
+            return new Boolean(filename, line, pos, this is not Nix);
+
         throw new EigerError(filename, line, pos, $"{Globals.InvalidOperationStr}: {this.GetType().Name} != {other.GetType().Name}", EigerError.ErrorType.InvalidOperationError);
     }
 

@@ -81,15 +81,18 @@ public class Program
                 (bool shouldBreak, bool didReturn, Value val) = Interpreter.VisitNode(statement, Interpreter.globalSymbolTable);
                 if (printExprs)
                 {
+                    string v = Convert.ToString(val) ?? "";
                     switch (val.GetType().Name)
                     {
                         case "Number":
+                        case "Boolean":
                             Console.ForegroundColor = ConsoleColor.Cyan; break;
                         case "String":
-                            Console.ForegroundColor = ConsoleColor.Yellow; break;
+                            Console.ForegroundColor = ConsoleColor.Yellow; v = $"\"{v}\""; break;
                         case "Nix":
                             Console.ForegroundColor = ConsoleColor.DarkGray; break;
                         case "Function":
+                        case "InlineFunction":
                         case "Class":
                         case "Instance":
                         case "Dataclass":
@@ -97,7 +100,7 @@ public class Program
                         default:
                             Console.ResetColor(); break;
                     }
-                    Console.WriteLine(Convert.ToString(val));
+                    Console.WriteLine(v);
                     Console.ResetColor();
                 }
             }
