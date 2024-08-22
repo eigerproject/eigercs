@@ -1,5 +1,5 @@
 ﻿class Event
-	let subscribers = []
+	let private subscribers = []
 
 	func Event() end
 	

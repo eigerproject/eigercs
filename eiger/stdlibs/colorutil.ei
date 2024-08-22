@@ -1,22 +1,22 @@
 ﻿dataclass ColorUtil
 	dataclass Colors
-		let Black = 0
-		let Blue = 9
-		let Cyan = 11
-		let DarkBlue = 1
-		let DarkCyan = 3
-		let DarkGray = 8
-		let DarkGreen = 2
-		let DarkMagenta = 5
-		let DarkRed = 4
-		let DarkYellow = 6
-		let Gray = 7
-		let Green = 10
-		let Magenta = 13
-		let Red = 12
-		let White = 15
-		let Yellow = 14
-		let All = [Black, Blue, Cyan, DarkBlue, DarkCyan, DarkGray, DarkGreen, DarkMagenta, DarkRed, DarkYellow, Gray, Green, Magenta, Red, White, Yellow]
+		let readonly Black = 0
+		let readonly Blue = 9
+		let readonly Cyan = 11
+		let readonly DarkBlue = 1
+		let readonly DarkCyan = 3
+		let readonly DarkGray = 8
+		let readonly DarkGreen = 2
+		let readonly DarkMagenta = 5
+		let readonly DarkRed = 4
+		let readonly DarkYellow = 6
+		let readonly Gray = 7
+		let readonly Green = 10
+		let readonly Magenta = 13
+		let readonly Red = 12
+		let readonly White = 15
+		let readonly Yellow = 14
+		let readonly All = [Black, Blue, Cyan, DarkBlue, DarkCyan, DarkGray, DarkGreen, DarkMagenta, DarkRed, DarkYellow, Gray, Green, Magenta, Red, White, Yellow]
 	end
 
 	func SetForegroundColor(_color)

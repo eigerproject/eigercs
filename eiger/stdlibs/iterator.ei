@@ -1,7 +1,7 @@
 class Iterator
-    let iter
-    let length
-    let ptr = 0
+    let private iter
+    let private length
+    let private ptr = 0
     func Iterator(_iter)
         if _iter.type != "string" then
             if _iter.type != "array" then
