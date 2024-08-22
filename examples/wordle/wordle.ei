@@ -1,33 +1,28 @@
-include ColorUtil
-include StringUtil
+include colorutil
+include stringutil
 
 dataclass GuessType
-    None = 0
-    Contains = 1
-    Correct = 2
+    let None = 0
+    let Contains = 1
+    let Correct = 2
 end
 
 class GuessChar
-    char = nix
-    tp = nix
-    func GuessChar(char, tp)
+    let char
+    let tp
+    func new(char, tp)
         this.char = char
         this.tp = tp
     end
 end
 
-Words = StringUtil.Split(fread("words.txt"), "\n")
+let readonly Words = StringUtil.Split(fread("words.txt"), "\n")
 
-word = Words[int(rand() * (Words.length - 1))]
-guesses = [
-    [nix,nix,nix,nix,nix],
-    [nix,nix,nix,nix,nix],
-    [nix,nix,nix,nix,nix],
-    [nix,nix,nix,nix,nix],
-    [nix,nix,nix,nix,nix],
-    [nix,nix,nix,nix,nix]
-]
-guess = 0
+let readonly word = Words[int(rand() * (Words.length - 1))]
+
+let guesses = 6 @ ( 5 @ nix )
+
+let guess = 0
 
 func printGameScreen()
     cls()
@@ -35,7 +30,7 @@ func printGameScreen()
     emitln("EIWORDLE\n")
     ColorUtil.SetForegroundColor(ColorUtil.Colors.Gray)
     
-    for i = 0 to guesses.length do
+    for i = 0 to 6 do
         ColorUtil.SetForegroundColor(ColorUtil.Colors.DarkGray)
         emit((i+1).asString + ". ")
         for j = 0 to 5 do
@@ -55,8 +50,8 @@ func printGameScreen()
 end
 
 func processGuess(input)
-    counts = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-    marked = [false, false, false, false, false]
+    let counts = 26 @ 0
+    let marked = 5 @ false
 
     for i = 0 to 5 do
         if input[i] ?= word[i] then
@@ -87,21 +82,20 @@ func processGuess(input)
     end
 end
 
-playing = true
-while playing do
+while true do
     if guess >= 6 then
-        playing = false
-    else
+        brk
+    end
+    
+    printGameScreen()
+    let i = in()
+    if i.length ?= 5 then
+        processGuess(i)
+        guess += 1
+    end
+    if i ?= word then
         printGameScreen()
-        i = in()
-        if i.length ?= 5 then
-            processGuess(i)
-            guess += 1
-        end
-        if i ?= word then
-            printGameScreen()
-            playing = false
-        end
+        playing = false
     end
 end 
 emit("The word was... ")

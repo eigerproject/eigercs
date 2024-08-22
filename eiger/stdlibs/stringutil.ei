@@ -50,6 +50,7 @@
             ret false
         end
 
+        let match
         for i = 0 to sString.length - dString.length + 1 do
             match = true
             for j = 0 to dString.length do
