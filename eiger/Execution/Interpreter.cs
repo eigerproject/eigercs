@@ -28,11 +28,11 @@ class Interpreter
     public static BuiltInFunctions.ExitFunction exitFunction = new();
     public static Number fgColor = new("<std>", 0, 0, (int)ConsoleColor.Gray)
     {
-        isReadonly = true
+        modifiers = ["readonly"]
     };
     public static Number bgColor = new("<std>", 0, 0, (int)ConsoleColor.Black)
     {
-        isReadonly = true
+        modifiers = ["readonly"]
     };
 
     // global symbol table
@@ -267,14 +267,20 @@ class Interpreter
         // LetNode: variableName
         // -- initialValue (optional)
 
-        if (symbolTable.ContainsKey(node.value))
-            throw new EigerError(node.filename, node.line, node.pos, $"Variable {node.value} already declared", EigerError.ErrorType.RuntimeError);
+        dynamic?[] pack = node.value ?? new dynamic?[2];
+        string varName = pack[1] ?? "";
+        List<string> modifiers = pack[0] ?? new List<string>();
+
+        if (symbolTable.ContainsKey(varName))
+            throw new EigerError(node.filename, node.line, node.pos, $"Variable {varName} already declared", EigerError.ErrorType.RuntimeError);
 
         Value v = node.children.Count == 1
             ? VisitNode(node.children[0], symbolTable).Item3
             : new Nix(node.filename, node.line, node.pos);
 
-        symbolTable.Add(node.value, v);
+        v.modifiers = modifiers;
+
+        symbolTable.Add(varName, v);
         return (false, false, v);
     }
 
@@ -353,7 +359,9 @@ class Interpreter
         // -- ...
 
         // get function name
-        string funcName = node.value ?? "";
+        dynamic?[] pack = node.value ?? new dynamic?[2];
+        string funcName = pack[1] ?? "";
+        List<string> modifiers = pack[0] ?? new List<string>();
 
         // a symbol with that name already exists
         if (symbolTable.ContainsKey(funcName) && funcName != "")
@@ -374,11 +382,16 @@ class Interpreter
             argnames.Add(node.children[i].value);
         }
 
+        Function result = new Function(node, funcName, argnames, root, symbolTable)
+        {
+            modifiers = modifiers
+        };
+
         // add the function to the current scope
         if (funcName != "")
-            symbolTable[funcName] = new Function(node, funcName, argnames, root, symbolTable);
+            symbolTable[funcName] = result;
 
-        return (false, false, new Function(node, funcName, argnames, root, symbolTable));
+        return (false, false, result);
     }
 
     // Visit inline function definition node
@@ -392,7 +405,9 @@ class Interpreter
         // -- ...
 
         // get function name
-        string funcName = node.value ?? "";
+        dynamic?[] pack = node.value ?? new dynamic?[2];
+        string funcName = pack[1] ?? "";
+        List<string> modifiers = pack[0] ?? new List<string>();
 
         if (symbolTable.ContainsKey(funcName) && funcName != "")
             throw new EigerError(node.filename, node.line, node.pos, $"{funcName} already declared", EigerError.ErrorType.RuntimeError);
@@ -412,7 +427,10 @@ class Interpreter
             argnames.Add(node.children[i].value);
         }
 
-        InlineFunction f = new InlineFunction(node, funcName, argnames, root, symbolTable);
+        InlineFunction f = new InlineFunction(node, funcName, argnames, root, symbolTable)
+        {
+            modifiers = modifiers
+        };
 
         // add the function to the current scope
         if (funcName != "")
@@ -479,7 +497,7 @@ class Interpreter
     private static Value HandleAssignment(ASTNode node, Value rightSide, Dictionary<string, Value> symbolTable)
     {
         Value leftValue = GetSymbol(symbolTable, node.children[0]);
-        if (leftValue.isReadonly)
+        if (leftValue.modifiers.Contains("readonly"))
             throw new EigerError(leftValue.filename, leftValue.line, leftValue.pos, $"{leftValue} is read-only!", EigerError.ErrorType.RuntimeError);
 
         SetSymbol(symbolTable, node.children[0], rightSide);
@@ -490,7 +508,7 @@ class Interpreter
     {
         Value leftValue = GetSymbol(symbolTable, node.children[0]);
         Value newValue = operation(leftValue, rightSide);
-        if (leftValue.isReadonly)
+        if (leftValue.modifiers.Contains("readonly"))
             throw new EigerError(leftValue.filename, leftValue.line, leftValue.pos, $"{leftValue} is read-only!", EigerError.ErrorType.RuntimeError);
         else
             SetSymbol(symbolTable, node.children[0], newValue);
@@ -553,6 +571,9 @@ class Interpreter
             }
             currentNode = currentNode.children[1];
         }
+
+        if (v.modifiers.Contains("private"))
+            throw new EigerError(node.filename, node.line, node.pos, "Attribute is private", EigerError.ErrorType.RuntimeError);
 
         if (v is BaseFunction f && currentNode.type == NodeType.FuncCall)
         {

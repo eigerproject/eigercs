@@ -31,6 +31,11 @@ public class Parser(List<Token> tokens)
         TokenType.EQ, TokenType.PLUSEQ,TokenType.MINUSEQ,TokenType.MULEQ,TokenType.DIVEQ,TokenType.EQEQ, TokenType.NEQEQ,TokenType.GT, TokenType.LT, TokenType.GTE, TokenType.LTE,
     };
 
+    readonly List<string> varModifiers = new()
+    {
+        "readonly", "private"
+    };
+
     string path = "<stdin>";
 
     // parse the root
@@ -149,6 +154,20 @@ public class Parser(List<Token> tokens)
         Token funcTok = Peek();
         Match(TokenType.IDENTIFIER, "func");
 
+        List<string> modifiers = [];
+
+        while (Peek().type == TokenType.IDENTIFIER && varModifiers.Contains(Peek().value))
+        {
+            string modifier = Peek().value ?? throw new EigerError(path, Peek().line, Peek().pos, $"Modifier has no value", EigerError.ErrorType.RuntimeError);
+
+            if (modifiers.Contains(modifier))
+                throw new EigerError(path, Peek().line, Peek().pos, $"Double modifier {modifier}", EigerError.ErrorType.RuntimeError);
+            else
+                modifiers.Add(modifier);
+
+            Advance();
+        }
+
         // get func name
         string funcName = "";
 
@@ -156,7 +175,7 @@ public class Parser(List<Token> tokens)
             funcName = Advance().value ?? "";
 
         // create func def node
-        ASTNode node = new(NodeType.FuncDef, funcName, funcTok.line, funcTok.pos, path);
+        ASTNode node = new(NodeType.FuncDef, new dynamic?[2] { modifiers, funcName }, funcTok.line, funcTok.pos, path);
         // create list for args
         List<ASTNode> args = [];
 
@@ -368,12 +387,26 @@ public class Parser(List<Token> tokens)
         Token letToken = Peek();
         Match(TokenType.IDENTIFIER, "let");
 
+        List<string> modifiers = [];
+
+        while (Peek().type == TokenType.IDENTIFIER && varModifiers.Contains(Peek().value))
+        {
+            string modifier = Peek().value ?? throw new EigerError(path, Peek().line, Peek().pos, $"Modifier has no value", EigerError.ErrorType.RuntimeError);
+
+            if (modifiers.Contains(modifier))
+                throw new EigerError(path, Peek().line, Peek().pos, $"Double modifier {modifier}", EigerError.ErrorType.RuntimeError);
+            else
+                modifiers.Add(modifier);
+
+            Advance();
+        }
+
         Token variableName = Advance();
 
-        ASTNode letNode = new ASTNode(NodeType.Let, variableName.value, letToken.line, letToken.pos, path);
+        ASTNode letNode = new(NodeType.Let, new dynamic?[2] { modifiers, variableName.value }, letToken.line, letToken.pos, path);
 
         // if the variable has an initial value (let x = 10)
-        if(Peek().type == TokenType.EQ)
+        if (Peek().type == TokenType.EQ)
         {
             Match(TokenType.EQ);
             letNode.AddChild(Expr());

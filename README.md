@@ -36,8 +36,8 @@
   
   ```
   class Person
-      let name
-      let surname
+      let private name
+      let private surname
 
       ~ constructor
       func new(name, surname)

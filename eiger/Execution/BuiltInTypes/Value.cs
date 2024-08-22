@@ -5,7 +5,7 @@ namespace EigerLang.Execution.BuiltInTypes;
 
 public class Value(string _filename, int _line, int _pos)
 {
-    public bool isReadonly = false;
+    public List<string> modifiers = [];
     public string filename = _filename;
     public int line = _line, pos = _pos;
 
@@ -101,19 +101,20 @@ public class Value(string _filename, int _line, int _pos)
 
     public virtual Value GetAttr(ASTNode attr)
     {
+        Value retVal;
         if (attr.type == NodeType.AttrAccess)
-        {
-            return GetAttr(attr.children[0]).GetAttr(attr.children[1]);
-        }
-        if (attr.value == "asString")
-        {
-            return new String(filename, line, pos, ToString() ?? "");
-        }
-        if (attr.value == "length")
-        {
-            return GetLength();
-        }
-        throw new EigerError(filename, line, pos, "Attribute not found", EigerError.ErrorType.RuntimeError);
+            retVal = GetAttr(attr.children[0]).GetAttr(attr.children[1]);
+        else if (attr.value == "asString")
+            retVal = new String(filename, line, pos, ToString() ?? "");
+        else if (attr.value == "length")
+            retVal = GetLength();
+        else
+            throw new EigerError(filename, line, pos, "Attribute not found", EigerError.ErrorType.RuntimeError);
+
+        if (retVal.modifiers.Contains("private"))
+            throw new EigerError(filename, line, pos, "Attribute is private", EigerError.ErrorType.RuntimeError);
+
+        return retVal;
     }
 
     public virtual void SetAttr(ASTNode attr, Value val)
