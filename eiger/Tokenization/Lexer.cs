@@ -170,6 +170,7 @@ public class Lexer
             { '^', TokenType.CARET },
             { '%', TokenType.PERC },
             { ',', TokenType.COMMA },
+            { '@', TokenType.AT },
             { '=', TokenType.EQ }
         };
 

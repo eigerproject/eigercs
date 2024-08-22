@@ -478,6 +478,7 @@ class Interpreter
             "/" => leftSide.DivedBy(rightSide),
             "%" => leftSide.ModdedBy(rightSide),
             "^" => leftSide.ExpedBy(rightSide),
+            "@" => leftSide.CreateArray(rightSide),
             "?=" => leftSide.ComparisonEqeq(rightSide),
             "<" => leftSide.ComparisonLT(rightSide),
             ">" => leftSide.ComparisonGT(rightSide),

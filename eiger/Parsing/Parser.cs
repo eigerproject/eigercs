@@ -28,7 +28,7 @@ public class Parser(List<Token> tokens)
     // comparison or assignment level operators
     readonly HashSet<TokenType> comparOps = new()
     {
-        TokenType.EQ, TokenType.PLUSEQ,TokenType.MINUSEQ,TokenType.MULEQ,TokenType.DIVEQ,TokenType.EQEQ, TokenType.NEQEQ,TokenType.GT, TokenType.LT, TokenType.GTE, TokenType.LTE,
+        TokenType.EQ, TokenType.PLUSEQ,TokenType.MINUSEQ,TokenType.MULEQ,TokenType.DIVEQ,TokenType.EQEQ, TokenType.NEQEQ,TokenType.GT, TokenType.LT, TokenType.GTE, TokenType.LTE, TokenType.AT,
     };
 
     readonly List<string> varModifiers = new()

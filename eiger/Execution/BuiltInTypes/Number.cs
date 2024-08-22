@@ -56,6 +56,16 @@ class Number : Value
         return new Number(filename, line, pos, value / other.value);
     }
 
+    public override Value CreateArray(object other)
+    {
+        List<Value> vals = [];
+
+        for (int i = 0; i < (int)value; i++)
+            vals.Add((Value)other);
+
+        return new Array(filename, line, pos, [.. vals]);
+    }
+
     public override Boolean ComparisonEqeq(dynamic other)
     {
         return new Boolean(filename, line, pos, value == other.value);

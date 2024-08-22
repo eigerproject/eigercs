@@ -33,6 +33,11 @@ public class Value(string _filename, int _line, int _pos)
         throw new EigerError(filename, line, pos, $"{Globals.InvalidOperationStr}: {this.GetType().Name} % {other.GetType().Name}", EigerError.ErrorType.InvalidOperationError);
     }
 
+    public virtual Value CreateArray(object other)
+    {
+        throw new EigerError(filename, line, pos, $"{Globals.InvalidOperationStr}: {this.GetType().Name} @ {other.GetType().Name}", EigerError.ErrorType.InvalidOperationError);
+    }
+
     public virtual Value ExpedBy(object other)
     {
         throw new EigerError(filename, line, pos, $"{Globals.InvalidOperationStr}: {this.GetType().Name} ^ {other.GetType().Name}", EigerError.ErrorType.InvalidOperationError);
