@@ -14,7 +14,7 @@ class Iterator
     end
 
     func Iterate()
-        if this.ptr < this.length then
+        if ptr < length then
             let retVal = iter[ptr]
             ptr += 1
             ret retVal
@@ -29,7 +29,7 @@ class Iterator
 
     func Peek()
         if ptr < length then
-            ret iter[this.ptr]
+            ret iter[ptr]
         else
             ret nix
         end
