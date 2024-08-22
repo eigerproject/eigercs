@@ -82,23 +82,27 @@ public class Program
                 if (printExprs)
                 {
                     string v = Convert.ToString(val) ?? "";
-                    switch (val.GetType().Name)
+
+
+                    if (val is Number || val is EigerLang.Execution.BuiltInTypes.Boolean)
                     {
-                        case "Number":
-                        case "Boolean":
-                            Console.ForegroundColor = ConsoleColor.Cyan; break;
-                        case "String":
-                            Console.ForegroundColor = ConsoleColor.Yellow; v = $"\"{v}\""; break;
-                        case "Nix":
-                            Console.ForegroundColor = ConsoleColor.DarkGray; break;
-                        case "Function":
-                        case "InlineFunction":
-                        case "Class":
-                        case "Instance":
-                        case "Dataclass":
-                            Console.ForegroundColor = ConsoleColor.Green; break;
-                        default:
-                            Console.ResetColor(); break;
+                        Console.ForegroundColor = ConsoleColor.Cyan;
+                    }
+                    else if (val is Nix)
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkGray;
+                    }
+                    else if (val is EigerLang.Execution.BuiltInTypes.String)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Yellow; v = $"\"{v}\"";
+                    }
+                    else if (val is BaseFunction || val is Class || val is Dataclass || val is Instance)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Green;
+                    }
+                    else
+                    {
+                        Console.ResetColor();
                     }
                     Console.WriteLine(v);
                     Console.ResetColor();
