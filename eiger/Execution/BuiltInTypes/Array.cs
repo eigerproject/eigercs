@@ -75,6 +75,7 @@ class Array : Value
     {
         if (idx < 0 || idx >= array.Length)
             throw new EigerError(filename, line, pos, "Index outside of bounds", EigerError.ErrorType.IndexError);
+        val.modifiers = array[idx].modifiers;
         array[idx] = val;
     }
 

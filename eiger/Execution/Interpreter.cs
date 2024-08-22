@@ -172,7 +172,7 @@ class Interpreter
 
         int step = value < toValue ? 1 : -1;
 
-        SetSymbol(localSymbolTable, node.children[0], new Number(node.filename, node.line, node.pos, value));
+        localSymbolTable[node.children[0].value] = new Number(node.filename, node.line, node.pos, value);
 
         while (value != toValue)
         {
@@ -752,6 +752,7 @@ class Interpreter
             }
             else if (key.type == NodeType.Identifier)
             {
+                value.modifiers = symbolTable[key.value].modifiers;
                 symbolTable[key.value] = value;
             }
             else if (key.type == NodeType.AttrAccess)

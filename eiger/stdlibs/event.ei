@@ -1,7 +1,7 @@
 ﻿class Event
 	let private subscribers = []
 
-	func Event() end
+	func new() end
 	
 	func Subscribe(subscriber) subscribers += subscriber end
 	
