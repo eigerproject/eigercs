@@ -12,9 +12,12 @@ class AsciiFunction : BuiltInFunction
 {
     public AsciiFunction() : base("ascii", ["chr"]) { }
 
-    public override (bool, bool, Value) Execute(List<Value> args, int line, int pos, string filepath)
+    public override ReturnResult Execute(List<Value> args, int line, int pos, string filepath)
     {
         CheckArgs(filepath, line, pos, args.Count);
-        return (false, false, new Number(filepath, line, pos, ((String)args[0]).value[0]));
+        return new()
+        {
+            result = new Number(filepath, line, pos, ((String)args[0]).value[0])
+        };
     }
 }

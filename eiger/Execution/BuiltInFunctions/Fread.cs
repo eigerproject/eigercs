@@ -12,7 +12,7 @@ class FreadFunction : BuiltInFunction
 {
     public FreadFunction() : base("fread", ["path"]) { }
 
-    public override (bool, bool, Value) Execute(List<Value> args, int line, int pos, string filepath)
+    public override ReturnResult Execute(List<Value> args, int line, int pos, string filepath)
     {
         CheckArgs(filepath, line, pos, args.Count);
         if (args[0] is not String)
@@ -21,7 +21,10 @@ class FreadFunction : BuiltInFunction
         {
             string pathStr = path.value;
             if (File.Exists(pathStr))
-                return (false, false, new String(filepath, line, pos, File.ReadAllText(pathStr)));
+                return new()
+                {
+                    result = new String(filepath, line, pos, File.ReadAllText(pathStr))
+                };
             else
                 throw new Errors.EigerError(filepath, line, pos, "File doesn't exist", Errors.EigerError.ErrorType.IOError);
 

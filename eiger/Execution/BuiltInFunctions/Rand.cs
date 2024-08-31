@@ -12,9 +12,12 @@ class RandFunction : BuiltInFunction
     public RandFunction() : base("rand", []) { }
     readonly Random rand = new();
 
-    public override (bool, bool, Value) Execute(List<Value> args, int line, int pos, string filepath)
+    public override ReturnResult Execute(List<Value> args, int line, int pos, string filepath)
     {
         CheckArgs(filepath, line, pos, args.Count);
-        return (false, false, new Number(filepath, line, pos, rand.NextDouble()));
+        return new()
+        {
+            result = new Number(filepath, line, pos, rand.NextDouble())
+        };
     }
 }

@@ -11,10 +11,13 @@ class EmitFunction : BuiltInFunction
 {
     public EmitFunction() : base("emit", ["value"]) { }
 
-    public override (bool, bool, Value) Execute(List<Value> args, int line, int pos, string filepath)
+    public override ReturnResult Execute(List<Value> args, int line, int pos, string filepath)
     {
         CheckArgs(filepath, line, pos, args.Count);
         Console.Write(args[0]);
-        return (false, false, new Nix(filepath, line, pos));
+        return new()
+        {
+            result = new Nix(filepath, line, pos)
+        };
     }
 }

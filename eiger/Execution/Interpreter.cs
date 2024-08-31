@@ -77,7 +77,7 @@ class Interpreter
         globalSymbolTable = new(defaultGlobalSymbolTable);
 
     // function for visiting a node
-    public static (bool, bool, Value) VisitNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    public static ReturnResult VisitNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         switch (node.type)
         {
@@ -92,7 +92,12 @@ class Interpreter
             case NodeType.Class: return VisitClassNode(node, symbolTable);
             case NodeType.Dataclass: return VisitDataclassNode(node, symbolTable);
             case NodeType.Return: return VisitReturnNode(node, symbolTable);
-            case NodeType.Break: return (true, false, new Nix(node.filename, node.line, node.pos));
+            case NodeType.Break:
+                return new()
+                {
+                    result = new Nix(node.filename, node.line, node.pos),
+                    shouldBreak = true
+                };
             case NodeType.BinOp: return VisitBinOpNode(node, symbolTable);
             case NodeType.UnaryOp: return VisitUnaryOpNode(node, symbolTable);
             case NodeType.Literal: return VisitLiteralNode(node, symbolTable);
@@ -104,21 +109,28 @@ class Interpreter
             default:
                 break;
         }
-        return (false, false, new Nix(node.filename, node.line, node.pos));
+        return new()
+        {
+            result = new Nix(node.filename, node.line, node.pos)
+        };
     }
 
     // visit return node
-    static (bool, bool, Value) VisitReturnNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static ReturnResult VisitReturnNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         // ReturnNode structure
         // ReturnNode
         // -- value
 
-        return (false, true, VisitNode(node.children[0], symbolTable).Item3);
+        return new()
+        {
+            result = VisitNode(node.children[0], symbolTable).result,
+            shouldReturn = true
+        };
     }
 
     // visit block node 
-    public static (bool, bool, Value) VisitBlockNode(ASTNode node, Dictionary<string, Value> symbolTable, Dictionary<string, Value>? parentSymbolTable = null)
+    public static ReturnResult VisitBlockNode(ASTNode node, Dictionary<string, Value> symbolTable, Dictionary<string, Value>? parentSymbolTable = null)
     {
         // BlockNode structure
         // BlockNode
@@ -129,7 +141,7 @@ class Interpreter
         // loop through each statement
         foreach (var child in node.children)
         {
-            (bool shouldBreak, bool didReturn, Value value) = VisitNode(child, symbolTable);
+            ReturnResult r = VisitNode(child, symbolTable);
 
             // Sync local and parent symbol tables
             // basically syncing the variables in this scope with the ones in the parent scope
@@ -141,15 +153,18 @@ class Interpreter
                         parentSymbolTable[symbol] = symbolTable[symbol];
 
             // if the current statement returned a value, return the value and stop block execution
-            if (didReturn || shouldBreak)
-                return (shouldBreak, didReturn, value);
+            if (r.shouldReturn || r.shouldBreak)
+                return r;
         }
         // return nothing
-        return (false, false, new Nix(node.filename, node.line, node.pos));
+        return new()
+        {
+            result = new Nix(node.filename, node.line, node.pos)
+        };
     }
 
     // visit for..to node
-    static (bool, bool, Value) VisitForToNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static ReturnResult VisitForToNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         // ForToNode structure
         // ForToNode
@@ -167,8 +182,8 @@ class Interpreter
 
         ASTNode forBlock = node.children[3];
 
-        double value = ((Number)VisitNode(node.children[1], symbolTable).Item3).value;
-        double toValue = ((Number)VisitNode(toNode, symbolTable).Item3).value;
+        double value = ((Number)VisitNode(node.children[1], symbolTable).result).value;
+        double toValue = ((Number)VisitNode(toNode, symbolTable).result).value;
 
         int step = value < toValue ? 1 : -1;
 
@@ -176,20 +191,23 @@ class Interpreter
 
         while (value != toValue)
         {
-            (bool shouldBreak, bool didReturn, Value v) = VisitBlockNode(forBlock, localSymbolTable, symbolTable);
+            ReturnResult r = VisitBlockNode(forBlock, localSymbolTable, symbolTable);
 
-            if (didReturn || shouldBreak)
-                return (shouldBreak, didReturn, v);
+            if (r.shouldReturn || r.shouldBreak)
+                return r;
 
             value += step;
             SetSymbol(localSymbolTable, node.children[0], new Number(node.filename, node.line, node.pos, value));
         }
 
-        return (false, false, new Nix(node.filename, node.line, node.pos));
+        return new()
+        {
+            result = new Nix(node.filename, node.line, node.pos)
+        };
     }
 
     // visit while node
-    static (bool, bool, Value) VisitWhileNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static ReturnResult VisitWhileNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         // WhileNode structure
         // WhileNode
@@ -197,25 +215,29 @@ class Interpreter
         // -- whileBlock
 
         // visit Condition
-        Boolean condition = (Boolean)VisitNode(node.children[0], symbolTable).Item3;
+        Boolean condition = (Boolean)VisitNode(node.children[0], symbolTable).result;
         while (Convert.ToBoolean(condition.value))
         {
             // visit the body of the loop
-            (bool shouldBreak, bool didReturn, Value v) = VisitBlockNode(node.children[1], new(symbolTable), symbolTable);
+            // (bool shouldBreak, bool didReturn, Value v)
+            ReturnResult r = VisitBlockNode(node.children[1], new(symbolTable), symbolTable);
 
-            if (didReturn || shouldBreak)
-                return (shouldBreak, didReturn, v);
+            if (r.shouldReturn || r.shouldBreak)
+                return r;
 
             // update the condition
-            condition = (Boolean)VisitNode(node.children[0], symbolTable).Item3;
+            condition = (Boolean)VisitNode(node.children[0], symbolTable).result;
         }
         // return nothing
-        return (false, false, new Nix(node.filename, node.line, node.pos));
+        return new()
+        {
+            result = new Nix(node.filename, node.line, node.pos)
+        };
     }
 
     // visit if node
     // visit if node
-    static (bool, bool, Value) VisitIfNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static ReturnResult VisitIfNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         // IfNode structure
         // IfNode
@@ -225,7 +247,7 @@ class Interpreter
         // -- elseBlock (if exists)
 
         // visit condition
-        Boolean condition = (Boolean)VisitNode(node.children[0], symbolTable).Item3;
+        Boolean condition = (Boolean)VisitNode(node.children[0], symbolTable).result;
 
         // if the condition is true
         if (Convert.ToBoolean(condition.value))
@@ -241,7 +263,7 @@ class Interpreter
             if (child.type == NodeType.If)
             {
                 // visit else if condition
-                Boolean elseIfCondition = (Boolean)VisitNode(child.children[0], symbolTable).Item3;
+                Boolean elseIfCondition = (Boolean)VisitNode(child.children[0], symbolTable).result;
                 if (Convert.ToBoolean(elseIfCondition.value))
                 {
                     // visit the else if block (2nd child of else if node)
@@ -257,11 +279,14 @@ class Interpreter
         }
 
         // if no condition is true and there's no else block, do nothing
-        return (false, false, new Nix(node.filename, node.line, node.pos));
+        return new()
+        {
+            result = new Nix(node.filename, node.line, node.pos)
+        };
     }
 
     // visit let variable declaration node
-    static (bool, bool, Value) VisitLetNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static ReturnResult VisitLetNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         // LetNode structure:
         // LetNode: variableName
@@ -275,18 +300,20 @@ class Interpreter
             throw new EigerError(node.filename, node.line, node.pos, $"Variable {varName} already declared", EigerError.ErrorType.RuntimeError);
 
         Value v = node.children.Count == 1
-            ? VisitNode(node.children[0], symbolTable).Item3
+            ? VisitNode(node.children[0], symbolTable).result
             : new Nix(node.filename, node.line, node.pos);
 
         v.modifiers = modifiers;
 
         symbolTable.Add(varName, v);
-        return (false, false, v);
+        return new()
+        {
+            result = v
+        };
     }
 
-
     // visit function call node
-    static (bool, bool, Value) VisitFuncCallNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static ReturnResult VisitFuncCallNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         // FuncCallNode structure:
         // FuncCallNode
@@ -295,7 +322,7 @@ class Interpreter
         // -- arg2
         // -- ...
 
-        Value func = VisitNode(node.children[0], symbolTable).Item3;
+        Value func = VisitNode(node.children[0], symbolTable).result;
 
         // if the symbol we're calling is a function or a class (it might be something else, like a variable)
         List<Value> args = PrepareArguments(node, symbolTable);
@@ -309,7 +336,7 @@ class Interpreter
     }
 
     // Visit dataclass definition node
-    static (bool, bool, Value) VisitDataclassNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static ReturnResult VisitDataclassNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         // DataclassNode structure
         // DataclassNode : <class name>
@@ -325,11 +352,11 @@ class Interpreter
 
         SetSymbol(symbolTable, node.value, classdef);
 
-        return (false, false, classdef);
+        return new() { result = classdef };
     }
 
     // Visit class definition node
-    static (bool, bool, Value) VisitClassNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static ReturnResult VisitClassNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         // ClassNode structure
         // ClassNode : <class name>
@@ -345,11 +372,11 @@ class Interpreter
 
         SetSymbol(symbolTable, node.value, classdef);
 
-        return (false, false, classdef);
+        return new() { result = classdef };
     }
 
     // Visit function definition node
-    static (bool, bool, Value) VisitFuncDefNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static ReturnResult VisitFuncDefNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         // FuncDefNode structure
         // FuncDefNode : <function name>
@@ -391,11 +418,11 @@ class Interpreter
         if (funcName != "")
             symbolTable[funcName] = result;
 
-        return (false, false, result);
+        return new() { result = result };
     }
 
     // Visit inline function definition node
-    static (bool, bool, Value) VisitFuncDefInlineNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static ReturnResult VisitFuncDefInlineNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         // VisitFuncDefInlineNode structure
         // VisitFuncDefInlineNode : <function name>
@@ -437,17 +464,20 @@ class Interpreter
             symbolTable[funcName] = f;
 
         // return the function
-        return (false, false, f);
+        return new()
+        {
+            result = f
+        };
     }
 
     // visit unary operator node
-    static (bool, bool, Value) VisitUnaryOpNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static ReturnResult VisitUnaryOpNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         // get unary operator
         string unaryOp = node.value ?? throw new EigerError(node.filename, node.line, node.pos, "Invalid Unary Operator", EigerError.ErrorType.RuntimeError);
 
         // get right side without unary operator
-        Value rightSide = VisitNode(node.children[0], symbolTable).Item3;
+        Value rightSide = VisitNode(node.children[0], symbolTable).result;
         // prepare a variable for return value
         Value retVal = unaryOp switch
         {
@@ -455,18 +485,21 @@ class Interpreter
             "not" => rightSide.Notted(),
             _ => throw new EigerError(node.filename, node.line, node.pos, "Invalid Unary Operator", EigerError.ErrorType.RuntimeError),
         };
-        return (false, false, retVal);
+        return new()
+        {
+            result = retVal
+        };
     }
 
     // visit binary operator node
-    static (bool, bool, Value) VisitBinOpNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static ReturnResult VisitBinOpNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         Value leftSide = new Nix(node.filename, node.line, node.pos);
 
         if (node.value != "=")
-            leftSide = VisitNode(node.children[0], symbolTable).Item3;
+            leftSide = VisitNode(node.children[0], symbolTable).result;
 
-        Value rightSide = VisitNode(node.children[1], symbolTable).Item3;
+        Value rightSide = VisitNode(node.children[1], symbolTable).result;
 
         // prepare a variable for return value
         Value retVal = node.value switch
@@ -492,7 +525,10 @@ class Interpreter
             "/=" => HandleCompoundAssignment(node, rightSide, symbolTable, (left, right) => left.DivedBy(right)),
             _ => throw new EigerError(node.filename, node.line, node.pos, $"{Globals.InvalidOperationStr}: {node.value}", EigerError.ErrorType.InvalidOperationError),
         };
-        return (false, false, retVal);
+        return new()
+        {
+            result = retVal
+        };
     }
 
     private static Value HandleAssignment(ASTNode node, Value rightSide, Dictionary<string, Value> symbolTable)
@@ -518,26 +554,34 @@ class Interpreter
 
 
     // visit literal node (pretty self-explanatory)
-    static (bool, bool, Value) VisitLiteralNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static ReturnResult VisitLiteralNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
+        Value v;
         if (node.value is string && node.value == "true")
-            return (false, false, new Boolean(node.filename, node.line, node.pos, true));
+            v = new Boolean(node.filename, node.line, node.pos, true);
         else if (node.value is string && node.value == "false")
-            return (false, false, new Boolean(node.filename, node.line, node.pos, false));
+            v = new Boolean(node.filename, node.line, node.pos, false);
         else if (node.value is string && node.value == "nix")
-            return (false, false, new Nix(node.filename, node.line, node.pos));
+            v = new Nix(node.filename, node.line, node.pos);
+        else v = Value.ToEigerValue(node.filename, node.line, node.pos, node.value);
 
-        return (false, false, Value.ToEigerValue(node.filename, node.line, node.pos, node.value));
+        return new()
+        {
+            result = v
+        };
     }
 
     // visit identifier node (pretty self-explanatory too)
-    static (bool, bool, Value) VisitIdentifierNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static ReturnResult VisitIdentifierNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
-        return (false, false, GetSymbol(symbolTable, node));
+        return new()
+        {
+            result = GetSymbol(symbolTable, node)
+        };
     }
 
     // visit array node
-    static (bool, bool, Value) VisitArrayNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static ReturnResult VisitArrayNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         // ArrayNode structure
         // ArrayNode
@@ -548,12 +592,15 @@ class Interpreter
         List<Value> list = [];
         foreach (ASTNode item in node.children)
         {
-            list.Add(VisitNode(item, symbolTable).Item3);
+            list.Add(VisitNode(item, symbolTable).result);
         }
-        return (false, false, new Array(node.filename, node.line, node.pos, [.. list]));
+        return new()
+        {
+            result = new Array(node.filename, node.line, node.pos, [.. list])
+        };
     }
 
-    private static (bool, bool, Value) VisitAttrAccessNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    private static ReturnResult VisitAttrAccessNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         // AttrAccessNode structure
         // AttrAccessNode
@@ -567,7 +614,7 @@ class Interpreter
         {
             if (currentNode.type != NodeType.AttrAccess)
             {
-                v = VisitNode(node.children[0], symbolTable).Item3.GetAttr(node.children[1]);
+                v = VisitNode(node.children[0], symbolTable).result.GetAttr(node.children[1]);
                 break;
             }
             currentNode = currentNode.children[1];
@@ -581,39 +628,51 @@ class Interpreter
             List<Value> args = []; // prepare a list for args
             foreach (ASTNode child in currentNode.children)
             {
-                Value val = VisitNode(child, symbolTable).Item3 ?? throw new EigerError(node.filename, node.line, node.pos, Globals.ArgumentErrorStr, EigerError.ErrorType.ArgumentError);
+                Value val = VisitNode(child, symbolTable).result ?? throw new EigerError(node.filename, node.line, node.pos, Globals.ArgumentErrorStr, EigerError.ErrorType.ArgumentError);
                 args.Add(val);
             }
-            return (false, false, f.Execute(args, node.line, node.pos, node.filename).Item3);
+            return new()
+            {
+                result = f.Execute(args, node.line, node.pos, node.filename).result
+            };
         }
         else if (v is Class c && currentNode.type == NodeType.FuncCall)
         {
             List<Value> args = []; // prepare a list for args
             foreach (ASTNode child in currentNode.children)
             {
-                Value val = VisitNode(child, symbolTable).Item3 ?? throw new EigerError(node.filename, node.line, node.pos, Globals.ArgumentErrorStr, EigerError.ErrorType.ArgumentError);
+                Value val = VisitNode(child, symbolTable).result ?? throw new EigerError(node.filename, node.line, node.pos, Globals.ArgumentErrorStr, EigerError.ErrorType.ArgumentError);
                 args.Add(val);
             }
-            return (false, false, c.Execute(args).Item3);
+            return new()
+            {
+                result = c.Execute(args).result
+            };
         }
         else
-            return (false, false, v);
+            return new()
+            {
+                result = v
+            };
     }
 
-    private static (bool, bool, Value) VisitElementAccessNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    private static ReturnResult VisitElementAccessNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         // ElementAccessNode structure
         // ElementAccessNode
         // -- value
         // -- idx
 
-        Value iter = VisitNode(node.children[0], symbolTable).Item3;
-        Value value = VisitNode(node.children[1], symbolTable).Item3;
+        Value iter = VisitNode(node.children[0], symbolTable).result;
+        Value value = VisitNode(node.children[1], symbolTable).result;
 
         try
         {
             int idx = Convert.ToInt32(((Number)(value ?? throw new EigerError(node.filename, node.line, node.pos, "Index is unknown", EigerError.ErrorType.ParserError))).value);
-            return (false, false, iter.GetIndex(idx));
+            return new()
+            {
+                result = iter.GetIndex(idx)
+            };
         }
         catch (IndexOutOfRangeException)
         {
@@ -621,7 +680,7 @@ class Interpreter
         }
     }
 
-    private static (bool, bool, Value) VisitIncludeNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    private static ReturnResult VisitIncludeNode(ASTNode node, Dictionary<string, Value> symbolTable)
     {
         // IncludeNode structure
         // IncludeNode
@@ -659,7 +718,10 @@ class Interpreter
 
         Program.Execute(content, path, false);
 
-        return (false, false, new Nix(node.filename, node.line, node.pos));
+        return new()
+        {
+            result = new Nix(node.filename, node.line, node.pos)
+        };
     }
 
     // get symbol from a symboltable with error handling
@@ -685,7 +747,7 @@ class Interpreter
 
                 Value list = GetSymbol(symbolTable, listNode);
 
-                int idx = (int)((Number)VisitNode(idxNode, symbolTable).Item3).value;
+                int idx = (int)((Number)VisitNode(idxNode, symbolTable).result).value;
 
                 return list.GetIndex(idx);
             }
@@ -711,7 +773,7 @@ class Interpreter
         List<Value> args = new List<Value>();
         for (int i = 1; i < node.children.Count; i++)
         {
-            Value val = VisitNode(node.children[i], symbolTable).Item3 ?? throw new EigerError(node.filename, node.line, node.pos, Globals.ArgumentErrorStr, EigerError.ErrorType.ArgumentError);
+            Value val = VisitNode(node.children[i], symbolTable).result ?? throw new EigerError(node.filename, node.line, node.pos, Globals.ArgumentErrorStr, EigerError.ErrorType.ArgumentError);
             args.Add(val);
         }
         return args;
@@ -747,7 +809,7 @@ class Interpreter
                 ASTNode listNode = key.children[0];
                 ASTNode idxNode = key.children[1];
                 Value list = GetSymbol(symbolTable, listNode);
-                int idx = (int)((Number)VisitNode(idxNode, symbolTable).Item3).value;
+                int idx = (int)((Number)VisitNode(idxNode, symbolTable).result).value;
                 list.SetIndex(idx, value);
             }
             else if (key.type == NodeType.Identifier)

@@ -11,18 +11,24 @@ class IntFunction : BuiltInFunction
 {
     public IntFunction() : base("int", ["val"]) { }
 
-    public override (bool, bool, Value) Execute(List<Value> args, int line, int pos, string filepath)
+    public override ReturnResult Execute(List<Value> args, int line, int pos, string filepath)
     {
         CheckArgs(filepath, line, pos, args.Count);
         if (args[0] is Number n)
         {
-            return (false, true, new Number(filepath, line, pos, Convert.ToInt32(n.value)));
+            return new()
+            {
+                result = new Number(filepath, line, pos, Convert.ToInt32(n.value))
+            };
         }
         else if (args[0] is BuiltInTypes.String s)
         {
             try
             {
-                return (false, true, new Number(filepath, line, pos, Convert.ToInt32(Convert.ToDouble(s.value))));
+                return new()
+                {
+                    result = new Number(filepath, line, pos, Convert.ToInt32(Convert.ToDouble(s.value)))
+                };
             }
             catch (FormatException)
             {

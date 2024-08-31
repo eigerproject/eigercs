@@ -78,7 +78,7 @@ public class Program
 
             foreach (var statement in root.children)
             {
-                (bool shouldBreak, bool didReturn, Value val) = Interpreter.VisitNode(statement, Interpreter.globalSymbolTable);
+                Value val = Interpreter.VisitNode(statement, Interpreter.globalSymbolTable).result;
                 if (printExprs)
                 {
                     string v = Convert.ToString(val) ?? "";
