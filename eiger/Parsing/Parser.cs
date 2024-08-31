@@ -130,6 +130,7 @@ public class Parser(List<Token> tokens)
             "func" => FuncDefStatement(),
             "ret" => RetStatement(),
             "brk" => BreakStatement(),
+            "cont" => ContinueStatement(),
             "class" => ClassStatement(),
             "dataclass" => DataclassStatement(),
             "include" => IncludeStatement(),
@@ -224,6 +225,17 @@ public class Parser(List<Token> tokens)
         foreach (var arg in args)
             node.AddChild(arg);
 
+        return node;
+    }
+
+    // continue statement
+    ASTNode ContinueStatement()
+    {
+        // match cont
+        Token breakToken = Peek();
+        Match(TokenType.IDENTIFIER, "cont");
+        // create node
+        ASTNode node = new(NodeType.Continue, null, breakToken.line, breakToken.pos, path);
         return node;
     }
 

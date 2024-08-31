@@ -25,5 +25,6 @@ public enum NodeType
     Dataclass,
     Include,
     UnaryOp,
-    Break
+    Break,
+    Continue
 }

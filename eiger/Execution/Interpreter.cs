@@ -98,6 +98,12 @@ class Interpreter
                     result = new Nix(node.filename, node.line, node.pos),
                     shouldBreak = true
                 };
+            case NodeType.Continue:
+                return new()
+                {
+                    result = new Nix(node.filename, node.line, node.pos),
+                    shouldContinue = true
+                };
             case NodeType.BinOp: return VisitBinOpNode(node, symbolTable);
             case NodeType.UnaryOp: return VisitUnaryOpNode(node, symbolTable);
             case NodeType.Literal: return VisitLiteralNode(node, symbolTable);
@@ -153,7 +159,7 @@ class Interpreter
                         parentSymbolTable[symbol] = symbolTable[symbol];
 
             // if the current statement returned a value, return the value and stop block execution
-            if (r.shouldReturn || r.shouldBreak)
+            if (r.shouldReturn || r.shouldBreak || r.shouldContinue)
                 return r;
         }
         // return nothing
