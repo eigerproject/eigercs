@@ -182,7 +182,6 @@ class Interpreter
         // ---- statement2
         // ---- ...
 
-        Dictionary<string, Value> localSymbolTable = new(symbolTable);
 
         ASTNode toNode = node.children[2];
 
@@ -193,17 +192,18 @@ class Interpreter
 
         int step = value < toValue ? 1 : -1;
 
-        localSymbolTable[node.children[0].value] = new Number(node.filename, node.line, node.pos, value);
 
         while (value != toValue)
         {
+            Dictionary<string, Value> localSymbolTable = new(symbolTable);
+            localSymbolTable[node.children[0].value] = new Number(node.filename, node.line, node.pos, value);
+
             ReturnResult r = VisitBlockNode(forBlock, localSymbolTable, symbolTable);
 
             if (r.shouldReturn || r.shouldBreak)
                 return r;
 
             value += step;
-            SetSymbol(localSymbolTable, node.children[0], new Number(node.filename, node.line, node.pos, value));
         }
 
         return new()
