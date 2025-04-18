@@ -379,4 +379,62 @@ public class EigerTests
             "3"
         );
     }
+
+    [TestMethod]
+    public void MathLibTest() {
+        TestCode(
+            "include math\nemitln(math.abs(-128))",
+            "128"
+        );
+
+        TestCode(
+            "include math\nemitln(math.abs(128))",
+            "128"
+        );
+
+        TestCode(
+            "include math\nemitln(math.sqrt(100))",
+            "10"
+        );
+
+        TestCode(
+            "include math\nemitln(math.sqrt(-100))",
+            "NaN"
+        );
+
+        TestCode(
+            "include math\nemitln(math.pow(2, -1))",
+            "0.5"
+        );
+
+        TestCode(
+            "include math\nemitln(math.pow(2, 10))",
+            "1024"
+        );
+
+        TestCode(
+            "include math\nemitln(math.mod(2, 2))",
+            "0"
+        );
+
+        TestCode(
+            "include math\nemitln(math.mod(37, 3))",
+            "1"
+        );
+
+        TestCode(
+            "include math\nemitln(math.factorial(5))",
+            "120"
+        );
+
+        TestCode(
+            "include math\nemitln(math.factorial(0))",
+            "1"
+        );
+
+        TestCode(
+            "include math\nemitln(math.sin(0))",
+            "0"
+        );
+    }
 }

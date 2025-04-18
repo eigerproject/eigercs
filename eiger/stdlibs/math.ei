@@ -10,7 +10,7 @@ dataclass math ~ Declare a namespace
 		if n < 0 then
 			ret -n
 		else
-			ret m
+			ret n
 		end
 	end
 
@@ -32,45 +32,35 @@ dataclass math ~ Declare a namespace
 		end
 	end
 
-	~ Improved sine function using a higher-order Taylor series
 	func sin(x)
-		~ Normalize the angle to the range [0, 2*pi)
-		let two_pi = 2 * pi
-		x = x % two_pi
+	    let half_pi = pi / 2
+	    let two_pi = 2 * pi
 
-		~ Handle negative angles
-		if x < 0 then
-			x += two_pi
-		end
+	    ~ Normalize x to [-pi, pi]
+	    x = x % two_pi
+	    if x < -pi then
+	        x += two_pi
+	    elif x > pi then
+	        x -= two_pi
+	    end
 
-		~ Determine the sign based on the angle's quadrant
-		let sign = 1
-		if x > pi then
-			x = x - pi
-			sign = -1
-		end
+	    ~ Further reduce to [-pi/2, pi/2]
+	    let sign = 1
+	    if x < -half_pi then
+	        x = -pi - x
+	        sign = -1
+	    elif x > half_pi then
+	        x = pi - x
+	        sign = -1
+	    end
 
-		~ Use Taylor series expansion for sine
-		let result = 0
-		let power = x
-		let fact = 1
-		let sign_toggle = 1
+	    ~ Polynomial approximation
+	    let xpow = x * x
+	    let result = x * (1 + xpow * (-1/6 + xpow * (1/120)))
 
-		for i = 0 to 10 do
-			~ Taylor series term
-			let term = sign_toggle * (power / fact)
-
-			~ Add term to result
-			result += term
-
-			~ Prepare for next term
-			sign_toggle = -sign_toggle
-			power *= pow(x, 2)
-			fact *= pow(2 * i + 2, 2)
-		end
-
-		ret sign * result
+	    ret sign * result
 	end
+
 
 	func cos(n) > sin(pi / 2 - n)
 end
