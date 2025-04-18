@@ -8,27 +8,27 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="stdlibs\colorutil.ei" />
-    <None Remove="stdlibs\event.ei" />
-    <None Remove="stdlibs\iterator.ei" />
-    <None Remove="stdlibs\math.ei" />
-    <None Remove="stdlibs\stringutil.ei" />
+    <None Remove="modules\colorutil.ei" />
+    <None Remove="modules\event.ei" />
+    <None Remove="modules\iterator.ei" />
+    <None Remove="modules\math.ei" />
+    <None Remove="modules\stringutil.ei" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="stdlibs\colorutil.ei">
+    <Content Include="modules\colorutil.ei">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="stdlibs\event.ei">
+    <Content Include="modules\event.ei">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="stdlibs\iterator.ei">
+    <Content Include="modules\iterator.ei">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="stdlibs\math.ei">
+    <Content Include="modules\math.ei">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="stdlibs\stringutil.ei">
+    <Content Include="modules\stringutil.ei">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

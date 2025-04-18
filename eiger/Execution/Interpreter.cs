@@ -696,7 +696,7 @@ class Interpreter
 
         if (node.children[0].type == NodeType.Identifier)
         {
-            path = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "stdlibs", node.children[0].value + Globals.fileExtension);
+            path = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "modules", node.children[0].value + Globals.fileExtension);
         }
         else if (node.children[0].type == NodeType.Literal && node.children[0].value is string s)
         {
