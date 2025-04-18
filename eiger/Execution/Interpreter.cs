@@ -330,9 +330,9 @@ class Interpreter
 
         Value func = VisitNode(node.children[0], symbolTable).result;
 
-        // if the symbol we're calling is a function or a class (it might be something else, like a variable)
         List<Value> args = PrepareArguments(node, symbolTable);
 
+        // if the symbol we're calling is a function or a class (it might be something else, like a variable)
         if (func is BaseFunction f)
             return f.Execute(args, node.line, node.pos, node.filename);
         else if (func is Class c)
@@ -780,6 +780,7 @@ class Interpreter
         for (int i = 1; i < node.children.Count; i++)
         {
             Value val = VisitNode(node.children[i], symbolTable).result ?? throw new EigerError(node.filename, node.line, node.pos, Globals.ArgumentErrorStr, EigerError.ErrorType.ArgumentError);
+            val.modifiers.Clear();
             args.Add(val);
         }
         return args;
