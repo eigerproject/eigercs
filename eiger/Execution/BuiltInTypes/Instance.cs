@@ -29,12 +29,12 @@ public class Instance : Value
         {
             return createdFrom;
         }
-        return symbolTable.GetSymbol(attr);
+        return symbolTable.GetSymbol(attr, false);
     }
 
     public override void SetAttr(ASTNode attr, Value val)
     {
-        symbolTable.SetSymbol(attr, val);
+        symbolTable.SetSymbol(attr, val, false);
     }
 
     public override string ToString()

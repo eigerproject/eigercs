@@ -34,7 +34,7 @@ namespace EigerLang.Execution
             /*else*/ values[key] = val;
         }
 
-        public void SetSymbol(ASTNode key, Value value) {
+        public void SetSymbol(ASTNode key, Value value, bool checkParents = true) {
             try
             {
                 if (key.type == NodeType.ElementAccess)
@@ -63,7 +63,7 @@ namespace EigerLang.Execution
             }
             catch (KeyNotFoundException)
             {
-                if(parent != null) parent.SetSymbol(key, value);
+                if(parent != null && checkParents) parent.SetSymbol(key, value);
                 else throw new EigerError(key.filename, key.line, key.pos, $"Setting to undefined symbol", EigerError.ErrorType.RuntimeError);
             }
         }
@@ -82,7 +82,7 @@ namespace EigerLang.Execution
             else throw new EigerError(filename, line, pos, $"{key} is undefined", EigerError.ErrorType.RuntimeError); 
         }
 
-        public Value GetSymbol(ASTNode key)
+        public Value GetSymbol(ASTNode key, bool checkParents = true)
         {
             string err_key = "";
             try
@@ -121,7 +121,7 @@ namespace EigerLang.Execution
             }
             catch (KeyNotFoundException)
             {
-                if(parent != null) return parent.GetSymbol(key);
+                if(parent != null && checkParents) return parent.GetSymbol(key);
                 else
                 throw new EigerError(key.filename, key.line, key.pos, $"{err_key} is undefined", EigerError.ErrorType.RuntimeError);
             }
