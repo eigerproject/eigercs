@@ -5,27 +5,22 @@ namespace EigerLang.Execution.BuiltInTypes;
 public class Dataclass : Value
 {
     public readonly dynamic name;
-    public Dictionary<string, Value> symbolTable;
-    public Dictionary<string, Value> properties;
+    public SymbolTable symbolTable;
 
-    public Dataclass(string filename, int line, int pos, string name, Dictionary<string, Value> symbolTable, ASTNode blockNode) : base(filename, line, pos)
+    public Dataclass(string filename, int line, int pos, string name, SymbolTable symbolTable, ASTNode blockNode) : base(filename, line, pos)
     {
         this.filename = filename;
         this.line = line;
         this.pos = pos;
         this.name = name;
 
-
         // create local symbol table
-        Dictionary<string, Value> localSymbolTable = new(symbolTable)
-        {
-            ["this"] = this
-        };
+        SymbolTable localSymbolTable = new(symbolTable);
+        localSymbolTable.CreateSymbol("this", this, "<setting this>", 0, 0);
 
         this.symbolTable = localSymbolTable;
 
         Interpreter.VisitBlockNode(blockNode, localSymbolTable);
-        properties = Interpreter.GetDictionaryDifference(symbolTable, localSymbolTable);
     }
 
     public override Value GetAttr(ASTNode attr)
@@ -33,12 +28,12 @@ public class Dataclass : Value
         if (attr.value == "type")
             return new String(filename, line, pos, "dataclass");
 
-        return Interpreter.GetSymbol(properties, attr);
+        return symbolTable.GetSymbol(attr);
     }
 
     public override void SetAttr(ASTNode attr, Value val)
     {
-        Interpreter.SetSymbol(properties, attr, val);
+        symbolTable.SetSymbol(attr, val);
     }
 
     public override string ToString()

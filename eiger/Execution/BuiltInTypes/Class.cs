@@ -1,14 +1,14 @@
 ﻿using EigerLang.Parsing;
+using EigerLang.Execution;
 
 namespace EigerLang.Execution.BuiltInTypes;
 
 public class Class : Value
 {
     public readonly dynamic name;
-    public Dictionary<string, Value> symbolTable;
     ASTNode blockNode;
 
-    public Class(string filename, int line, int pos, string name, Dictionary<string, Value> symbolTable, ASTNode blockNode) : base(filename, line, pos)
+    public Class(string filename, int line, int pos, string name, ASTNode blockNode) : base(filename, line, pos)
     {
         if (name == "new")
             throw new EigerLang.Errors.EigerError(filename, line, pos, "`new` is an invalid name for a class", Errors.EigerError.ErrorType.RuntimeError);
@@ -16,26 +16,25 @@ public class Class : Value
         this.line = line;
         this.pos = pos;
         this.name = name;
-        this.symbolTable = symbolTable;
         this.blockNode = blockNode;
     }
 
-    public ReturnResult Execute(List<Value> args)
+    public ReturnResult Execute(List<Value> args, SymbolTable symbolTable)
     {
         // create local symbol table
-        Dictionary<string, Value> localSymbolTable = new(symbolTable);
+        SymbolTable localSymbolTable = new(symbolTable);
 
-        Instance inst = new(filename, line, pos, this, localSymbolTable, symbolTable);
+        Instance inst = new(filename, line, pos, this, localSymbolTable);
 
-        localSymbolTable["this"] = inst;
+        localSymbolTable.CreateSymbol("this", inst, "<setting `this`>", 0, 0);
 
         Interpreter.VisitBlockNode(blockNode, localSymbolTable);
 
-        localSymbolTable = Interpreter.GetDictionaryDifference(symbolTable, localSymbolTable);
-
-        if (localSymbolTable.TryGetValue("new", out Value value))
+        if (localSymbolTable.HasSymbol("new")) {
+            Value value = localSymbolTable.GetSymbol("new", filename, line, pos);
             if (value is Function constructorFunc)
                 constructorFunc.Execute(args, line, pos, filename);
+        }
 
         return new() { result = inst };
     }

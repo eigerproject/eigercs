@@ -36,7 +36,7 @@ class Interpreter
     };
 
     // global symbol table
-    public static Dictionary<string, Value> globalSymbolTable = new() {
+    public static SymbolTable globalSymbolTable = new(null, new() {
         {"emit",emitFunction},
         {"emitln",emitlnFunction},
         {"in",inFunction},
@@ -52,9 +52,9 @@ class Interpreter
         {"ascii",asciiFunction},
         {"time", timeFunction},
         {"exit", exitFunction},
-    };
+    });
 
-    static Dictionary<string, Value> defaultGlobalSymbolTable = new() {
+    public static SymbolTable defaultGlobalSymbolTable = new(null, new() {
         {"emit",emitFunction},
         {"emitln",emitlnFunction},
         {"in",inFunction},
@@ -70,14 +70,14 @@ class Interpreter
         {"ascii",asciiFunction},
         {"time", timeFunction},
         {"exit", exitFunction},
-    };
+    });
 
     // to reset the symbol table (used in tests)
     public static void ResetSymbolTable() =>
         globalSymbolTable = new(defaultGlobalSymbolTable);
 
     // function for visiting a node
-    public static ReturnResult VisitNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    public static ReturnResult VisitNode(ASTNode node, SymbolTable symbolTable)
     {
         switch (node.type)
         {
@@ -122,7 +122,7 @@ class Interpreter
     }
 
     // visit return node
-    static ReturnResult VisitReturnNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static ReturnResult VisitReturnNode(ASTNode node, SymbolTable symbolTable)
     {
         // ReturnNode structure
         // ReturnNode
@@ -136,7 +136,7 @@ class Interpreter
     }
 
     // visit block node 
-    public static ReturnResult VisitBlockNode(ASTNode node, Dictionary<string, Value> symbolTable, Dictionary<string, Value>? parentSymbolTable = null)
+    public static ReturnResult VisitBlockNode(ASTNode node, SymbolTable symbolTable)
     {
         // BlockNode structure
         // BlockNode
@@ -148,15 +148,6 @@ class Interpreter
         foreach (var child in node.children)
         {
             ReturnResult r = VisitNode(child, symbolTable);
-
-            // Sync local and parent symbol tables
-            // basically syncing the variables in this scope with the ones in the parent scope
-            // to enable changing global variables from a child scope (like an if statement or a function)
-            // this is not a very optimized solution but I can't come up with a better one
-            if (parentSymbolTable != null)
-                foreach (var symbol in parentSymbolTable.Keys)
-                    if (symbolTable.ContainsKey(symbol))
-                        parentSymbolTable[symbol] = symbolTable[symbol];
 
             // if the current statement returned a value, return the value and stop block execution
             if (r.shouldReturn || r.shouldBreak || r.shouldContinue)
@@ -170,7 +161,7 @@ class Interpreter
     }
 
     // visit for..to node
-    static ReturnResult VisitForToNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static ReturnResult VisitForToNode(ASTNode node, SymbolTable symbolTable)
     {
         // ForToNode structure
         // ForToNode
@@ -195,10 +186,11 @@ class Interpreter
 
         while (value != toValue)
         {
-            Dictionary<string, Value> localSymbolTable = new(symbolTable);
-            localSymbolTable[node.children[0].value] = new Number(node.filename, node.line, node.pos, value);
+            SymbolTable localSymbolTable = new(symbolTable);
 
-            ReturnResult r = VisitBlockNode(forBlock, localSymbolTable, symbolTable);
+            localSymbolTable.CreateSymbol(node.children[0].value, new Number(node.filename, node.line, node.pos, value), node.filename, node.line, node.pos);
+
+            ReturnResult r = VisitBlockNode(forBlock, localSymbolTable);
 
             if (r.shouldReturn || r.shouldBreak)
                 return r;
@@ -213,7 +205,7 @@ class Interpreter
     }
 
     // visit while node
-    static ReturnResult VisitWhileNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static ReturnResult VisitWhileNode(ASTNode node, SymbolTable symbolTable)
     {
         // WhileNode structure
         // WhileNode
@@ -226,7 +218,7 @@ class Interpreter
         {
             // visit the body of the loop
             // (bool shouldBreak, bool didReturn, Value v)
-            ReturnResult r = VisitBlockNode(node.children[1], new(symbolTable), symbolTable);
+            ReturnResult r = VisitBlockNode(node.children[1], new(symbolTable));
 
             if (r.shouldReturn || r.shouldBreak)
                 return r;
@@ -243,7 +235,7 @@ class Interpreter
 
     // visit if node
     // visit if node
-    static ReturnResult VisitIfNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static ReturnResult VisitIfNode(ASTNode node, SymbolTable symbolTable)
     {
         // IfNode structure
         // IfNode
@@ -259,7 +251,7 @@ class Interpreter
         if (Convert.ToBoolean(condition.value))
         {
             // visit the if block (2nd child node)
-            return VisitBlockNode(node.children[1], new(symbolTable), symbolTable);
+            return VisitBlockNode(node.children[1], new(symbolTable));
         }
 
         // check for else if blocks
@@ -273,14 +265,14 @@ class Interpreter
                 if (Convert.ToBoolean(elseIfCondition.value))
                 {
                     // visit the else if block (2nd child of else if node)
-                    return VisitBlockNode(child.children[1], new(symbolTable), symbolTable);
+                    return VisitBlockNode(child.children[1], new(symbolTable));
                 }
             }
             else
             {
                 // assume this is the else block
                 // visit the else block
-                return VisitBlockNode(child, new(symbolTable), symbolTable);
+                return VisitBlockNode(child, new(symbolTable));
             }
         }
 
@@ -292,7 +284,7 @@ class Interpreter
     }
 
     // visit let variable declaration node
-    static ReturnResult VisitLetNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static ReturnResult VisitLetNode(ASTNode node, SymbolTable symbolTable)
     {
         // LetNode structure:
         // LetNode: variableName
@@ -302,7 +294,7 @@ class Interpreter
         string varName = pack[1] ?? "";
         List<string> modifiers = pack[0] ?? new List<string>();
 
-        if (symbolTable.ContainsKey(varName))
+        if (symbolTable.HasSymbol(varName))
             throw new EigerError(node.filename, node.line, node.pos, $"Variable {varName} already declared", EigerError.ErrorType.RuntimeError);
 
         Value v = node.children.Count == 1
@@ -311,7 +303,8 @@ class Interpreter
 
         v.modifiers = modifiers;
 
-        symbolTable.Add(varName, v);
+        symbolTable.CreateSymbol(varName, v, node.filename, node.line, node.pos);
+
         return new()
         {
             result = v
@@ -319,7 +312,7 @@ class Interpreter
     }
 
     // visit function call node
-    static ReturnResult VisitFuncCallNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static ReturnResult VisitFuncCallNode(ASTNode node, SymbolTable symbolTable)
     {
         // FuncCallNode structure:
         // FuncCallNode
@@ -336,13 +329,13 @@ class Interpreter
         if (func is BaseFunction f)
             return f.Execute(args, node.line, node.pos, node.filename);
         else if (func is Class c)
-            return c.Execute(args);
+            return c.Execute(args, symbolTable);
         else
             throw new EigerError(node.filename, node.line, node.pos, $"{node.value} is not a function", EigerError.ErrorType.RuntimeError);
     }
 
     // Visit dataclass definition node
-    static ReturnResult VisitDataclassNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static ReturnResult VisitDataclassNode(ASTNode node, SymbolTable symbolTable)
     {
         // DataclassNode structure
         // DataclassNode : <class name>
@@ -351,18 +344,18 @@ class Interpreter
         // ---- definition2
         // ---- ...
 
-        if (symbolTable.ContainsKey(node.value))
+        if (symbolTable.HasSymbol(node.value))
             throw new EigerError(node.filename, node.line, node.pos, $"{node.value} already declared", EigerError.ErrorType.RuntimeError);
 
-        Dataclass classdef = new(node.filename, node.line, node.pos, node.value, new Dictionary<string, Value>(symbolTable), node.children[0]);
+        Dataclass classdef = new(node.filename, node.line, node.pos, node.value, symbolTable, node.children[0]);
 
-        SetSymbol(symbolTable, node.value, classdef);
+        symbolTable.CreateSymbol(node.value, classdef, node.filename, node.line, node.pos);
 
         return new() { result = classdef };
     }
 
     // Visit class definition node
-    static ReturnResult VisitClassNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static ReturnResult VisitClassNode(ASTNode node, SymbolTable symbolTable)
     {
         // ClassNode structure
         // ClassNode : <class name>
@@ -371,18 +364,18 @@ class Interpreter
         // ---- statement2
         // ---- ...
 
-        if (symbolTable.ContainsKey(node.value))
+        if (symbolTable.HasSymbol(node.value))
             throw new EigerError(node.filename, node.line, node.pos, $"{node.value} already declared", EigerError.ErrorType.RuntimeError);
 
-        Class classdef = new(node.filename, node.line, node.pos, node.value, symbolTable, node.children[0]);
+        Class classdef = new(node.filename, node.line, node.pos, node.value, node.children[0]);
 
-        SetSymbol(symbolTable, node.value, classdef);
+        symbolTable.CreateSymbol(node.value, classdef, node.filename, node.line, node.pos);
 
         return new() { result = classdef };
     }
 
     // Visit function definition node
-    static ReturnResult VisitFuncDefNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static ReturnResult VisitFuncDefNode(ASTNode node, SymbolTable symbolTable)
     {
         // FuncDefNode structure
         // FuncDefNode : <function name>
@@ -397,7 +390,7 @@ class Interpreter
         List<string> modifiers = pack[0] ?? new List<string>();
 
         // a symbol with that name already exists
-        if (symbolTable.ContainsKey(funcName) && funcName != "")
+        if (symbolTable.HasSymbol(funcName) && funcName != "")
             throw new EigerError(node.filename, node.line, node.pos, $"{funcName} already declared", EigerError.ErrorType.RuntimeError);
 
         // get funciton body
@@ -422,13 +415,13 @@ class Interpreter
 
         // add the function to the current scope
         if (funcName != "")
-            symbolTable[funcName] = result;
+            symbolTable.CreateSymbol(funcName, result, node.filename, node.line, node.pos);
 
         return new() { result = result };
     }
 
     // Visit inline function definition node
-    static ReturnResult VisitFuncDefInlineNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static ReturnResult VisitFuncDefInlineNode(ASTNode node, SymbolTable symbolTable)
     {
         // VisitFuncDefInlineNode structure
         // VisitFuncDefInlineNode : <function name>
@@ -442,7 +435,7 @@ class Interpreter
         string funcName = pack[1] ?? "";
         List<string> modifiers = pack[0] ?? new List<string>();
 
-        if (symbolTable.ContainsKey(funcName) && funcName != "")
+        if (symbolTable.HasSymbol(funcName) && funcName != "")
             throw new EigerError(node.filename, node.line, node.pos, $"{funcName} already declared", EigerError.ErrorType.RuntimeError);
 
         // get funciton body
@@ -467,7 +460,7 @@ class Interpreter
 
         // add the function to the current scope
         if (funcName != "")
-            symbolTable[funcName] = f;
+            symbolTable.CreateSymbol(funcName, f, node.filename, node.line, node.pos);
 
         // return the function
         return new()
@@ -477,7 +470,7 @@ class Interpreter
     }
 
     // visit unary operator node
-    static ReturnResult VisitUnaryOpNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static ReturnResult VisitUnaryOpNode(ASTNode node, SymbolTable symbolTable)
     {
         // get unary operator
         string unaryOp = node.value ?? throw new EigerError(node.filename, node.line, node.pos, "Invalid Unary Operator", EigerError.ErrorType.RuntimeError);
@@ -498,7 +491,7 @@ class Interpreter
     }
 
     // visit binary operator node
-    static ReturnResult VisitBinOpNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static ReturnResult VisitBinOpNode(ASTNode node, SymbolTable symbolTable)
     {
         Value leftSide = new Nix(node.filename, node.line, node.pos);
 
@@ -537,30 +530,30 @@ class Interpreter
         };
     }
 
-    private static Value HandleAssignment(ASTNode node, Value rightSide, Dictionary<string, Value> symbolTable)
+    private static Value HandleAssignment(ASTNode node, Value rightSide, SymbolTable symbolTable)
     {
-        Value leftValue = GetSymbol(symbolTable, node.children[0]);
+        Value leftValue = symbolTable.GetSymbol(node.children[0]);
         if (leftValue.modifiers.Contains("readonly"))
             throw new EigerError(leftValue.filename, leftValue.line, leftValue.pos, $"{leftValue} is read-only!", EigerError.ErrorType.RuntimeError);
 
-        SetSymbol(symbolTable, node.children[0], rightSide);
+        symbolTable.SetSymbol(node.children[0], rightSide);
         return rightSide;
     }
 
-    private static Value HandleCompoundAssignment(ASTNode node, Value rightSide, Dictionary<string, Value> symbolTable, Func<Value, Value, Value> operation)
+    private static Value HandleCompoundAssignment(ASTNode node, Value rightSide, SymbolTable symbolTable, Func<Value, Value, Value> operation)
     {
-        Value leftValue = GetSymbol(symbolTable, node.children[0]);
+        Value leftValue = symbolTable.GetSymbol(node.children[0]);
         Value newValue = operation(leftValue, rightSide);
         if (leftValue.modifiers.Contains("readonly"))
             throw new EigerError(leftValue.filename, leftValue.line, leftValue.pos, $"{leftValue} is read-only!", EigerError.ErrorType.RuntimeError);
         else
-            SetSymbol(symbolTable, node.children[0], newValue);
+            symbolTable.SetSymbol(node.children[0], newValue);
         return newValue;
     }
 
 
     // visit literal node (pretty self-explanatory)
-    static ReturnResult VisitLiteralNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static ReturnResult VisitLiteralNode(ASTNode node, SymbolTable symbolTable)
     {
         Value v;
         if (node.value is string && node.value == "true")
@@ -578,16 +571,16 @@ class Interpreter
     }
 
     // visit identifier node (pretty self-explanatory too)
-    static ReturnResult VisitIdentifierNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static ReturnResult VisitIdentifierNode(ASTNode node, SymbolTable symbolTable)
     {
         return new()
         {
-            result = GetSymbol(symbolTable, node)
+            result = symbolTable.GetSymbol(node)
         };
     }
 
     // visit array node
-    static ReturnResult VisitArrayNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    static ReturnResult VisitArrayNode(ASTNode node, SymbolTable symbolTable)
     {
         // ArrayNode structure
         // ArrayNode
@@ -606,7 +599,7 @@ class Interpreter
         };
     }
 
-    private static ReturnResult VisitAttrAccessNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    private static ReturnResult VisitAttrAccessNode(ASTNode node, SymbolTable symbolTable)
     {
         // AttrAccessNode structure
         // AttrAccessNode
@@ -615,6 +608,7 @@ class Interpreter
 
         Value v;
         ASTNode currentNode = node.children[1];
+        bool isInSelf = node.children[0].type == NodeType.Identifier && node.children[0].value == "this";
 
         while (true)
         {
@@ -626,7 +620,7 @@ class Interpreter
             currentNode = currentNode.children[1];
         }
 
-        if (v.modifiers.Contains("private"))
+        if (v.modifiers.Contains("private") && !isInSelf)
             throw new EigerError(node.filename, node.line, node.pos, "Attribute is private", EigerError.ErrorType.RuntimeError);
 
         if (v is BaseFunction f && currentNode.type == NodeType.FuncCall)
@@ -652,7 +646,7 @@ class Interpreter
             }
             return new()
             {
-                result = c.Execute(args).result
+                result = c.Execute(args, symbolTable).result
             };
         }
         else
@@ -662,7 +656,7 @@ class Interpreter
             };
     }
 
-    private static ReturnResult VisitElementAccessNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    private static ReturnResult VisitElementAccessNode(ASTNode node, SymbolTable symbolTable)
     {
         // ElementAccessNode structure
         // ElementAccessNode
@@ -686,7 +680,7 @@ class Interpreter
         }
     }
 
-    private static ReturnResult VisitIncludeNode(ASTNode node, Dictionary<string, Value> symbolTable)
+    private static ReturnResult VisitIncludeNode(ASTNode node, SymbolTable symbolTable)
     {
         // IncludeNode structure
         // IncludeNode
@@ -730,51 +724,7 @@ class Interpreter
         };
     }
 
-    // get symbol from a symboltable with error handling
-    public static Value GetSymbol(Dictionary<string, Value> symbolTable, ASTNode key)
-    {
-        string err_key = "";
-        try
-        {
-            if (key.type == NodeType.Identifier)
-            {
-                err_key = key.value ?? "";
-                return symbolTable[key.value];
-            }
-            else if (key.type == NodeType.FuncCall)
-            {
-                err_key = key.children[0].value ?? "";
-                return symbolTable[key.children[0].value];
-            }
-            else if (key.type == NodeType.ElementAccess)
-            {
-                ASTNode listNode = key.children[0];
-                ASTNode idxNode = key.children[1];
-
-                Value list = GetSymbol(symbolTable, listNode);
-
-                int idx = (int)((Number)VisitNode(idxNode, symbolTable).result).value;
-
-                return list.GetIndex(idx);
-            }
-            else if (key.type == NodeType.AttrAccess)
-            {
-                ASTNode leftNode = key.children[0];
-                ASTNode rightNode = key.children[1];
-
-                err_key = leftNode.value ?? "";
-
-                return symbolTable[leftNode.value].GetAttr(rightNode);
-            }
-            else throw new EigerError(key.filename, key.line, key.pos, $"Invalid Node {key.type}", EigerError.ErrorType.ParserError);
-        }
-        catch (KeyNotFoundException)
-        {
-            throw new EigerError(key.filename, key.line, key.pos, $"{err_key} is undefined", EigerError.ErrorType.RuntimeError);
-        }
-    }
-
-    static List<Value> PrepareArguments(ASTNode node, Dictionary<string, Value> symbolTable)
+    static List<Value> PrepareArguments(ASTNode node, SymbolTable symbolTable)
     {
         List<Value> args = new List<Value>();
         for (int i = 1; i < node.children.Count; i++)
@@ -799,45 +749,5 @@ class Interpreter
         }
 
         return diff;
-    }
-
-    public static void SetSymbol(Dictionary<string, Value> symbolTable, string key, Value value)
-    {
-        symbolTable[key] = value;
-    }
-
-    // set symbol from a symboltable with error handling
-    public static void SetSymbol(Dictionary<string, Value> symbolTable, ASTNode key, Value value)
-    {
-        try
-        {
-            if (key.type == NodeType.ElementAccess)
-            {
-                ASTNode listNode = key.children[0];
-                ASTNode idxNode = key.children[1];
-                Value list = GetSymbol(symbolTable, listNode);
-                int idx = (int)((Number)VisitNode(idxNode, symbolTable).result).value;
-                list.SetIndex(idx, value);
-            }
-            else if (key.type == NodeType.Identifier)
-            {
-                value.modifiers = symbolTable[key.value].modifiers;
-                symbolTable[key.value] = value;
-            }
-            else if (key.type == NodeType.AttrAccess)
-            {
-                ASTNode leftNode = key.children[0];
-                ASTNode rightNode = key.children[1];
-                symbolTable[leftNode.value].SetAttr(rightNode, value);
-            }
-            else
-            {
-                throw new EigerError(key.filename, key.line, key.pos, "Left side of assignment is invalid", EigerError.ErrorType.RuntimeError);
-            }
-        }
-        catch (KeyNotFoundException)
-        {
-            throw new EigerError(key.filename, key.line, key.pos, "Variable is undefined", EigerError.ErrorType.RuntimeError);
-        }
     }
 }

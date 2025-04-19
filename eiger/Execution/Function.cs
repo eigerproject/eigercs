@@ -4,17 +4,18 @@
 
 using EigerLang.Errors;
 using EigerLang.Execution.BuiltInTypes;
+using EigerLang.Execution;
 using EigerLang.Parsing;
 
 namespace EigerLang.Execution;
 
 // a base function from which both custom and built-in functions will extend
-abstract class BaseFunction(ASTNode node, string name, List<string> arg_n, Dictionary<string, Value> symbolTable) : Value(node.filename, node.line, node.pos)
+abstract class BaseFunction(ASTNode node, string name, List<string> arg_n, SymbolTable symbolTable) : Value(node.filename, node.line, node.pos)
 {
     public string name { get; } = name; // name
     public List<string> arg_n { get; } = arg_n; // argument names
 
-    public Dictionary<string, Value> symbolTable = symbolTable; // symbol table
+    public SymbolTable symbolTable = symbolTable; // symbol table
 
     public void CheckArgs(string path, int line, int pos, int argCount)
     {
@@ -32,7 +33,7 @@ class Function : BaseFunction
     // function body
     ASTNode root;
 
-    public Function(ASTNode node, string name, List<string> arg_n, ASTNode root, Dictionary<string, Value> symbolTable) : base(node, name, arg_n, symbolTable)
+    public Function(ASTNode node, string name, List<string> arg_n, ASTNode root, SymbolTable symbolTable) : base(node, name, arg_n, symbolTable)
     {
         this.root = root;
     }
@@ -42,16 +43,14 @@ class Function : BaseFunction
         CheckArgs(path, line, pos, args.Count);
 
         // create local symbol table
-        Dictionary<string, Value> localSymbolTable = new(symbolTable);
+        SymbolTable localSymbolTable = new(symbolTable);
 
         // add args to that local symbol table
         for (int i = 0; i < args.Count; i++)
-        {
-            localSymbolTable[arg_n[i]] = args[i];
-        }
+            localSymbolTable.CreateSymbol(arg_n[i], args[i], path, line,pos);
 
         // visit the body and return the result
-        return Interpreter.VisitBlockNode(root, localSymbolTable, symbolTable);
+        return Interpreter.VisitBlockNode(root, localSymbolTable);
     }
 
     public override string ToString()
@@ -66,7 +65,7 @@ class InlineFunction : BaseFunction
     // function body
     ASTNode root;
 
-    public InlineFunction(ASTNode node, string name, List<string> arg_n, ASTNode root, Dictionary<string, Value> symbolTable) : base(node, name, arg_n, symbolTable)
+    public InlineFunction(ASTNode node, string name, List<string> arg_n, ASTNode root, SymbolTable symbolTable) : base(node, name, arg_n, symbolTable)
     {
         this.root = root;
     }
@@ -76,13 +75,11 @@ class InlineFunction : BaseFunction
         CheckArgs(path, line, pos, args.Count);
 
         // create local symbol table
-        Dictionary<string, Value> localSymbolTable = new(symbolTable);
+        SymbolTable localSymbolTable = new(symbolTable);
 
         // add args to that local symbol table
         for (int i = 0; i < args.Count; i++)
-        {
-            localSymbolTable[arg_n[i]] = args[i];
-        }
+            localSymbolTable.CreateSymbol(arg_n[i], args[i], path, line,pos);
 
         // visit the body and return the result
         ReturnResult r = Interpreter.VisitNode(root, localSymbolTable);

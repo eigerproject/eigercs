@@ -7,10 +7,9 @@ public class Instance : Value
     public readonly dynamic? value = null;
     string name;
     Class createdFrom;
-    Dictionary<string, Value> symbolTable;
-    Dictionary<string, Value> parentSymbolTable;
+    SymbolTable symbolTable;
 
-    public Instance(string filename, int line, int pos, Class createdFrom, Dictionary<string, Value> symbolTable, Dictionary<string, Value> parentSymbolTable) : base(filename, line, pos)
+    public Instance(string filename, int line, int pos, Class createdFrom, SymbolTable symbolTable) : base(filename, line, pos)
     {
         this.filename = filename;
         this.line = line;
@@ -18,7 +17,6 @@ public class Instance : Value
         this.name = createdFrom.name;
         this.createdFrom = createdFrom;
         this.symbolTable = symbolTable;
-        this.parentSymbolTable = parentSymbolTable;
     }
 
     public override Value GetAttr(ASTNode attr)
@@ -31,12 +29,12 @@ public class Instance : Value
         {
             return createdFrom;
         }
-        return Interpreter.GetSymbol(symbolTable, attr);
+        return symbolTable.GetSymbol(attr);
     }
 
     public override void SetAttr(ASTNode attr, Value val)
     {
-        Interpreter.SetSymbol(symbolTable, attr, val);
+        symbolTable.SetSymbol(attr, val);
     }
 
     public override string ToString()
