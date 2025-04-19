@@ -8,15 +8,15 @@ namespace EigerLang.Execution
     public class SymbolTable
     {
         Dictionary<string, Value> values;
-        SymbolTable parent;
+        SymbolTable? parent;
 
-        public SymbolTable(SymbolTable _parent)
+        public SymbolTable(SymbolTable? _parent)
         {
             this.parent = _parent;
             values = new();
         }
 
-        public SymbolTable(SymbolTable _parent, Dictionary<string, Value> _values)
+        public SymbolTable(SymbolTable? _parent, Dictionary<string, Value> _values)
         {
             this.parent = _parent;
             this.values = _values;

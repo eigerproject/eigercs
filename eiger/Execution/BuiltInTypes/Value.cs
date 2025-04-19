@@ -147,4 +147,8 @@ public class Value(string _filename, int _line, int _pos)
         else
             return false;
     }
+
+    public override int GetHashCode() {
+        return base.GetHashCode();
+    }
 }
