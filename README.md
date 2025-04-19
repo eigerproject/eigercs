@@ -27,10 +27,18 @@
     There are no stable releases of the language yet, but you can still build from the source
   </p></i>
   <h2 align="center">Building and Running</h2>
+  <h3>If using Visual Studio</h3>
   <ul>
       <li>Clone this repository</li>
-      <li>Open the solution `.sln` file using Visual Studio</li>
+      <li>Open the solution file using Visual Studio</li>
       <li>Build and run</li>
+      <li>To run unit tests, use the Test Explorer</li>
+  </ul>
+  <h3>Using the .NET CLI</h3>
+  <ul>
+      <li>Clone this repository</li>
+      <li>Run <code>dotnet run</code> in <code>/eiger</code></li>
+      <li>To run unit tests, run <code>dotnet test</code> in <code>/eiger.Tests</code></li>
   </ul>
   <h2 align="center">Simple Example</h2>
   
