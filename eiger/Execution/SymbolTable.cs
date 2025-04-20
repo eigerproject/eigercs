@@ -53,8 +53,9 @@ namespace EigerLang.Execution
                 else if (key.type == NodeType.AttrAccess)
                 {
                     ASTNode leftNode = key.children[0];
+                    Value leftVal = GetSymbol(leftNode);
                     ASTNode rightNode = key.children[1];
-                    values[leftNode.value].SetAttr(rightNode, value);
+                    leftVal.SetAttr(rightNode, value);
                 }
                 else
                 {
@@ -111,11 +112,11 @@ namespace EigerLang.Execution
                 else if (key.type == NodeType.AttrAccess)
                 {
                     ASTNode leftNode = key.children[0];
+                    Value leftVal = GetSymbol(leftNode);
+
                     ASTNode rightNode = key.children[1];
 
-                    err_key = leftNode.value ?? "";
-
-                    return values[leftNode.value].GetAttr(rightNode);
+                    return leftVal.GetAttr(rightNode);
                 }
                 else throw new EigerError(key.filename, key.line, key.pos, $"Invalid Node {key.type}", EigerError.ErrorType.ParserError);
             }

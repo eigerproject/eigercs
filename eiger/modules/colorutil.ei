@@ -1,24 +1,24 @@
-﻿dataclass ColorUtil
-	dataclass Colors
-		let readonly Black = 0
-		let readonly Blue = 9
-		let readonly Cyan = 11
-		let readonly DarkBlue = 1
-		let readonly DarkCyan = 3
-		let readonly DarkGray = 8
-		let readonly DarkGreen = 2
-		let readonly DarkMagenta = 5
-		let readonly DarkRed = 4
-		let readonly DarkYellow = 6
-		let readonly Gray = 7
-		let readonly Green = 10
-		let readonly Magenta = 13
-		let readonly Red = 12
-		let readonly White = 15
-		let readonly Yellow = 14
-		let readonly All = [Black, Blue, Cyan, DarkBlue, DarkCyan, DarkGray, DarkGreen, DarkMagenta, DarkRed, DarkYellow, Gray, Green, Magenta, Red, White, Yellow]
-	end
+﻿dataclass Colors
+	let readonly Black = 0
+	let readonly Blue = 9
+	let readonly Cyan = 11
+	let readonly DarkBlue = 1
+	let readonly DarkCyan = 3
+	let readonly DarkGray = 8
+	let readonly DarkGreen = 2
+	let readonly DarkMagenta = 5
+	let readonly DarkRed = 4
+	let readonly DarkYellow = 6
+	let readonly Gray = 7
+	let readonly Green = 10
+	let readonly Magenta = 13
+	let readonly Red = 12
+	let readonly White = 15
+	let readonly Yellow = 14
+	let readonly All = [Black, Blue, Cyan, DarkBlue, DarkCyan, DarkGray, DarkGreen, DarkMagenta, DarkRed, DarkYellow, Gray, Green, Magenta, Red, White, Yellow]
+end
 
+dataclass ColorUtil
 	func SetForegroundColor(_color)
 		if _color <= 15 then
 			if _color >= 0 then

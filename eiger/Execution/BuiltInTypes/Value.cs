@@ -91,12 +91,12 @@ public class Value(string _filename, int _line, int _pos)
 
     public virtual Value GetIndex(int idx)
     {
-        throw new EigerError(filename, line, pos, "Object is not iterable", EigerError.ErrorType.RuntimeError);
+        throw new EigerError(filename, line, pos, $"Object of type {this.GetType().Name} is not iterable", EigerError.ErrorType.RuntimeError);
     }
 
     public virtual void SetIndex(int idx, Value val)
     {
-        throw new EigerError(filename, line, pos, "Object is not iterable", EigerError.ErrorType.RuntimeError);
+        throw new EigerError(filename, line, pos, $"Object of type {this.GetType().Name} is not iterable", EigerError.ErrorType.RuntimeError);
     }
 
     public virtual Value GetLength()
