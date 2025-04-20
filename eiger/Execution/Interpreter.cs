@@ -192,8 +192,8 @@ class Interpreter
 
             ReturnResult r = VisitBlockNode(forBlock, localSymbolTable);
 
-            if (r.shouldReturn || r.shouldBreak)
-                return r;
+            if(r.shouldBreak) break;
+            if (r.shouldReturn) return r;
 
             value += step;
         }
@@ -220,8 +220,8 @@ class Interpreter
             // (bool shouldBreak, bool didReturn, Value v)
             ReturnResult r = VisitBlockNode(node.children[1], new(symbolTable));
 
-            if (r.shouldReturn || r.shouldBreak)
-                return r;
+            if(r.shouldBreak) break;
+            if (r.shouldReturn) return r;
 
             // update the condition
             condition = (Boolean)VisitNode(node.children[0], symbolTable).result;
