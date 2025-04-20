@@ -8,29 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="modules\colorutil.ei" />
-    <None Remove="modules\event.ei" />
-    <None Remove="modules\iterator.ei" />
-    <None Remove="modules\math.ei" />
-    <None Remove="modules\stringutil.ei" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="modules\colorutil.ei">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="modules\event.ei">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="modules\iterator.ei">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="modules\math.ei">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="modules\stringutil.ei">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Content Include="modules\*.ei" CopyToOutputDirectory="PreserveNewest"></Content>
   </ItemGroup>
 
 </Project>
