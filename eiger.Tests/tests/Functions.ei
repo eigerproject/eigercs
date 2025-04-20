@@ -1,0 +1,12 @@
+func add(a, b)
+	let result = a + b
+	ret result
+end
+
+emitln(add(2, 3))
+
+func greet()
+	emitln("Hello, world!")
+end
+
+greet()

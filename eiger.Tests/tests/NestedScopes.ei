@@ -1,0 +1,31 @@
+let x = 5
+let y = 0
+
+if x ?= 5 then
+	y = 10
+
+	if y ?= 10 then
+		let z = 15
+		emit(z)
+	end
+end
+
+emit(y)
+emitln(x)
+
+~ ---------------------- ~
+
+x = 5
+
+if x ?= 5 then
+	y = 10
+
+	if y ?= 10 then
+		x = 20
+		emit(x)
+	end
+
+	emit(y)
+end
+
+emitln(x)

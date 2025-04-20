@@ -1,0 +1,5 @@
+let anonymous_and_inline = func(a, b) > a + b
+emitln(anonymous_and_inline(2, 3))
+
+anonymous_and_inline = func(a) > a * a
+emitln(anonymous_and_inline(4))

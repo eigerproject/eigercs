@@ -1,0 +1,18 @@
+include math
+
+emitln(math.abs(-128))
+emitln(math.abs(128))
+
+emitln(math.sqrt(100))
+emitln(math.sqrt(-100))
+
+emitln(math.pow(2, -1))
+emitln(math.pow(2, 10))
+
+emitln(math.mod(2, 2))
+emitln(math.mod(37, 3))
+
+emitln(math.factorial(0))
+emitln(math.factorial(5))
+
+emitln(math.sin(0))

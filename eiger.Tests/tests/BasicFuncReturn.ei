@@ -1,0 +1,2 @@
+func return_ten() ret 10 end
+emitln(return_ten())

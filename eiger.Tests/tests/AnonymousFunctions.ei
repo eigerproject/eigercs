@@ -1,0 +1,5 @@
+let anonymous = func(a, b) ret a + b end
+emitln(anonymous(2, 3))
+
+anonymous = func(a) ret a * a end
+emitln(anonymous(4))

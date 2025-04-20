@@ -1,0 +1,7 @@
+let x = 0
+
+while x != 5 do
+	emit(x)
+	if x ?= 2 then brk end
+	x += 1
+end

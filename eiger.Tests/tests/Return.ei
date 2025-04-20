@@ -1,0 +1,57 @@
+func returnFive()
+ ret 5
+end
+emitln(returnFive())
+
+func addNumbers(a, b)
+ ret a + b
+end
+emitln(addNumbers(4, 6))
+
+func conditionalReturnOne(x)
+ if x ?= 1 then ret 10
+ else ret 20
+end
+end
+emitln(conditionalReturnOne(1))
+
+func conditionalReturnTwo(x)
+ if x ?= 1 then ret 10
+ else ret 20
+end
+end
+emitln(conditionalReturnTwo(2))
+
+func multiplyValues(a, b)
+ ret a * b
+end
+func addAndMultiplyValues(a, b, c)
+ let sumResult = a + b
+ ret multiplyValues(sumResult, c)
+end
+emitln(addAndMultiplyValues(2, 3, 4))
+
+func earlyReturnTest(x)
+ if x ?= 1 then ret 10 
+ emitln("This should not print")
+ ret 20
+end end
+emitln(earlyReturnTest(1))
+
+func outerOne()
+ func innerOne(x)
+ if x ?= 1 then ret 5 end
+ ret 6
+end
+ ret innerOne(1)
+end
+emitln(outerOne())
+
+func outerTwo()
+ func innerTwo(x)
+ if x ?= 1 then ret 5 end
+ ret 6
+end
+ ret innerTwo(2)
+end
+emitln(outerTwo())

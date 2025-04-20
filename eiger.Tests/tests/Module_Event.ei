@@ -1,0 +1,14 @@
+include event
+
+let ev = Event()
+ev.Subscribe(func(msg) emitln("First Subscriber: " + msg) end)
+ev.Subscribe(func(msg) emitln("Second Subscriber: " + msg) end)
+ev.Invoke("Hello!")
+
+func functionOne(args) > emitln("This is function one")
+func functionTwo(args) > emitln("This is function two")
+ev = Event()
+ev.Subscribe(functionTwo)
+ev.Subscribe(functionOne)
+ev.Unsubscribe(functionTwo)
+ev.Invoke(nix)

@@ -1,0 +1,25 @@
+class Person
+	let name
+	let surname
+
+	func new(name, surname)
+		this.name = name
+		this.surname = surname
+	end
+
+	func Introduction()
+		emitln("I am " + this.name + " " + surname + "!")
+	end
+
+	func Greet(other)
+		emitln(name + " greeted " + other.name + "!")
+	end
+end
+
+let px = Person("Name1", "Surname1")
+let py = Person("Name2", "Surname2")
+
+px.Introduction()
+py.Introduction()
+
+px.Greet(py)

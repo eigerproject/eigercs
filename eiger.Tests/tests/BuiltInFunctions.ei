@@ -1,0 +1,12 @@
+~ emitln
+emitln("Hello, World!")
+
+~ double
+emitln(double("3.1415"))
+
+~ int
+emitln(int("3.1415"))
+emitln(int(3.1415))
+
+emitln(int("3.8"))
+emitln(int(3.8))

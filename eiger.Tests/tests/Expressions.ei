@@ -1,0 +1,7 @@
+~ Basic Arithmetic
+emitln(5 + 3 * 2)
+emitln(10 / 2 - 1)
+emitln(7 * (5 - 3))
+
+~ String concatenation
+emitln("Hello " + "world!")

@@ -1,0 +1,5 @@
+func f(a, b) > a + b
+emitln(f(2, 3))
+
+func ftwo(a) > a * a
+emitln(ftwo(4))

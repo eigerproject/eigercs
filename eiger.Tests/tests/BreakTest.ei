@@ -1,0 +1,15 @@
+let x = 0
+
+while x < 5 do
+	if x ?= 3 then brk end
+	emit(x)
+	x += 1
+end
+emitln("")
+
+~ ------------------ ~
+
+for i = 0 to 5 do
+	if i ?= 3 then brk end
+	emit(i)
+end

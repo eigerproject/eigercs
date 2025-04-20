@@ -1,0 +1,8 @@
+func find_number()
+	let x = 0
+	while x != 5 do
+		if x ?= 3 then ret x end
+		x += 1
+	end
+end
+emitln(find_number())
