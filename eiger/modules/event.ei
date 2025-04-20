@@ -9,7 +9,7 @@
 		let newSubscribers = []
 		for i = 0 to subscribers.length do
 			if subscribers[i] != subscriber then
-				newSubscribers += subscibers[i]
+				newSubscribers += subscribers[i]
 			end
 		end
 		subscribers = newSubscribers

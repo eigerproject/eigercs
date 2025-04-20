@@ -381,7 +381,24 @@ public class EigerTests
     }
 
     [TestMethod]
-    public void MathLibTest() {
+    public void EventLibTest()
+    {
+        // Subscribing to event and invoking event
+        TestCode(
+            "include event\nlet ev = Event()\nev.Subscribe(func(msg) emitln(\"First Subscriber: \" + msg) end)\nev.Subscribe(func(msg) emitln(\"Second Subscriber: \" + msg) end)\nev.Invoke(\"Hello!\")",
+            "First Subscriber: Hello!\nSecond Subscriber: Hello!\n"
+        );
+
+        // Unsubscribing from event
+        TestCode(
+            "include event\nfunc functionOne(args) emitln(\"This is function one\") end\nfunc functionTwo(args) emitln(\"This is function two\") end\nlet ev = Event()\nev.Subscribe(functionTwo)\nev.Subscribe(functionOne)\nev.Unsubscribe(functionTwo)\nev.Invoke(nix)",
+            "This is function one"
+        );
+    }
+
+    [TestMethod]
+    public void MathLibTest()
+    {
         TestCode(
             "include math\nemitln(math.abs(-128))",
             "128"

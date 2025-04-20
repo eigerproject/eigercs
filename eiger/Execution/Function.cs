@@ -7,6 +7,8 @@ using EigerLang.Execution.BuiltInTypes;
 using EigerLang.Execution;
 using EigerLang.Parsing;
 
+using Boolean = EigerLang.Execution.BuiltInTypes.Boolean;
+
 namespace EigerLang.Execution;
 
 // a base function from which both custom and built-in functions will extend
@@ -25,6 +27,18 @@ abstract class BaseFunction(ASTNode node, string name, List<string> arg_n, Symbo
     }
 
     public abstract ReturnResult Execute(List<Value> args, int line, int pos, string path); // abstract execute function
+
+    public override Boolean ComparisonEqeq(object other) {
+        if(other is BaseFunction f)
+            return new Boolean(filename, line, pos, name == f.name && arg_n.SequenceEqual(f.arg_n) && symbolTable == f.symbolTable);
+        return new Boolean(filename, line, pos, false);
+    }
+
+    public override Boolean ComparisonNeqeq(object other) {
+         if(other is BaseFunction f)
+            return new Boolean(filename, line, pos, !(name == f.name && arg_n.SequenceEqual(f.arg_n) && symbolTable == f.symbolTable));
+        return new Boolean(filename, line, pos, true);
+    }
 }
 
 // custom functions
