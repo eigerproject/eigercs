@@ -11,9 +11,6 @@ public class Instance : Value
 
     public Instance(string filename, int line, int pos, Class createdFrom, SymbolTable symbolTable) : base(filename, line, pos)
     {
-        this.filename = filename;
-        this.line = line;
-        this.pos = pos;
         this.name = createdFrom.name;
         this.createdFrom = createdFrom;
         this.symbolTable = symbolTable;

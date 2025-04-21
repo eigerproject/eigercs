@@ -12,9 +12,6 @@ public class Class : Value
     {
         if (name == "new")
             throw new EigerLang.Errors.EigerError(filename, line, pos, "`new` is an invalid name for a class", Errors.EigerError.ErrorType.RuntimeError);
-        this.filename = filename;
-        this.line = line;
-        this.pos = pos;
         this.name = name;
         this.blockNode = blockNode;
     }

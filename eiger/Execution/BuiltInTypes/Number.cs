@@ -12,9 +12,6 @@ class Number : Value
 
     public Number(string filename, int line, int pos, double value) : base(filename, line, pos)
     {
-        this.filename = filename;
-        this.line = line;
-        this.pos = pos;
         this.value = value;
     }
 

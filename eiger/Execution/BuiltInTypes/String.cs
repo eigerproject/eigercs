@@ -14,9 +14,6 @@ class String : Value
     public String(string filename, int line, int pos, string value) : base(filename, line, pos)
     {
         this.value = value;
-        this.filename = filename;
-        this.line = line;
-        this.pos = pos;
     }
 
     public override Value GetIndex(int idx)

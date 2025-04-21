@@ -8,9 +8,6 @@ class Nix : Value
 
     public Nix(string filename, int line, int pos) : base(filename, line, pos)
     {
-        this.filename = filename;
-        this.line = line;
-        this.pos = pos;
     }
 
     public override string ToString()

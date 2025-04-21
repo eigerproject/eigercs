@@ -7,27 +7,32 @@ using EigerLang.Parsing;
 
 namespace EigerLang.Execution.BuiltInTypes;
 
+using System.Text;
+
 class Array : Value
 {
-    public Value[] array;
+    public List<Value> array;
 
-    public Array(string fn, int ln, int ps, Value[] array) : base(fn, ln, ps)
+    public Array(string fn, int ln, int ps, List<Value> array) : base(fn, ln, ps)
     {
         this.array = array;
-        this.filename = fn;
-        this.line = ln;
-        this.pos = ps;
     }
 
     public override Value AddedTo(object other)
     {
         if (other is Array arr)
         {
-            return new Array(filename, line, pos, [.. array, .. arr.array]);
+            var newArr = new List<Value>(array.Count + arr.array.Count);
+            newArr.AddRange(array);
+            newArr.AddRange(arr.array);
+            return new Array(filename, line, pos, newArr);
         }
         else
         {
-            return new Array(filename, line, pos, [.. array, (Value)other]);
+            var newArr = new List<Value>(array.Count + 1);
+            newArr.AddRange(array);
+            newArr.Add((Value)other);
+            return new Array(filename, line, pos, newArr);
         }
     }
 
@@ -35,12 +40,9 @@ class Array : Value
     {
         if (other is Array arr)
         {
-            return new Boolean(filename, line, pos, arr.array.Length == array.Length && arr.array.SequenceEqual(array));
+            return new Boolean(filename, line, pos, arr.array.Count == array.Count && arr.array.SequenceEqual(array));
         }
-        else
-        {
-            return new Boolean(filename, line, pos, false);
-        }
+        return new Boolean(filename, line, pos, false);
     }
 
     public override Boolean ComparisonNeqeq(object other)
@@ -49,17 +51,31 @@ class Array : Value
         {
             return new Boolean(filename, line, pos, !arr.array.SequenceEqual(array));
         }
-        else
-        {
-            return new Boolean(filename, line, pos, true);
-        }
+        return new Boolean(filename, line, pos, true);
+    }
+
+    private void ValidateIndex(int idx)
+    {
+        if (idx < 0 || idx >= array.Count)
+            throw new EigerError(filename, line, pos, "Index outside of bounds", EigerError.ErrorType.IndexError);
     }
 
     public override Value GetIndex(int idx)
     {
-        if (idx < 0 || idx >= array.Length)
-            throw new EigerError(filename, line, pos, "Index outside of bounds", EigerError.ErrorType.IndexError);
+        ValidateIndex(idx);
         return array[idx];
+    }
+
+    public override void SetIndex(int idx, Value val)
+    {
+        ValidateIndex(idx);
+        val.modifiers = array[idx].modifiers;
+        array[idx] = val;
+    }
+
+    public override Value GetLength()
+    {
+        return new Number(filename, line, pos, array.Count);
     }
 
     public override Value GetAttr(ASTNode attr)
@@ -71,31 +87,17 @@ class Array : Value
         return base.GetAttr(attr);
     }
 
-    public override void SetIndex(int idx, Value val)
-    {
-        if (idx < 0 || idx >= array.Length)
-            throw new EigerError(filename, line, pos, "Index outside of bounds", EigerError.ErrorType.IndexError);
-        val.modifiers = array[idx].modifiers;
-        array[idx] = val;
-    }
-
-    public override Value GetLength()
-    {
-        return new Number(filename, line, pos, array.Length);
-    }
-
     public override string ToString()
     {
-        string strep = "[";
-        for (int i = 0; i < array.Length; i++)
+        var sb = new StringBuilder();
+        sb.Append('[');
+        for (int i = 0; i < array.Count; i++)
         {
-            strep += array[i].ToString();
-            if (i != array.Length - 1)
-            {
-                strep += ", ";
-            }
+            sb.Append(array[i].ToString());
+            if (i != array.Count - 1)
+                sb.Append(", ");
         }
-        strep += "]";
-        return strep;
+        sb.Append(']');
+        return sb.ToString();
     }
 }

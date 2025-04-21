@@ -5,7 +5,13 @@ namespace EigerLang.Execution.BuiltInTypes;
 
 public class Value(string _filename, int _line, int _pos)
 {
-    public List<string> modifiers = [];
+    private List<string>? _modifiers;
+    public List<string> modifiers
+    {
+        get => _modifiers ??= new List<string>();
+        set => _modifiers = value;
+    }
+
     public string filename = _filename;
     public int line = _line, pos = _pos;
 
@@ -101,7 +107,7 @@ public class Value(string _filename, int _line, int _pos)
 
     public virtual Value GetLength()
     {
-        throw new EigerError(filename, line, pos, "Object has no length", EigerError.ErrorType.RuntimeError);
+        throw new EigerError(filename, line, pos, "Object of type {this.GetType().Name} has no length", EigerError.ErrorType.RuntimeError);
     }
 
     public virtual Value GetAttr(ASTNode attr)
@@ -142,13 +148,10 @@ public class Value(string _filename, int _line, int _pos)
 
     public override bool Equals(object? obj)
     {
-        if (obj is not null)
-            return ComparisonEqeq(obj).value;
-        else
-            return false;
+        if (ReferenceEquals(this, obj)) return true;
+        if (obj is null || obj.GetType() != this.GetType()) return false;
+        return ComparisonEqeq(obj).value;
     }
 
-    public override int GetHashCode() {
-        return base.GetHashCode();
-    }
+    public override int GetHashCode() => HashCode.Combine(filename, line, pos);
 }

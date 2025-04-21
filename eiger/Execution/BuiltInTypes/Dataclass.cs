@@ -9,9 +9,6 @@ public class Dataclass : Value
 
     public Dataclass(string filename, int line, int pos, string name, SymbolTable symbolTable, ASTNode blockNode) : base(filename, line, pos)
     {
-        this.filename = filename;
-        this.line = line;
-        this.pos = pos;
         this.name = name;
 
         // create local symbol table

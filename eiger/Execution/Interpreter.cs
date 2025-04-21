@@ -524,6 +524,7 @@ class Interpreter
             "/=" => HandleCompoundAssignment(node, rightSide, symbolTable, (left, right) => left.DivedBy(right)),
             _ => throw new EigerError(node.filename, node.line, node.pos, $"{Globals.InvalidOperationStr}: {node.value}", EigerError.ErrorType.InvalidOperationError),
         };
+        
         return new()
         {
             result = retVal

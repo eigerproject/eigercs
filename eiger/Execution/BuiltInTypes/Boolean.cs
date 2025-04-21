@@ -12,10 +12,6 @@ public class Boolean : Value
 
     public Boolean(string filename, int line, int pos, bool value) : base(filename, line, pos)
     {
-        this.filename = filename;
-        this.value = value;
-        this.line = line;
-        this.pos = pos;
         this.value = value;
     }
 
