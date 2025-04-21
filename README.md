@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="artwork/logo-gray.png" width="400px" />
+    <img src="artwork/eiger-green-512.png" width="400px" />
     <h1>Eiger Programming Language</h1>
     <p>
       Eiger <i>(name from <a href="https://en.wikipedia.org/wiki/Eiger" target="_blank">Mt. Eiger, Switzerland</a>)</i> is a simple interpreted dynamic-typed programming language.
