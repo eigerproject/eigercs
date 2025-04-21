@@ -73,10 +73,10 @@ public class Program
         {
             Lexer lex = new(src, fn);
             List<Token> tokens = lex.Tokenize();
-            
+
             Parser parser = new(tokens);
             ASTNode root = parser.Parse(fn);
-            
+
             foreach (var statement in root.children)
             {
                 Value val = Interpreter.VisitNode(statement, Interpreter.globalSymbolTable).result;

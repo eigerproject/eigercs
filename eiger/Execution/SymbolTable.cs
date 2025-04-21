@@ -22,7 +22,7 @@ namespace EigerLang.Execution
         {
             parent = _parent;
             values = _values;
-            
+
             if (_parent != null) lookupCache = new();
         }
 
@@ -30,7 +30,7 @@ namespace EigerLang.Execution
         {
             for (SymbolTable? current = this; current != null; current = current.parent)
                 if (current.values.ContainsKey(key)) return true;
-            
+
             return false;
         }
 

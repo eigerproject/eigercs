@@ -27,7 +27,8 @@ public class Class : Value
 
         Interpreter.VisitBlockNode(blockNode, localSymbolTable);
 
-        if (localSymbolTable.HasSymbol("new")) {
+        if (localSymbolTable.HasSymbol("new"))
+        {
             Value value = localSymbolTable.GetSymbol("new", filename, line, pos);
             if (value is Function constructorFunc)
                 constructorFunc.Execute(args, line, pos, filename);

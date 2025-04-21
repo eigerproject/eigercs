@@ -28,14 +28,16 @@ abstract class BaseFunction(ASTNode node, string name, List<string> arg_n, Symbo
 
     public abstract ReturnResult Execute(List<Value> args, int line, int pos, string path); // abstract execute function
 
-    public override Boolean ComparisonEqeq(object other) {
-        if(other is BaseFunction f)
+    public override Boolean ComparisonEqeq(object other)
+    {
+        if (other is BaseFunction f)
             return new Boolean(filename, line, pos, name == f.name && arg_n.SequenceEqual(f.arg_n) && symbolTable == f.symbolTable);
         return new Boolean(filename, line, pos, false);
     }
 
-    public override Boolean ComparisonNeqeq(object other) {
-         if(other is BaseFunction f)
+    public override Boolean ComparisonNeqeq(object other)
+    {
+        if (other is BaseFunction f)
             return new Boolean(filename, line, pos, !(name == f.name && arg_n.SequenceEqual(f.arg_n) && symbolTable == f.symbolTable));
         return new Boolean(filename, line, pos, true);
     }
@@ -61,7 +63,7 @@ class Function : BaseFunction
 
         // add args to that local symbol table
         for (int i = 0; i < args.Count; i++)
-            localSymbolTable.CreateSymbol(arg_n[i], args[i], path, line,pos);
+            localSymbolTable.CreateSymbol(arg_n[i], args[i], path, line, pos);
 
         // visit the body and return the result
         return Interpreter.VisitBlockNode(root, localSymbolTable);
@@ -93,7 +95,7 @@ class InlineFunction : BaseFunction
 
         // add args to that local symbol table
         for (int i = 0; i < args.Count; i++)
-            localSymbolTable.CreateSymbol(arg_n[i], args[i], path, line,pos);
+            localSymbolTable.CreateSymbol(arg_n[i], args[i], path, line, pos);
 
         // visit the body and return the result
         ReturnResult r = Interpreter.VisitNode(root, localSymbolTable);
