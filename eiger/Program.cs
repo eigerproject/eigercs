@@ -21,7 +21,7 @@ public class Program
             while (true)
             {
                 Console.ForegroundColor = ConsoleColor.DarkGray;
-                Console.Write("#-> ");
+                Console.Write("% ");
                 Console.ResetColor();
                 string inp = Console.ReadLine() ?? "";
 
