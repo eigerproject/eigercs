@@ -26,6 +26,7 @@ class Interpreter
     public static BuiltInFunctions.AsciiFunction asciiFunction = new();
     public static BuiltInFunctions.TimeFunction timeFunction = new();
     public static BuiltInFunctions.ExitFunction exitFunction = new();
+    public static BuiltInFunctions.FmtFunction fmtFunction = new();
     public static Number fgColor = new("<std>", 0, 0, (int)ConsoleColor.Gray)
     {
         modifiers = ["readonly"]
@@ -52,6 +53,7 @@ class Interpreter
         {"ascii",asciiFunction},
         {"time", timeFunction},
         {"exit", exitFunction},
+        {"fmt", fmtFunction},
     });
 
     public static SymbolTable defaultGlobalSymbolTable = new(null, new() {
@@ -81,7 +83,7 @@ class Interpreter
     {
         switch (node.type)
         {
-            case NodeType.Block: return VisitBlockNode(node, symbolTable);
+            case NodeType.Block: return VisitBlockNode(node, new(symbolTable));
             case NodeType.Let: return VisitLetNode(node, symbolTable);
             case NodeType.If: return VisitIfNode(node, symbolTable);
             case NodeType.ForTo: return VisitForToNode(node, symbolTable);

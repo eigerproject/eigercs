@@ -16,13 +16,16 @@ abstract class BaseFunction(ASTNode node, string name, List<string> arg_n, Symbo
 {
     public string name { get; } = name; // name
     public List<string> arg_n { get; } = arg_n; // argument names
+    public bool isVariadic = false; // if the function is variadic
 
     public SymbolTable symbolTable = symbolTable; // symbol table
 
     public void CheckArgs(string path, int line, int pos, int argCount)
     {
-        // if the count of the given args and the required args are not equal
-        if (argCount != arg_n.Count)
+        // if the count of given arguments is invalid
+        if(isVariadic && argCount < arg_n.Count)
+            throw new EigerError(path, line, pos, $"Function {name} takes at least {arg_n.Count} arguments, got {argCount}", EigerError.ErrorType.ArgumentError);
+        if (!isVariadic && argCount != arg_n.Count)
             throw new EigerError(path, line, pos, $"Function {name} takes {arg_n.Count} arguments, got {argCount}", EigerError.ErrorType.ArgumentError);
     }
 
@@ -113,7 +116,9 @@ class InlineFunction : BaseFunction
 // built-in functions
 abstract class BuiltInFunction : BaseFunction
 {
-    public BuiltInFunction(string name, List<string> arg_n) : base(new(NodeType.Block, 0, 0, 0, "<unset>"), name, arg_n, Interpreter.globalSymbolTable) { }
+    public BuiltInFunction(string name, List<string> arg_n, bool isVariadic = false) : base(new(NodeType.Block, 0, 0, 0, "<unset>"), name, arg_n, Interpreter.globalSymbolTable) {
+        this.isVariadic = isVariadic;
+    }
 
     public override ReturnResult Execute(List<Value> args, int line, int pos, string file) { return new() { result = new Nix(file, line, pos) }; }
 
