@@ -12,7 +12,7 @@ namespace EigerLang.Execution.BuiltInFunctions;
 
 class FmtFunction : BuiltInFunction
 {
-    public FmtFunction() : base("fmt", ["fmt"], true) { }
+    public FmtFunction() : base("fmt", ["fmt", "args"], true) { }
 
     public override ReturnResult Execute(List<Value> args, int line, int pos, string filepath)
     {
@@ -23,6 +23,8 @@ class FmtFunction : BuiltInFunction
 
         string fmt = args[0].ToString();
         string result = "";
+
+        List<Value> fargs = (args[1] as EigerLang.Execution.BuiltInTypes.Array).array;
 
         for (int i = 0; i < fmt.Length; ++i)
         {
@@ -37,9 +39,9 @@ class FmtFunction : BuiltInFunction
 
                 if (i + 1 < fmt.Length && char.IsDigit(fmt[i + 1]))
                 {
-                    int index = fmt[i + 1] - '1'; 
-                    if (index >= 0 && index < args.Count - 1)
-                        result += args[index + 1].ToString();
+                    int index = fmt[i + 1] - '0'; 
+                    if (index > 0 && index <= fargs.Count)
+                        result += fargs[index - 1].ToString();
                     else
                         result += $"%{fmt[i + 1]}";
 

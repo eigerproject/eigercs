@@ -193,6 +193,13 @@ public class Parser(List<Token> tokens)
             do // add arguments until there are no more
             {
                 if (Peek().type == TokenType.COMMA) Advance(); // advance through the comma
+                if (Peek().type == TokenType.PLUS)  // variadic arguments
+                {
+                    args.Add(new ASTNode(NodeType.Literal, '+', funcTok.line, funcTok.pos, path));
+                    Advance();
+                    args.Add(Factor()); // add the name to the args
+                    break;
+                }
 
                 args.Add(Factor()); // add the name to the args
 

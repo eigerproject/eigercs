@@ -325,15 +325,25 @@ class Interpreter
 
         Value func = VisitNode(node.children[0], symbolTable).result;
 
-        List<Value> args = PrepareArguments(node, symbolTable);
+        bool variadic = false;
+        int fncount = 0;
 
-        // if the symbol we're calling is a function or a class (it might be something else, like a variable)
-        if (func is BaseFunction f)
-            return f.Execute(args, node.line, node.pos, node.filename);
-        else if (func is Class c)
-            return c.Execute(args, symbolTable);
+        bool isClass = false;
+
+        if (func is BaseFunction f) {
+            variadic = f.isVariadic;
+            fncount = f.arg_n.Count;
+        } else if (func is Class c) isClass = true;
         else
             throw new EigerError(node.filename, node.line, node.pos, $"{node.value} is not a function", EigerError.ErrorType.RuntimeError);
+
+        List<Value> args = PrepareArguments(node, symbolTable, variadic, fncount);
+
+        // if the symbol we're calling is a function or a class (it might be something else, like a variable)
+        if (!isClass)
+            return (func as BaseFunction).Execute(args, node.line, node.pos, node.filename);
+        else 
+            return (func as Class).Execute(args, symbolTable);
     }
 
     // Visit namespace definition node
@@ -406,6 +416,8 @@ class Interpreter
         // get funciton body
         ASTNode root = node.children[0];
 
+        bool variadic = false;
+
         // prepare list for argnames
         List<string> argnames = new();
 
@@ -415,12 +427,18 @@ class Interpreter
             // assuming the node is guaranteed to be an identifier, we can get it's name and add to the name
             // this will be useful later when calling the function, we will add each given argument with that
             // name in the function's local scope
+            if(node.children[i].value is char && node.children[i].value == '+') {
+                argnames.Add(node.children[i + 1].value);
+                variadic = true;
+                break;
+            }
             argnames.Add(node.children[i].value);
         }
 
         Function result = new Function(node, funcName, argnames, root, symbolTable)
         {
-            modifiers = modifiers
+            modifiers = modifiers,
+            isVariadic = variadic
         };
 
         // add the function to the current scope
@@ -735,15 +753,37 @@ class Interpreter
         };
     }
 
-    static List<Value> PrepareArguments(ASTNode node, SymbolTable symbolTable)
+    static List<Value> PrepareArguments(ASTNode node, SymbolTable symbolTable, bool variadic, int fncount)
     {
         List<Value> args = new List<Value>();
-        for (int i = 1; i < node.children.Count; i++)
-        {
-            Value val = VisitNode(node.children[i], symbolTable).result ?? throw new EigerError(node.filename, node.line, node.pos, Globals.ArgumentErrorStr, EigerError.ErrorType.ArgumentError);
-            val.modifiers.Clear();
-            args.Add(val);
+
+        if(variadic) {
+            if(fncount > node.children.Count) 
+                throw new EigerError(node.filename, node.line, node.pos, "Not enough arguments in variadic function", EigerError.ErrorType.ArgumentError);
+
+            for (int i = 1; i < fncount; i++) {
+                Value val = VisitNode(node.children[i], symbolTable).result ?? throw new EigerError(node.filename, node.line, node.pos, Globals.ArgumentErrorStr, EigerError.ErrorType.ArgumentError);
+                val.modifiers.Clear();
+                args.Add(val);
+            }
+
+            List<Value> varArgs = new();
+            for(int i = fncount; i < node.children.Count; ++i) {
+                Value val = VisitNode(node.children[i], symbolTable).result ?? throw new EigerError(node.filename, node.line, node.pos, Globals.ArgumentErrorStr, EigerError.ErrorType.ArgumentError);
+                val.modifiers.Clear();
+                varArgs.Add(val);
+            }
+
+            EigerLang.Execution.BuiltInTypes.Array varArgsSymbol = new("<varargs>", -1, -1, varArgs);
+            args.Add(varArgsSymbol);   
+        } else {
+            for (int i = 1; i < node.children.Count; i++) {
+                Value val = VisitNode(node.children[i], symbolTable).result ?? throw new EigerError(node.filename, node.line, node.pos, Globals.ArgumentErrorStr, EigerError.ErrorType.ArgumentError);
+                val.modifiers.Clear();
+                args.Add(val);
+            }
         }
+
         return args;
     }
 

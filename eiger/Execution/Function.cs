@@ -23,8 +23,8 @@ abstract class BaseFunction(ASTNode node, string name, List<string> arg_n, Symbo
     public void CheckArgs(string path, int line, int pos, int argCount)
     {
         // if the count of given arguments is invalid
-        if(isVariadic && argCount < arg_n.Count)
-            throw new EigerError(path, line, pos, $"Function {name} takes at least {arg_n.Count} arguments, got {argCount}", EigerError.ErrorType.ArgumentError);
+        if(isVariadic && argCount < arg_n.Count - 1)
+            throw new EigerError(path, line, pos, $"Function {name} takes at least {arg_n.Count - 1} arguments, got {argCount}", EigerError.ErrorType.ArgumentError);
         if (!isVariadic && argCount != arg_n.Count)
             throw new EigerError(path, line, pos, $"Function {name} takes {arg_n.Count} arguments, got {argCount}", EigerError.ErrorType.ArgumentError);
     }
