@@ -135,7 +135,7 @@ public class Parser(List<Token> tokens)
             "brk" => BreakStatement(),
             "cont" => ContinueStatement(),
             "class" => ClassStatement(),
-            "dataclass" => DataclassStatement(),
+            "namespace" => NamespaceStatement(),
             "include" => IncludeStatement(),
             _ => Expr(),
         };
@@ -346,17 +346,17 @@ public class Parser(List<Token> tokens)
         return node;
     }
 
-    // dataclass definition
-    ASTNode DataclassStatement()
+    // namespace definition
+    ASTNode NamespaceStatement()
     {
         // match class
-        Match(TokenType.IDENTIFIER, "dataclass");
+        Match(TokenType.IDENTIFIER, "namespace");
         // get class name
-        string className = Advance().value ?? throw new EigerError(path, Peek().line, Peek().pos, "Expected dataclass name", EigerError.ErrorType.ParserError);
+        string className = Advance().value ?? throw new EigerError(path, Peek().line, Peek().pos, "Expected namesapce name", EigerError.ErrorType.ParserError);
         // get class body
         ASTNode body = StatementList();
         // construct the node
-        ASTNode node = new ASTNode(NodeType.Dataclass, className, body.line, body.pos, path);
+        ASTNode node = new ASTNode(NodeType.Namespace, className, body.line, body.pos, path);
 
         node.AddChild(body);
 

@@ -1,4 +1,4 @@
-﻿dataclass Colors {
+﻿namespace Colors {
 	let readonly Black = 0
 	let readonly Blue = 9
 	let readonly Cyan = 11
@@ -18,7 +18,7 @@
 	let readonly All = [Black, Blue, Cyan, DarkBlue, DarkCyan, DarkGray, DarkGreen, DarkMagenta, DarkRed, DarkYellow, Gray, Green, Magenta, Red, White, Yellow]
 }
 
-dataclass ColorUtil {
+namespace ColorUtil {
 	func SetForegroundColor(_color) {
 		if _color <= 15 {
 			if _color >= 0 

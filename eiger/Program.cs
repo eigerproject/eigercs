@@ -96,7 +96,11 @@ public class Program
                     {
                         Console.ForegroundColor = ConsoleColor.Yellow; v = $"\"{v}\"";
                     }
-                    else if (val is BaseFunction || val is Class || val is Dataclass || val is Instance)
+                    else if (val is Namespace)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Blue;
+                    }
+                    else if (val is BaseFunction || val is Class || val is Instance)
                     {
                         Console.ForegroundColor = ConsoleColor.Green;
                     }

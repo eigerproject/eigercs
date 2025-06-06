@@ -90,7 +90,7 @@ class Interpreter
             case NodeType.FuncDef: return VisitFuncDefNode(node, symbolTable);
             case NodeType.FuncDefInline: return VisitFuncDefInlineNode(node, symbolTable);
             case NodeType.Class: return VisitClassNode(node, symbolTable);
-            case NodeType.Dataclass: return VisitDataclassNode(node, symbolTable);
+            case NodeType.Namespace: return VisitNamespaceNode(node, symbolTable);
             case NodeType.Return: return VisitReturnNode(node, symbolTable);
             case NodeType.Break:
                 return new()
@@ -334,24 +334,32 @@ class Interpreter
             throw new EigerError(node.filename, node.line, node.pos, $"{node.value} is not a function", EigerError.ErrorType.RuntimeError);
     }
 
-    // Visit dataclass definition node
-    static ReturnResult VisitDataclassNode(ASTNode node, SymbolTable symbolTable)
+    // Visit namespace definition node
+    static ReturnResult VisitNamespaceNode(ASTNode node, SymbolTable symbolTable)
     {
-        // DataclassNode structure
-        // DataclassNode : <class name>
+        // NamespaceNode structure
+        // NamespaceNode : <name>
         // -- block
         // ---- definition1
         // ---- definition2
         // ---- ...
 
-        if (symbolTable.HasSymbol(node.value))
-            throw new EigerError(node.filename, node.line, node.pos, $"{node.value} already declared", EigerError.ErrorType.RuntimeError);
+        if (symbolTable.HasSymbol(node.value)) {
+            if(symbolTable.GetSymbol(node.value, node.filename, node.line, node.pos) is not Namespace)
+                throw new EigerError(node.filename, node.line, node.pos, $"{node.value} already declared", EigerError.ErrorType.RuntimeError);
+            else {
+                Namespace ns = (Namespace)(symbolTable.GetSymbol(node.value, node.filename, node.line, node.pos));
+                ns.AddDefinition(node.children[0]);
 
-        Dataclass classdef = new(node.filename, node.line, node.pos, node.value, symbolTable, node.children[0]);
+                return new() { result = ns };
+            }
+        } else {
+            Namespace newNs = new(node.filename, node.line, node.pos, node.value, symbolTable, node.children[0]);
 
-        symbolTable.CreateSymbol(node.value, classdef, node.filename, node.line, node.pos);
+            symbolTable.CreateSymbol(node.value, newNs, node.filename, node.line, node.pos);
 
-        return new() { result = classdef };
+            return new() { result = newNs };    
+        }
     }
 
     // Visit class definition node

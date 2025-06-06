@@ -1,4 +1,4 @@
-﻿dataclass StringUtil {
+﻿namespace StringUtil {
     func Split(string, seperator) {
         let parts = []
         let temp = ""

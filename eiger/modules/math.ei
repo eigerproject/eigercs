@@ -1,6 +1,6 @@
 ﻿~ Eiger Standard Math Library
 
-dataclass math { ~ Declare a namespace
+namespace math { ~ Declare a namespace
 	~ Mathematical Constants
 	let readonly pi = 3.14159265358979323846
 	let readonly e = 2.718281828459045

@@ -22,7 +22,7 @@ public enum NodeType
     ElementAccess,
     Class,
     AttrAccess,
-    Dataclass,
+    Namespace,
     Include,
     UnaryOp,
     Break,
