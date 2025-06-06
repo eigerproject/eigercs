@@ -43,33 +43,31 @@
   <h2 align="center">Simple Example</h2>
   
   ```
-  class Person
-      let private name
-      let private surname
+  class Person {
+	let name
+	let surname
 
-      ~ constructor
-      func new(name, surname)
-          this.name = name
-          this.surname = surname
-      end
-  
-      func Introduction()
-          emitln("I am " + this.name + " " + this.surname + "!")
-      end
-  
-      func Greet(other)
-          emitln(this.name + " greeted " + other.name + "!")
-      end
-  end
-  
-  let px = Person("Name1", "Surname1")
-  let py = Person("Name2", "Surname2")
-  
-  px.Introduction()
-  py.Introduction()
-  px.Greet(py)
-  
-  Person("a","b").Introduction()
+	func new(name, surname) {
+		this.name = name
+		this.surname = surname
+	}
+
+	func Introduction() {
+		emitln("I am " + this.name + " " + surname + "!")
+	}
+
+	func Greet(other) {
+		emitln(name + " greeted " + other.name + "!")
+	}
+}
+
+let px = Person("Name1", "Surname1")
+let py = Person("Name2", "Surname2")
+
+px.Introduction()
+py.Introduction()
+
+px.Greet(py)
   ```
   
   This is a very simple example showing Eiger's OOP capabilities
