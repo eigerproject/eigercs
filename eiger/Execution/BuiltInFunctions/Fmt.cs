@@ -21,10 +21,10 @@ class FmtFunction : BuiltInFunction
         if(args[0] is not String) 
               throw new Errors.EigerError(filepath, line, pos, $"{Globals.ArgumentErrorStr}: format is not string", Errors.EigerError.ErrorType.ArgumentError);
 
-        string fmt = args[0].ToString();
+        string fmt = args[0].ToString()!;
         string result = "";
 
-        List<Value> fargs = (args[1] as EigerLang.Execution.BuiltInTypes.Array).array;
+        List<Value> fargs = (args[1] as EigerLang.Execution.BuiltInTypes.Array)!.array;
 
         for (int i = 0; i < fmt.Length; ++i)
         {

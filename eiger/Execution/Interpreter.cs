@@ -27,6 +27,8 @@ class Interpreter
     public static BuiltInFunctions.TimeFunction timeFunction = new();
     public static BuiltInFunctions.ExitFunction exitFunction = new();
     public static BuiltInFunctions.FmtFunction fmtFunction = new();
+    public static BuiltInFunctions.FilterFunction filterFunction = new();
+    public static BuiltInFunctions.MapFunction mapFunction = new();
     public static Number fgColor = new("<std>", 0, 0, (int)ConsoleColor.Gray)
     {
         modifiers = ["readonly"]
@@ -54,6 +56,8 @@ class Interpreter
         {"time", timeFunction},
         {"exit", exitFunction},
         {"fmt", fmtFunction},
+        {"filter", filterFunction},
+        {"map", mapFunction}
     });
 
     public static SymbolTable defaultGlobalSymbolTable = new(null, new() {
@@ -71,7 +75,7 @@ class Interpreter
         {"color_bg",bgColor},
         {"ascii",asciiFunction},
         {"time", timeFunction},
-        {"exit", exitFunction},
+        {"exit", exitFunction}
     });
 
     // to reset the symbol table (used in tests)
@@ -341,9 +345,9 @@ class Interpreter
 
         // if the symbol we're calling is a function or a class (it might be something else, like a variable)
         if (!isClass)
-            return (func as BaseFunction).Execute(args, node.line, node.pos, node.filename);
+            return (func as BaseFunction)!.Execute(args, node.line, node.pos, node.filename);
         else 
-            return (func as Class).Execute(args, symbolTable);
+            return (func as Class)!.Execute(args, symbolTable);
     }
 
     // Visit namespace definition node
