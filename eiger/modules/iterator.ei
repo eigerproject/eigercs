@@ -1,37 +1,36 @@
-class Iterator
+class Iterator {
     let private iter
     let private length
     let private ptr = 0
-    func new(_iter)
-        if _iter.type != "string" then
-            if _iter.type != "array" then
+
+    func new(_iter) {
+        if _iter.type != "string" {
+            if _iter.type != "array" {
                 emitln("Not Iterable!")
                 ret nix
-            end
-        end
+            }
+        }
         this.iter = _iter
         this.length = _iter.length
-    end
+    }
 
-    func Iterate()
-        if ptr < length then
+    func Iterate() {
+        if ptr < length {
             let retVal = iter[ptr]
             ptr += 1
             ret retVal
-        else
+        } else
             ret nix
-        end
-    end
+    }
 
     func HasNext() > ptr < length
 
     func Reset() > ptr = 0
 
-    func Peek()
-        if ptr < length then
+    func Peek() {
+        if ptr < length
             ret iter[ptr]
         else
             ret nix
-        end
-    end
-end
+    }
+}

@@ -166,6 +166,8 @@ public class Lexer
             { ')', TokenType.RPAREN },
             { '[', TokenType.LSQUARE },
             { ']', TokenType.RSQUARE },
+            {'{', TokenType.LBRACE},
+            {'}', TokenType.RBRACE},
             { '.', TokenType.DOT },
             { '^', TokenType.CARET },
             { '%', TokenType.PERC },

@@ -34,4 +34,6 @@ public enum TokenType
     DOT,
     CARET,
     PERC,
+    LBRACE,
+    RBRACE
 }

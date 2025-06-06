@@ -1,18 +1,17 @@
 ﻿~ Eiger Standard Math Library
 
-dataclass math ~ Declare a namespace
+dataclass math { ~ Declare a namespace
 	~ Mathematical Constants
 	let readonly pi = 3.14159265358979323846
 	let readonly e = 2.718281828459045
 
 	~ get the unsigned value of a number
-	func abs(n)
-		if n < 0 then
+	func abs(n) {
+		if n < 0
 			ret -n
 		else
 			ret n
-		end
-	end
+	}
 
 	~ get the square root of a number
 	func sqrt(n) > n ^ 0.5
@@ -24,43 +23,31 @@ dataclass math ~ Declare a namespace
 	func mod(a, b) > a % b
 
 	~ get factorial of a number using recursion
-	func factorial(n)
-		if n ?= 0 then
+	func factorial(n) {
+		if n ?= 0
 			ret 1
 		else
 			ret n * factorial(n - 1)
-		end
-	end
+	}
 
-	func sin(x)
-	    let half_pi = pi / 2
-	    let two_pi = 2 * pi
+	func sin(x) {
+	    let readonly epsilon = 0.000001
+	    let term = x
+	    let sum = 0
+	    let n = 1
 
-	    ~ Normalize x to [-pi, pi]
-	    x = x % two_pi
-	    if x < -pi then
-	        x += two_pi
-	    elif x > pi then
-	        x -= two_pi
-	    end
+	    while x > pi x -= 2 * pi
+	    while x < -pi x += 2 * pi
 
-	    ~ Further reduce to [-pi/2, pi/2]
-	    let sign = 1
-	    if x < -half_pi then
-	        x = -pi - x
-	        sign = -1
-	    elif x > half_pi then
-	        x = pi - x
-	        sign = -1
-	    end
+	    while abs(term) >= epsilon {
+	    	sum += term
+	    	n += 2
+	    	term = -term * x * x / (n * (n - 1))
+	    }
 
-	    ~ Polynomial approximation
-	    let xpow = x * x
-	    let result = x * (1 + xpow * (-1/6 + xpow * (1/120)))
-
-	    ret sign * result
-	end
+	    ret sum
+	}
 
 
 	func cos(n) > sin(pi / 2 - n)
-end
+}

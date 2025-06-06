@@ -1,2 +1,2 @@
-func return_ten() ret 10 end
+func return_ten() { ret 10 }
 emitln(return_ten())

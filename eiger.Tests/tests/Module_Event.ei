@@ -1,8 +1,8 @@
 include event
 
 let ev = Event()
-ev.Subscribe(func(msg) emitln("First Subscriber: " + msg) end)
-ev.Subscribe(func(msg) emitln("Second Subscriber: " + msg) end)
+ev.Subscribe(func(msg) { emitln("First Subscriber: " + msg) })
+ev.Subscribe(func(msg) { emitln("Second Subscriber: " + msg) })
 ev.Invoke("Hello!")
 
 func functionOne(args) > emitln("This is function one")

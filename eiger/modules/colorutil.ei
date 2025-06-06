@@ -1,4 +1,4 @@
-﻿dataclass Colors
+﻿dataclass Colors {
 	let readonly Black = 0
 	let readonly Blue = 9
 	let readonly Cyan = 11
@@ -16,30 +16,26 @@
 	let readonly White = 15
 	let readonly Yellow = 14
 	let readonly All = [Black, Blue, Cyan, DarkBlue, DarkCyan, DarkGray, DarkGreen, DarkMagenta, DarkRed, DarkYellow, Gray, Green, Magenta, Red, White, Yellow]
-end
+}
 
-dataclass ColorUtil
-	func SetForegroundColor(_color)
-		if _color <= 15 then
-			if _color >= 0 then
+dataclass ColorUtil {
+	func SetForegroundColor(_color) {
+		if _color <= 15 {
+			if _color >= 0 
 				color(_color, color_bg)
 			else
 				emitln("invalid color!")
-			end
-		else
+		} else 
 			emitln("invalid color!")
-		end
-	end
+	}
 
-	func SetBackgroundColor(_color)
-		if _color <= 15 then
-			if _color >= 0 then
+	func SetBackgroundColor(_color) {
+		if _color <= 15 {
+			if _color >= 0 
 				color(color_fg, _color)
 			else
 				emitln("invalid color!")
-			end
-		else
+		} else
 			emitln("invalid color!")
-		end
-	end
-end
+	}
+}

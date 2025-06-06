@@ -1,24 +1,23 @@
-﻿class Event
+﻿class Event {
 	let private subscribers = []
 
-	func new() end
+	func new() {}
 	
-	func Subscribe(subscriber) subscribers += subscriber end
+	func Subscribe(subscriber) { subscribers += subscriber }
 	
-	func Unsubscribe(subscriber)
+	func Unsubscribe(subscriber) {
 		let newSubscribers = []
-		for i = 0 to subscribers.length do
-			if subscribers[i] != subscriber then
+		for i = 0 to subscribers.length {
+			if subscribers[i] != subscriber 
 				newSubscribers += subscribers[i]
-			end
-		end
+		}
 		subscribers = newSubscribers
-	end
+	}
 	
-	func Invoke(eventArgs)
-		for i = 0 to subscribers.length do
+	func Invoke(eventArgs) {
+		for i = 0 to subscribers.length {
 			let f = subscribers[i]
 			f(eventArgs)
-		end
-	end
-end
+		}
+	}
+}

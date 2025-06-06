@@ -1,6 +1,6 @@
 let x = 0
-while x != 5 do
+while x != 5 {
 	emit(x)
-	if x ?=2 then brk end
+	if x ?= 2 brk
 	x += 1
-end
+}

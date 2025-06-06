@@ -1,15 +1,15 @@
-class Person
+class Person {
 	let name
 	let surname
 
-	func new(name, surname)
+	func new(name, surname) {
 		this.name = name
 		this.surname = surname
-	end
+	}
 
-	func Introduction()
+	func Introduction() {
 		emitln("I am " + this.name + " " + surname + "!")
-	end
-end
+	}
+}
 
 Person("a", "b").Introduction()

@@ -190,7 +190,7 @@ class Interpreter
 
             localSymbolTable.CreateSymbol(node.children[0].value, new Number(node.filename, node.line, node.pos, value), node.filename, node.line, node.pos);
 
-            ReturnResult r = VisitBlockNode(forBlock, localSymbolTable);
+            ReturnResult r = VisitNode(forBlock, localSymbolTable);
 
             if (r.shouldBreak) break;
             if (r.shouldReturn) return r;
@@ -218,7 +218,7 @@ class Interpreter
         {
             // visit the body of the loop
             // (bool shouldBreak, bool didReturn, Value v)
-            ReturnResult r = VisitBlockNode(node.children[1], new(symbolTable));
+            ReturnResult r = VisitNode(node.children[1], new(symbolTable));
 
             if (r.shouldBreak) break;
             if (r.shouldReturn) return r;
@@ -251,7 +251,7 @@ class Interpreter
         if (Convert.ToBoolean(condition.value))
         {
             // visit the if block (2nd child node)
-            return VisitBlockNode(node.children[1], new(symbolTable));
+            return VisitNode(node.children[1], new(symbolTable));
         }
 
         // check for else if blocks
@@ -265,14 +265,14 @@ class Interpreter
                 if (Convert.ToBoolean(elseIfCondition.value))
                 {
                     // visit the else if block (2nd child of else if node)
-                    return VisitBlockNode(child.children[1], new(symbolTable));
+                    return VisitNode(child.children[1], new(symbolTable));
                 }
             }
             else
             {
                 // assume this is the else block
                 // visit the else block
-                return VisitBlockNode(child, new(symbolTable));
+                return VisitNode(child, new(symbolTable));
             }
         }
 

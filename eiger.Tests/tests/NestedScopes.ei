@@ -1,14 +1,14 @@
 let x = 5
 let y = 0
 
-if x ?= 5 then
+if x ?= 5 {
 	y = 10
 
-	if y ?= 10 then
+	if y ?= 10 {
 		let z = 15
 		emit(z)
-	end
-end
+	}
+}
 
 emit(y)
 emitln(x)
@@ -17,15 +17,15 @@ emitln(x)
 
 x = 5
 
-if x ?= 5 then
+if x ?= 5 {
 	y = 10
 
-	if y ?= 10 then
+	if y ?= 10 {
 		x = 20
 		emit(x)
-	end
+	}
 
 	emit(y)
-end
+}
 
 emitln(x)

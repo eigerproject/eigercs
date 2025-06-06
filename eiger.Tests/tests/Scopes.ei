@@ -1,9 +1,9 @@
 let x = 10
 
-if x ?= 10 then
+if x ?= 10 {
 	let y = 20
 	emit(y)
-end
+}
 
 emitln(x)
 
@@ -11,10 +11,10 @@ emitln(x)
 
 x = 10
 
-if x ?= 10 then
+if x ?= 10 {
 	x = 20
 	emit(x)
-end
+}
 
 emitln(x)
 
@@ -22,10 +22,10 @@ emitln(x)
 
 x = 5
 
-func example()
+func example() {
 	let y = x + 2
 	emitln(y)
-end
+}
 
 example()
 
@@ -33,10 +33,10 @@ example()
 
 x = 5
 
-func secondExample()
+func secondExample() {
 	x = 10
 	emit(x)
-end
+}
 
 secondExample()
 emitln(x)

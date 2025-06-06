@@ -42,7 +42,7 @@ public class Parser(List<Token> tokens)
     public ASTNode Parse(string p)
     {
         path = p;
-        return StatementList();
+        return StatementList(true);
     }
 
     // advance to next token
@@ -104,14 +104,16 @@ public class Parser(List<Token> tokens)
     }
 
     // statement list
-    ASTNode StatementList()
+    ASTNode StatementList(bool isRoot = false)
     {
+      if(current < tokens.Count && Peek().type == TokenType.LBRACE && !isRoot) Advance();
         ASTNode root = new(NodeType.Block, null, 1, 0, path);
         // add statements until the end of block (end or else)
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
-        while (current < tokens.Count && Peek().value.ToString() != "end" && Peek().value.ToString() != "else" && Peek().value.ToString() != "elif")
+        while (current < tokens.Count && Peek().type != TokenType.RBRACE)
             root.AddChild(Statement());
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
+        if(current < tokens.Count && Peek().type == TokenType.RBRACE) Advance();
         return root;
     }
 
@@ -120,6 +122,7 @@ public class Parser(List<Token> tokens)
     {
         // store the peeked token
         Token peeked = Peek();
+        if(peeked.type == TokenType.LBRACE) return StatementList();
         return peeked.value switch
         {
             // if it's a statement, parse a statement, else, parse an expression
@@ -214,9 +217,6 @@ public class Parser(List<Token> tokens)
         {
             // parse the body
             ASTNode rootNode = StatementList();
-
-            // match end
-            Match(TokenType.IDENTIFIER, "end");
 
             // add the root node first, then the argnames
             node.AddChild(rootNode);
@@ -316,12 +316,8 @@ public class Parser(List<Token> tokens)
         Match(TokenType.IDENTIFIER, "to");
         // match ending value
         ASTNode to = Expr();
-        // match do
-        Match(TokenType.IDENTIFIER, "do");
         // get for block
-        ASTNode forBlock = StatementList();
-        // match end
-        Match(TokenType.IDENTIFIER, "end");
+        ASTNode forBlock = Statement();
 
         // construct for node
         ASTNode forNode = new(NodeType.ForTo, null, forToken.line, forToken.pos, path);
@@ -342,8 +338,6 @@ public class Parser(List<Token> tokens)
         string className = Advance().value ?? throw new EigerError(path, Peek().line, Peek().pos, "Expected class name", EigerError.ErrorType.ParserError);
         // get class body
         ASTNode body = StatementList();
-        // match end
-        Match(TokenType.IDENTIFIER, "end");
         // construct the node
         ASTNode node = new ASTNode(NodeType.Class, className, body.line, body.pos, path);
 
@@ -361,8 +355,6 @@ public class Parser(List<Token> tokens)
         string className = Advance().value ?? throw new EigerError(path, Peek().line, Peek().pos, "Expected dataclass name", EigerError.ErrorType.ParserError);
         // get class body
         ASTNode body = StatementList();
-        // match end
-        Match(TokenType.IDENTIFIER, "end");
         // construct the node
         ASTNode node = new ASTNode(NodeType.Dataclass, className, body.line, body.pos, path);
 
@@ -379,12 +371,8 @@ public class Parser(List<Token> tokens)
         Match(TokenType.IDENTIFIER, "while");
         // match condition (which is an expression)
         ASTNode condition = Expr();
-        // match do
-        Match(TokenType.IDENTIFIER, "do");
         // get while block
-        ASTNode doBlock = StatementList();
-        // match end
-        Match(TokenType.IDENTIFIER, "end");
+        ASTNode doBlock = Statement();
         // construct the node, first the condition, then the block
         ASTNode whileNode = new(NodeType.While, null, whileToken.line, whileToken.pos, path);
         whileNode.AddChild(condition);
@@ -435,10 +423,9 @@ public class Parser(List<Token> tokens)
         Match(TokenType.IDENTIFIER, "if");
         // match condition (which is an expression)
         ASTNode condition = Expr();
-        // match then
-        Match(TokenType.IDENTIFIER, "then");
+
         // get if block
-        ASTNode ifBlock = StatementList();
+        ASTNode ifBlock = Statement();
 
         // list to store else if branches
         List<ASTNode> elseIfBranches = new List<ASTNode>();
@@ -453,10 +440,8 @@ public class Parser(List<Token> tokens)
             Match(TokenType.IDENTIFIER, "elif");
             // match condition (which is an expression)
             ASTNode elseIfCondition = Expr();
-            // match then
-            Match(TokenType.IDENTIFIER, "then");
             // get else if block
-            ASTNode elseIfBlock = StatementList();
+            ASTNode elseIfBlock = Statement();
 
             // construct the else if node
             ASTNode elseIfNode = new(NodeType.If, null, ifToken.line, ifToken.pos, path);
@@ -471,11 +456,8 @@ public class Parser(List<Token> tokens)
             // match else
             Match(TokenType.IDENTIFIER, "else");
             // get else block
-            elseBranch = StatementList();
+            elseBranch = Statement();
         }
-
-        // match end
-        Match(TokenType.IDENTIFIER, "end");
 
         // construct the node, first the condition, then the if block, then the else if blocks, then the else block (if exists)
         ASTNode ifNode = new(NodeType.If, null, ifToken.line, ifToken.pos, path);
