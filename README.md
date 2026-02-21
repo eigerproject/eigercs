@@ -27,9 +27,9 @@
       <li>Run <code>dotnet run</code> in <code>/eiger</code></li>
       <li>To run unit tests, run <code>dotnet test</code> in <code>/eiger.Tests</code></li>
   </ul>
-  <h2>Simple Example</h2>
+  <h2>Simple Example/Syntax Showcase</h2>
   
-  ```
+```
   class Person {
 	let name
 	let surname
@@ -56,8 +56,4 @@ px.Introduction()
 py.Introduction()
 
 px.Greet(py)
-
-```
-
-This is a very simple example showing Eiger's OOP capabilities
 ```
