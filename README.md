@@ -2,7 +2,7 @@
     <img src="artwork/eiger-green-512.png" width="400px" />
     <h1>Eiger Programming Language</h1>
     <p>
-      Eiger <i>(name from <a href="https://en.wikipedia.org/wiki/Eiger" target="_blank">Mt. Eiger, Switzerland</a>)</i> is a simple interpreted dynamic-typed programming language.
+      Eiger <i>(name from <a href="https://en.wikipedia.org/wiki/Eiger" target="_blank">Mt. Eiger, Switzerland</a>)</i> is a multi-paradigm programming language with a dynamic type system.
     </p>
     <a href="https://eigerproject.github.io" target="_blank">Website</a>
     |
